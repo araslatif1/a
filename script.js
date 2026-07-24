@@ -67,6 +67,17 @@
   }
 
   function fetchFileTree(owner, repo) {
+    if (owner === 'Local') {
+      return fetchWithTimeout('files.json?_t=' + Date.now(), {}, FETCH_TIMEOUT_MS).then(function (res) {
+        if (!res.ok) throw new Error('NOT_FOUND');
+        return res.json();
+      }).then(function (fileList) {
+        return fileList.map(function (path) {
+          return { type: 'blob', path: path };
+        });
+      });
+    }
+
     var url = 'https://api.github.com/repos/' + encodeURIComponent(owner) + '/' + encodeURIComponent(repo) + '/git/trees/HEAD?recursive=1&_t=' + Date.now();
     var headers = { 'Accept': 'application/vnd.github.v3+json', 'Cache-Control': 'no-cache' };
     var token = getToken();
@@ -119,6 +130,12 @@
 
   function fetchRawContent(owner, repo, path) {
     var encodedPath = path.split('/').map(encodeURIComponent).join('/');
+    if (owner === 'Local') {
+      return fetchWithTimeout(encodedPath, {}, RAW_TIMEOUT_MS).then(function (res) {
+        if (!res.ok) return null;
+        return res.text();
+      }).catch(function () { return null; });
+    }
     var url = 'https://raw.githubusercontent.com/' + encodeURIComponent(owner) + '/' + encodeURIComponent(repo) + '/HEAD/' + encodedPath;
     return fetchWithTimeout(url, {}, RAW_TIMEOUT_MS).then(function (res) {
       if (!res.ok) return null;
@@ -582,23 +599,7 @@
     var root = document.getElementById('app');
 
     if (!repoInfo) {
-      root.innerHTML = '';
-      var errorState = document.createElement('div');
-      errorState.className = 'error-state';
-      var icon = document.createElement('div');
-      icon.className = 'error-state__icon';
-      icon.textContent = '\uD83D\uDEAB';
-      var title = document.createElement('h2');
-      title.className = 'error-state__title';
-      title.textContent = 'Not a GitHub Pages site';
-      var desc = document.createElement('p');
-      desc.className = 'error-state__description';
-      desc.textContent = 'This page must be hosted on GitHub Pages (e.g. username.github.io).';
-      errorState.appendChild(icon);
-      errorState.appendChild(title);
-      errorState.appendChild(desc);
-      root.appendChild(errorState);
-      return;
+      repoInfo = { owner: 'Local', repo: 'Library' };
     }
 
     document.documentElement.setAttribute('data-theme', getTheme());
