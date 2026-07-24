@@ -5,6 +5,7 @@
   var CACHE_TTL_MS = 3600000;
   var TITLE_FETCH_CONCURRENCY = 5;
   var THEME_KEY = 'gh-pages-theme';
+  var TOKEN_KEY = 'gh-pages-token';
   var SEARCH_DEBOUNCE_MS = 200;
   var FETCH_TIMEOUT_MS = 15000;
   var RAW_TIMEOUT_MS = 10000;
@@ -58,7 +59,10 @@
 
   function fetchFileTree(owner, repo) {
     var url = 'https://api.github.com/repos/' + encodeURIComponent(owner) + '/' + encodeURIComponent(repo) + '/git/trees/HEAD?recursive=1';
-    return fetchWithTimeout(url).then(function (res) {
+    var headers = { 'Accept': 'application/vnd.github.v3+json' };
+    var token = getToken();
+    if (token) headers['Authorization'] = 'token ' + token;
+    return fetchWithTimeout(url, { headers: headers }).then(function (res) {
       if (res.status === 403) {
         return res.json().catch(function () { return {}; }).then(function (data) {
           if (data.message && data.message.toLowerCase().includes('rate limit')) {
@@ -142,6 +146,14 @@
   function setTheme(theme) {
     localStorage.setItem(THEME_KEY, theme);
     document.documentElement.setAttribute('data-theme', theme);
+  }
+
+  function getToken() {
+    return localStorage.getItem(TOKEN_KEY) || '';
+  }
+
+  function setToken(token) {
+    localStorage.setItem(TOKEN_KEY, token);
   }
 
   function errorMessageFor(error) {
@@ -312,7 +324,7 @@
     mainContent.appendChild(spinner);
   }
 
-  function renderError(mainContent, message, retryFn) {
+  function renderError(mainContent, message, retryFn, isRateLimit) {
     mainContent.innerHTML = '';
     var errorState = document.createElement('div');
     errorState.className = 'error-state';
@@ -328,9 +340,38 @@
     errorState.appendChild(icon);
     errorState.appendChild(title);
     errorState.appendChild(desc);
+
+    if (isRateLimit) {
+      var tokenWrap = document.createElement('div');
+      tokenWrap.style.cssText = 'margin-top:16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;';
+      var tokenInput = document.createElement('input');
+      tokenInput.type = 'password';
+      tokenInput.placeholder = 'GitHub token (optional, raises limit to 5000/hr)';
+      tokenInput.style.cssText = 'padding:8px 12px;border:1px solid var(--border-color);border-radius:var(--radius-sm);background:var(--bg-input);color:var(--text-primary);font-size:14px;width:300px;max-width:100%;outline:none;';
+      var tokenBtn = document.createElement('button');
+      tokenBtn.className = 'retry-button';
+      tokenBtn.textContent = 'Save & Retry';
+      tokenBtn.style.cssText = 'padding:8px 16px;';
+      tokenBtn.addEventListener('click', function () {
+        var val = tokenInput.value.trim();
+        if (val) setToken(val);
+        if (retryFn) retryFn();
+      });
+      tokenWrap.appendChild(tokenInput);
+      tokenWrap.appendChild(tokenBtn);
+
+      var tokenHint = document.createElement('p');
+      tokenHint.style.cssText = 'width:100%;text-align:center;font-size:12px;color:var(--text-muted);margin-top:8px;';
+      tokenHint.textContent = 'Create one at github.com/settings/tokens (no permissions needed, just reduces rate limit)';
+      tokenWrap.appendChild(tokenHint);
+
+      errorState.appendChild(tokenWrap);
+    }
+
     if (retryFn) {
       var retryBtn = document.createElement('button');
       retryBtn.className = 'retry-button';
+      retryBtn.style.cssText = isRateLimit ? 'margin-top:12px;' : 'margin-top:16px;';
       var retryIcon = document.createElement('span');
       retryIcon.className = 'retry-button__icon';
       retryIcon.appendChild(createRefreshIcon());
@@ -339,6 +380,7 @@
       retryBtn.addEventListener('click', retryFn);
       errorState.appendChild(retryBtn);
     }
+
     mainContent.appendChild(errorState);
   }
 
@@ -595,10 +637,11 @@
         setCachedTree(tree);
         processTree(tree);
       }).catch(function (error) {
+        var isRateLimit = error.message === 'RATE_LIMIT';
         renderError(els.mainContent, errorMessageFor(error), function () {
           localStorage.removeItem(CACHE_KEY);
           loadFiles();
-        });
+        }, isRateLimit);
       });
     }
 
