@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var CACHE_KEY = 'gh-pages-tree-cache-v2';
+  var CACHE_KEY = 'gh-pages-tree-cache-v3';
   var CACHE_TTL_MS = 300000;
   var TITLE_FETCH_CONCURRENCY = 5;
   var THEME_KEY = 'gh-pages-theme';
@@ -85,16 +85,18 @@
   ];
 
   function fetchFileTree(owner, repo) {
+    var localItems = DEFAULT_LOCAL_FILES.map(function (path) {
+      return { type: 'blob', path: path };
+    });
+
     if (owner === 'Local' || window.location.protocol === 'file:') {
       return fetchWithTimeout('files.json?_t=' + Date.now(), {}, FETCH_TIMEOUT_MS).then(function (res) {
         if (!res.ok) throw new Error('NOT_FOUND');
         return res.json();
-      }).catch(function () {
-        return DEFAULT_LOCAL_FILES;
       }).then(function (fileList) {
-        return fileList.map(function (path) {
-          return { type: 'blob', path: path };
-        });
+        return fileList.map(function (path) { return { type: 'blob', path: path }; });
+      }).catch(function () {
+        return localItems;
       });
     }
 
@@ -119,7 +121,17 @@
       }
       return res.json();
     }).then(function (data) {
-      return data.tree || [];
+      var apiTree = data.tree || [];
+      var pathMap = {};
+      apiTree.forEach(function (item) { pathMap[item.path.toLowerCase()] = true; });
+      localItems.forEach(function (item) {
+        if (!pathMap[item.path.toLowerCase()]) {
+          apiTree.push(item);
+        }
+      });
+      return apiTree;
+    }).catch(function () {
+      return localItems;
     });
   }
 
@@ -150,18 +162,18 @@
 
   function fetchRawContent(owner, repo, path) {
     var encodedPath = path.split('/').map(encodeURIComponent).join('/');
-    if (owner === 'Local') {
-      return fetchWithTimeout(encodedPath, {}, RAW_TIMEOUT_MS).then(function (res) {
+    return fetchWithTimeout(encodedPath, {}, RAW_TIMEOUT_MS).then(function (res) {
+      if (res.ok) return res.text();
+      throw new Error('NOT_LOCAL');
+    }).catch(function () {
+      if (owner === 'Local') return null;
+      var url = 'https://raw.githubusercontent.com/' + encodeURIComponent(owner) + '/' + encodeURIComponent(repo) + '/HEAD/' + encodedPath;
+      return fetchWithTimeout(url, {}, RAW_TIMEOUT_MS).then(function (res) {
         if (!res.ok) return null;
         return res.text();
-      }).catch(function () { return null; });
-    }
-    var url = 'https://raw.githubusercontent.com/' + encodeURIComponent(owner) + '/' + encodeURIComponent(repo) + '/HEAD/' + encodedPath;
-    return fetchWithTimeout(url, {}, RAW_TIMEOUT_MS).then(function (res) {
-      if (!res.ok) return null;
-      return res.text();
-    }).catch(function () {
-      return null;
+      }).catch(function () {
+        return null;
+      });
     });
   }
 
