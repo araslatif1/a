@@ -118,7 +118,8 @@
   }
 
   function fetchRawContent(owner, repo, path) {
-    var url = 'https://raw.githubusercontent.com/' + encodeURIComponent(owner) + '/' + encodeURIComponent(repo) + '/HEAD/' + path;
+    var encodedPath = path.split('/').map(encodeURIComponent).join('/');
+    var url = 'https://raw.githubusercontent.com/' + encodeURIComponent(owner) + '/' + encodeURIComponent(repo) + '/HEAD/' + encodedPath;
     return fetchWithTimeout(url, {}, RAW_TIMEOUT_MS).then(function (res) {
       if (!res.ok) return null;
       return res.text();
@@ -434,7 +435,7 @@
     files.forEach(function (file, idx) {
       var card = document.createElement('a');
       card.className = 'card';
-      card.href = file.path;
+      card.href = file.path.split('/').map(encodeURIComponent).join('/');
       card.dataset.path = file.path.toLowerCase();
       card.dataset.title = (file.title || '').toLowerCase();
       card.dataset.filename = file.path.split('/').pop().toLowerCase();
