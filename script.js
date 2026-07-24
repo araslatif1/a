@@ -2,7 +2,7 @@
   'use strict';
 
   var CACHE_KEY = 'gh-pages-tree-cache';
-  var CACHE_TTL_MS = 3600000;
+  var CACHE_TTL_MS = 300000;
   var TITLE_FETCH_CONCURRENCY = 5;
   var THEME_KEY = 'gh-pages-theme';
   var TOKEN_KEY = 'gh-pages-token';
@@ -278,6 +278,10 @@
     statusCount.className = 'status-bar__count';
     statusCount.id = 'gh-count';
     statusBar.appendChild(statusCount);
+    var statusHint = document.createElement('span');
+    statusHint.id = 'gh-cache-hint';
+    statusHint.style.cssText = 'margin-left:12px;font-size:12px;opacity:0.7;';
+    statusBar.appendChild(statusHint);
     root.appendChild(statusBar);
 
     var mainContent = document.createElement('div');
@@ -403,10 +407,16 @@
     mainContent.appendChild(emptyState);
   }
 
-  function renderGrid(mainContent, statusBar, statusCount, files) {
+  function renderGrid(mainContent, statusBar, statusCount, files, fromCache) {
     mainContent.innerHTML = '';
     statusCount.innerHTML = '<strong>' + files.length + '</strong> page' + (files.length !== 1 ? 's' : '') + ' found';
     statusBar.style.display = '';
+    if (fromCache !== undefined) {
+      var hint = document.getElementById('gh-cache-hint');
+      if (hint) {
+        hint.textContent = fromCache ? 'From cache \u2014 click \u21BB to refresh' : 'Updated just now';
+      }
+    }
 
     var grid = document.createElement('div');
     grid.className = 'card-grid';
@@ -599,8 +609,8 @@
 
     var files = [];
 
-    function renderFileGrid(sortedFiles) {
-      renderGrid(els.mainContent, els.statusBar, els.statusCount, sortedFiles);
+    function renderFileGrid(sortedFiles, fromCache) {
+      renderGrid(els.mainContent, els.statusBar, els.statusCount, sortedFiles, fromCache);
     }
 
     setupSearchAndSort(files, els, renderFileGrid);
@@ -629,13 +639,13 @@
 
       var cached = getCachedTree();
       if (cached) {
-        processTree(cached);
+        processTree(cached, true);
         return Promise.resolve();
       }
 
       return fetchFileTree(repoInfo.owner, repoInfo.repo).then(function (tree) {
         setCachedTree(tree);
-        processTree(tree);
+        processTree(tree, false);
       }).catch(function (error) {
         var isRateLimit = error.message === 'RATE_LIMIT';
         renderError(els.mainContent, errorMessageFor(error), function () {
@@ -645,7 +655,7 @@
       });
     }
 
-    function processTree(tree) {
+    function processTree(tree, fromCache) {
       var htmlFiles = filterHtmlFiles(tree);
       files.length = 0;
       htmlFiles.forEach(function (f) {
@@ -655,7 +665,7 @@
         renderEmpty(els.mainContent);
         return;
       }
-      renderFileGrid(files);
+      renderFileGrid(files, fromCache);
       fetchTitlesInBatches(files, repoInfo.owner, repoInfo.repo);
     }
 
