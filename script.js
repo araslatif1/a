@@ -1,8 +1,8 @@
 (function () {
   'use strict';
 
-  var POLL_INTERVAL = 60000;
-  var CONCURRENCY_LIMIT = 3;
+  var CACHE_KEY = 'gh-pages-tree-cache';
+  var CACHE_TTL_MS = 3600000;
   var TITLE_FETCH_CONCURRENCY = 5;
   var THEME_KEY = 'gh-pages-theme';
   var SEARCH_DEBOUNCE_MS = 200;
@@ -114,29 +114,6 @@
     });
   }
 
-  function fetchLastModified(owner, repo, path) {
-    var url = 'https://api.github.com/repos/' + encodeURIComponent(owner) + '/' + encodeURIComponent(repo) + '/commits?path=' + encodeURIComponent(path) + '&per_page=1';
-    return fetchWithTimeout(url, {}, RAW_TIMEOUT_MS).then(function (res) {
-      if (res.status === 403) {
-        return res.json().catch(function () { return {}; }).then(function (data) {
-          if (data.message && data.message.toLowerCase().includes('rate limit')) {
-            return null;
-          }
-          return null;
-        });
-      }
-      if (!res.ok) return null;
-      return res.json();
-    }).then(function (commits) {
-      if (Array.isArray(commits) && commits.length > 0 && commits[0].commit && commits[0].commit.committer) {
-        return commits[0].commit.committer.date;
-      }
-      return null;
-    }).catch(function () {
-      return null;
-    });
-  }
-
   function batchFetchWithConcurrency(tasks, limit) {
     var results = new Array(tasks.length);
     var index = 0;
@@ -170,7 +147,7 @@
   function errorMessageFor(error) {
     switch (error.message) {
       case 'RATE_LIMIT':
-        return 'GitHub API rate limit exceeded. Please wait a few minutes and try again.';
+        return 'GitHub API rate limit exceeded (60 requests/hour for unauthenticated requests). Click Refresh to use cached data, or wait a few minutes.';
       case 'PRIVATE_OR_FORBIDDEN':
         return 'This repository is private or access is forbidden. Make sure the repository is public.';
       case 'NOT_FOUND':
@@ -271,6 +248,13 @@
     themeToggle.textContent = getTheme() === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
     controls.appendChild(themeToggle);
 
+    var refreshBtn = document.createElement('button');
+    refreshBtn.className = 'theme-toggle';
+    refreshBtn.id = 'gh-refresh-btn';
+    refreshBtn.title = 'Refresh page list';
+    refreshBtn.appendChild(createRefreshIcon());
+    controls.appendChild(refreshBtn);
+
     header.appendChild(controls);
     root.appendChild(header);
 
@@ -307,6 +291,7 @@
       searchInput: searchInput,
       sortSelect: sortSelect,
       themeToggle: themeToggle,
+      refreshBtn: refreshBtn,
       statusBar: statusBar,
       statusCount: statusCount,
       mainContent: mainContent
@@ -530,21 +515,6 @@
     return batchFetchWithConcurrency(tasks, TITLE_FETCH_CONCURRENCY);
   }
 
-  function fetchLastModifiedDates(files, owner, repo) {
-    var tasks = files.map(function (file, idx) {
-      return function () {
-        return fetchLastModified(owner, repo, file.path).then(function (date) {
-          if (date) {
-            files[idx].lastModified = date;
-            var el = document.getElementById('gh-date-' + idx);
-            if (el) el.textContent = formatDate(date) || '\u2014';
-          }
-        });
-      };
-    });
-    return batchFetchWithConcurrency(tasks, CONCURRENCY_LIMIT);
-  }
-
   function init() {
     var repoInfo = detectRepo();
     var root = document.getElementById('app');
@@ -580,6 +550,11 @@
       els.themeToggle.textContent = next === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
     });
 
+    els.refreshBtn.addEventListener('click', function () {
+      localStorage.removeItem(CACHE_KEY);
+      loadFiles();
+    });
+
     var files = [];
 
     function renderFileGrid(sortedFiles) {
@@ -588,29 +563,60 @@
 
     setupSearchAndSort(files, els, renderFileGrid);
 
+    function getCachedTree() {
+      try {
+        var raw = localStorage.getItem(CACHE_KEY);
+        if (!raw) return null;
+        var cached = JSON.parse(raw);
+        if (Date.now() - cached.time > CACHE_TTL_MS) return null;
+        return cached.tree;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function setCachedTree(tree) {
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ tree: tree, time: Date.now() }));
+      } catch (e) { /* ignore */ }
+    }
+
     function loadFiles() {
       renderLoading(els.mainContent);
       els.statusBar.style.display = 'none';
+
+      var cached = getCachedTree();
+      if (cached) {
+        processTree(cached);
+        return Promise.resolve();
+      }
+
       return fetchFileTree(repoInfo.owner, repoInfo.repo).then(function (tree) {
-        var htmlFiles = filterHtmlFiles(tree);
-        files.length = 0;
-        htmlFiles.forEach(function (f) {
-          files.push({ path: f.path, title: null, lastModified: null });
-        });
-        if (files.length === 0) {
-          renderEmpty(els.mainContent);
-          return;
-        }
-        renderFileGrid(files);
-        fetchTitlesInBatches(files, repoInfo.owner, repoInfo.repo);
-        fetchLastModifiedDates(files, repoInfo.owner, repoInfo.repo);
+        setCachedTree(tree);
+        processTree(tree);
       }).catch(function (error) {
-        renderError(els.mainContent, errorMessageFor(error), loadFiles);
+        renderError(els.mainContent, errorMessageFor(error), function () {
+          localStorage.removeItem(CACHE_KEY);
+          loadFiles();
+        });
       });
     }
 
+    function processTree(tree) {
+      var htmlFiles = filterHtmlFiles(tree);
+      files.length = 0;
+      htmlFiles.forEach(function (f) {
+        files.push({ path: f.path, title: null, lastModified: null });
+      });
+      if (files.length === 0) {
+        renderEmpty(els.mainContent);
+        return;
+      }
+      renderFileGrid(files);
+      fetchTitlesInBatches(files, repoInfo.owner, repoInfo.repo);
+    }
+
     loadFiles();
-    setInterval(loadFiles, POLL_INTERVAL);
   }
 
   if (document.readyState === 'loading') {
