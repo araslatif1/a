@@ -16,6 +16,15 @@
     location.pathname.toLowerCase() === '/index.html';
 
   function detectRepo() {
+    try {
+      var searchParams = new URLSearchParams(window.location.search);
+      var paramOwner = searchParams.get('owner');
+      var paramRepo = searchParams.get('repo');
+      if (paramOwner && paramRepo) {
+        return { owner: paramOwner, repo: paramRepo };
+      }
+    } catch (e) {}
+
     var hostname = window.location.hostname;
     var pathname = window.location.pathname;
     var match = hostname.match(/^([^.]+)\.github\.io$/);
@@ -633,17 +642,7 @@
       } catch (e) { /* ignore */ }
     }
 
-    function loadFiles() {
-      renderLoading(els.mainContent);
-      els.statusBar.style.display = 'none';
-
-      var cached = getCachedTree();
-      if (cached) {
-        console.log('[Pages] Loading from cache:', cached.length, 'items');
-        processTree(cached, true);
-        return Promise.resolve();
-      }
-
+    function fetchFreshTree() {
       console.log('[Pages] Fetching from GitHub API...');
       return fetchFileTree(repoInfo.owner, repoInfo.repo).then(function (tree) {
         console.log('[Pages] Got tree:', tree.length, 'items');
@@ -656,6 +655,37 @@
           loadFiles();
         }, isRateLimit);
       });
+    }
+
+    function fetchFreshTreeInBackground() {
+      fetchFileTree(repoInfo.owner, repoInfo.repo).then(function (tree) {
+        setCachedTree(tree);
+        var oldPaths = files.map(function (f) { return f.path; }).sort().join(',');
+        var htmlFiles = filterHtmlFiles(tree);
+        var newPaths = htmlFiles.map(function (f) { return f.path; }).sort().join(',');
+
+        if (oldPaths !== newPaths) {
+          console.log('[Pages] New/updated files detected on GitHub API! Updating grid...');
+          processTree(tree, false);
+        }
+      }).catch(function (err) {
+        console.warn('[Pages] Background refresh check failed:', err.message);
+      });
+    }
+
+    function loadFiles() {
+      renderLoading(els.mainContent);
+      els.statusBar.style.display = 'none';
+
+      var cached = getCachedTree();
+      if (cached) {
+        console.log('[Pages] Loading initial view from cache:', cached.length, 'items');
+        processTree(cached, true);
+        fetchFreshTreeInBackground();
+        return Promise.resolve();
+      }
+
+      return fetchFreshTree();
     }
 
     function processTree(tree, fromCache) {
