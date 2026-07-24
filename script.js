@@ -58,11 +58,11 @@
   }
 
   function fetchFileTree(owner, repo) {
-    var url = 'https://api.github.com/repos/' + encodeURIComponent(owner) + '/' + encodeURIComponent(repo) + '/git/trees/HEAD?recursive=1';
-    var headers = { 'Accept': 'application/vnd.github.v3+json' };
+    var url = 'https://api.github.com/repos/' + encodeURIComponent(owner) + '/' + encodeURIComponent(repo) + '/git/trees/HEAD?recursive=1&_t=' + Date.now();
+    var headers = { 'Accept': 'application/vnd.github.v3+json', 'Cache-Control': 'no-cache' };
     var token = getToken();
     if (token) headers['Authorization'] = 'token ' + token;
-    return fetchWithTimeout(url, { headers: headers }).then(function (res) {
+    return fetchWithTimeout(url, { headers: headers, cache: 'no-store' }).then(function (res) {
       if (res.status === 403) {
         return res.json().catch(function () { return {}; }).then(function (data) {
           if (data.message && data.message.toLowerCase().includes('rate limit')) {
@@ -639,11 +639,14 @@
 
       var cached = getCachedTree();
       if (cached) {
+        console.log('[Pages] Loading from cache:', cached.length, 'items');
         processTree(cached, true);
         return Promise.resolve();
       }
 
+      console.log('[Pages] Fetching from GitHub API...');
       return fetchFileTree(repoInfo.owner, repoInfo.repo).then(function (tree) {
+        console.log('[Pages] Got tree:', tree.length, 'items');
         setCachedTree(tree);
         processTree(tree, false);
       }).catch(function (error) {
