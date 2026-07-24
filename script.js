@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var CACHE_KEY = 'gh-pages-tree-cache';
+  var CACHE_KEY = 'gh-pages-tree-cache-v2';
   var CACHE_TTL_MS = 300000;
   var TITLE_FETCH_CONCURRENCY = 5;
   var THEME_KEY = 'gh-pages-theme';
@@ -66,11 +66,31 @@
     return doc.body.textContent || '';
   }
 
+  var DEFAULT_LOCAL_FILES = [
+    "a (1).html",
+    "a (2).html",
+    "a (3).html",
+    "a (4).html",
+    "a (5).html",
+    "a (6).html",
+    "a (7).html",
+    "a (8).html",
+    "a (9).html",
+    "a (10).html",
+    "a (11).html",
+    "a (12).html",
+    "a (13).html",
+    "a (14).html",
+    "it-officer-prep__highlight-notes.html"
+  ];
+
   function fetchFileTree(owner, repo) {
-    if (owner === 'Local') {
+    if (owner === 'Local' || window.location.protocol === 'file:') {
       return fetchWithTimeout('files.json?_t=' + Date.now(), {}, FETCH_TIMEOUT_MS).then(function (res) {
         if (!res.ok) throw new Error('NOT_FOUND');
         return res.json();
+      }).catch(function () {
+        return DEFAULT_LOCAL_FILES;
       }).then(function (fileList) {
         return fileList.map(function (path) {
           return { type: 'blob', path: path };
