@@ -1,0 +1,281 @@
+/* =========================================================================
+   style.css - Modern, responsive styling for the HTML Documentation Viewer
+   Supports light & dark themes via CSS variables + a [data-theme] attribute
+   on <html>. Theme is set from config.json but can be toggled live too.
+   ========================================================================= */
+
+/* ---------- Theme tokens ---------- */
+:root,
+html[data-theme="light"] {
+  --bg: #f4f6fb;
+  --bg-elevated: #ffffff;
+  --text: #1c2333;
+  --text-muted: #6b7280;
+  --accent: #4f6df5;
+  --accent-soft: #e8ecfe;
+  --border: #e3e6ef;
+  --shadow: 0 4px 14px rgba(30, 41, 59, 0.08);
+  --shadow-hover: 0 10px 24px rgba(30, 41, 59, 0.14);
+  --danger-bg: #fff4e5;
+  --danger-text: #92400e;
+}
+
+html[data-theme="dark"] {
+  --bg: #12141c;
+  --bg-elevated: #1c2030;
+  --text: #eef1f8;
+  --text-muted: #9aa1b4;
+  --accent: #7b93ff;
+  --accent-soft: #262c47;
+  --border: #2a2f42;
+  --shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  --shadow-hover: 0 10px 26px rgba(0, 0, 0, 0.5);
+  --danger-bg: #3a2c1a;
+  --danger-text: #ffcf8a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.25s ease, color 0.25s ease;
+  min-height: 100vh;
+}
+
+/* ---------- Header ---------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 2rem 0.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.topbar h1 {
+  font-size: 1.6rem;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.icon-btn {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 10px;
+  width: 42px;
+  height: 42px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.icon-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+/* ---------- Toolbar (search + sort) ---------- */
+.toolbar {
+  max-width: 1100px;
+  margin: 1rem auto;
+  padding: 0 2rem;
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.search-wrap {
+  flex: 1 1 260px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+#search-box {
+  width: 100%;
+  padding: 0.7rem 1rem 0.7rem 2.4rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text);
+  font-size: 0.95rem;
+  outline: none;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+#search-box:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+#sort-select {
+  padding: 0.7rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text);
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+/* ---------- Status line ---------- */
+.status-line {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  min-height: 1.2rem;
+}
+
+/* ---------- Card grid ---------- */
+.card-grid {
+  max-width: 1100px;
+  margin: 0.5rem auto 3rem;
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.1rem;
+}
+
+.card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.2rem;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  cursor: pointer;
+  animation: fadeIn 0.35s ease both;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  position: relative;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--accent);
+}
+
+.card-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.favorite-star {
+  color: #f5b342;
+}
+
+.card-filename {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-family: "SFMono-Regular", Consolas, monospace;
+}
+
+.card-modified {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.card-open-btn {
+  margin-top: 0.5rem;
+  align-self: flex-start;
+  padding: 0.45rem 0.9rem;
+  border-radius: 9px;
+  border: none;
+  background: var(--accent);
+  color: white;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.card-open-btn:hover {
+  opacity: 0.88;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Empty / warning states ---------- */
+.empty-state,
+.server-warning {
+  max-width: 640px;
+  margin: 2rem auto;
+  padding: 1.2rem 1.5rem;
+  border-radius: 14px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.server-warning {
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  text-align: left;
+}
+.server-warning pre {
+  background: rgba(0, 0, 0, 0.12);
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+/* ---------- Floating "Back to Index" button (injected on sub-pages) ---------- */
+.back-to-index-btn {
+  position: fixed;
+  top: 18px;
+  left: 18px;
+  z-index: 9999;
+  background: var(--accent, #4f6df5);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.back-to-index-btn:hover {
+  transform: translateY(-2px);
+  opacity: 0.92;
+}
+
+/* ---------- Responsive tweaks ---------- */
+@media (max-width: 560px) {
+  .topbar,
+  .toolbar,
+  .status-line,
+  .card-grid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  .topbar h1 {
+    font-size: 1.3rem;
+  }
+}

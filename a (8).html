@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<title>Date Difference Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0c10;
+    --surface: #13141a;
+    --card: #1a1c25;
+    --border: #2a2d3a;
+    --accent: #00e5ff;
+    --accent2: #ff6b6b;
+    --accent3: #a8ff78;
+    --text: #e8eaf0;
+    --muted: #5a5f7a;
+    --glow: 0 0 30px rgba(0,229,255,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 820px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 3rem;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .header .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+    opacity: 0.8;
+  }
+
+  .header h1 {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Date inputs grid */
+  .dates-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1.5rem;
+    align-items: start;
+    margin-bottom: 2rem;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  .date-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.6rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+
+  .date-card:hover {
+    border-color: rgba(0,229,255,0.3);
+    box-shadow: var(--glow);
+  }
+
+  .date-card.start { border-top: 3px solid var(--accent2); }
+  .date-card.end   { border-top: 3px solid var(--accent); }
+
+  .card-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .card-label .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent2);
+    flex-shrink: 0;
+  }
+
+  .date-card.end .card-label .dot { background: var(--accent); }
+
+  /* The actual date input */
+  input[type="date"] {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.05rem;
+    font-weight: 500;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    color-scheme: dark;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.75rem;
+  }
+
+  input[type="date"]:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,229,255,0.1);
+  }
+
+  .date-card.start input[type="date"]:focus {
+    border-color: var(--accent2);
+    box-shadow: 0 0 0 3px rgba(255,107,107,0.1);
+  }
+
+  /* Formatted display */
+  .date-display {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--muted);
+    padding: 0.4rem 0.6rem;
+    background: rgba(255,255,255,0.03);
+    border-radius: 6px;
+    min-height: 1.8rem;
+    transition: color 0.3s;
+  }
+
+  .date-display.active { color: var(--accent); }
+  .date-card.start .date-display.active { color: var(--accent2); }
+
+  /* Arrow divider */
+  .arrow-divider {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-top: 3.5rem;
+    gap: 0.5rem;
+    color: var(--muted);
+  }
+
+  .arrow-icon {
+    width: 44px; height: 44px;
+    border: 1.5px solid var(--border);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    background: var(--card);
+    transition: border-color 0.3s, color 0.3s;
+    animation: pulse 2.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.08); opacity: 1; }
+  }
+
+  /* Result panel */
+  .result-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    animation: fadeUp 0.6s 0.2s ease both;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .result-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent), var(--accent3));
+  }
+
+  .result-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem 1rem;
+    text-align: center;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+
+  .stat-box:hover {
+    transform: translateY(-2px);
+    border-color: rgba(0,229,255,0.2);
+  }
+
+  .stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2.2rem;
+    font-weight: 500;
+    line-height: 1;
+    margin-bottom: 0.4rem;
+    transition: color 0.4s;
+  }
+
+  .stat-box:nth-child(1) .stat-value { color: var(--accent2); }
+  .stat-box:nth-child(2) .stat-value { color: var(--accent); }
+  .stat-box:nth-child(3) .stat-value { color: var(--accent3); }
+
+  .stat-unit {
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* Extra stats */
+  .extra-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .extra-stat {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+  }
+
+  .extra-stat .es-label { color: var(--muted); }
+  .extra-stat .es-val {
+    color: var(--text);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+
+  /* Direction badge */
+  .direction-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 20px;
+    padding: 0.3rem 0.9rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.05em;
+    transition: all 0.3s;
+  }
+
+  .direction-badge.past {
+    background: rgba(255,107,107,0.08);
+    border-color: rgba(255,107,107,0.2);
+    color: var(--accent2);
+  }
+
+  .direction-badge.same {
+    background: rgba(168,255,120,0.08);
+    border-color: rgba(168,255,120,0.2);
+    color: var(--accent3);
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    padding: 1rem 0;
+    letter-spacing: 0.05em;
+  }
+
+  /* Reset button */
+  .reset-btn {
+    margin-top: 1.5rem;
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.7rem;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+
+  .reset-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,229,255,0.04);
+  }
+
+  /* Number flip animation */
+  @keyframes numFlip {
+    0% { transform: translateY(-6px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+
+  .stat-value.updated {
+    animation: numFlip 0.25s ease both;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .dates-grid { grid-template-columns: 1fr; }
+    .arrow-divider { flex-direction: row; padding-top: 0; }
+    .stats-row { grid-template-columns: repeat(3, 1fr); }
+    .extra-stats { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <div class="header">
+    <div class="label">// Time Calculator</div>
+    <h1>Date Difference</h1>
+  </div>
+
+  <div class="dates-grid">
+    <!-- Start Date -->
+    <div class="date-card start">
+      <div class="card-label">
+        <span class="dot"></span>
+        Start Date
+      </div>
+      <input type="date" id="startDate" />
+      <div class="date-display" id="startDisplay">— select a date —</div>
+    </div>
+
+    <!-- Arrow -->
+    <div class="arrow-divider">
+      <div class="arrow-icon">→</div>
+    </div>
+
+    <!-- End Date -->
+    <div class="date-card end">
+      <div class="card-label">
+        <span class="dot"></span>
+        End Date <span style="color:rgba(0,229,255,0.4); font-size:0.6rem; margin-left:0.3rem;">(today)</span>
+      </div>
+      <input type="date" id="endDate" />
+      <div class="date-display" id="endDisplay">— select a date —</div>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="result-panel">
+    <div class="result-title">// Difference Breakdown</div>
+
+    <div id="directionBadge" class="direction-badge" style="display:none;"></div>
+
+    <div id="resultContent">
+      <div class="empty-state">← Select both dates to calculate →</div>
+    </div>
+
+    <button class="reset-btn" onclick="resetDates()">↺ Reset to Today</button>
+  </div>
+
+</div>
+
+<script>
+  const startInput = document.getElementById('startDate');
+  const endInput   = document.getElementById('endDate');
+  const startDisp  = document.getElementById('startDisplay');
+  const endDisp    = document.getElementById('endDisplay');
+  const badge      = document.getElementById('directionBadge');
+  const content    = document.getElementById('resultContent');
+
+  const MONTHS = ['January','February','March','April','May','June',
+                  'July','August','September','October','November','December'];
+  const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+  function toISO(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${dd}`;
+  }
+
+  function fmtDisplay(dateStr) {
+    if (!dateStr) return '— select a date —';
+    const [y,m,d] = dateStr.split('-').map(Number);
+    const dt = new Date(y, m-1, d);
+    return `${DAYS[dt.getDay()]}, ${MONTHS[m-1]} ${d}, ${y}`;
+  }
+
+  function setToday() {
+    const today = toISO(new Date());
+    endInput.value = today;
+    endDisp.textContent = fmtDisplay(today);
+    endDisp.classList.add('active');
+  }
+
+  function calcDiff(startStr, endStr) {
+    const [sy,sm,sd] = startStr.split('-').map(Number);
+    const [ey,em,ed] = endStr.split('-').map(Number);
+
+    let s = new Date(sy, sm-1, sd);
+    let e = new Date(ey, em-1, ed);
+
+    const direction = e > s ? 'future' : e < s ? 'past' : 'same';
+    if (direction === 'past') { [s, e] = [e, s]; }
+
+    // Total days
+    const totalMs   = e - s;
+    const totalDays = Math.round(totalMs / 86400000);
+    const totalWeeks = Math.floor(totalDays / 7);
+    const totalHours = totalDays * 24;
+
+    // Years / months / remaining days
+    let years  = e.getFullYear() - s.getFullYear();
+    let months = e.getMonth()    - s.getMonth();
+    let days   = e.getDate()     - s.getDate();
+
+    if (days < 0) {
+      months--;
+      const prevMonth = new Date(e.getFullYear(), e.getMonth(), 0);
+      days += prevMonth.getDate();
+    }
+    if (months < 0) { years--; months += 12; }
+
+    return { years, months, days, totalDays, totalWeeks, totalHours, direction };
+  }
+
+  function animateVal(el, newVal) {
+    el.classList.remove('updated');
+    void el.offsetWidth;
+    el.textContent = newVal;
+    el.classList.add('updated');
+  }
+
+  function render() {
+    const s = startInput.value;
+    const e = endInput.value;
+
+    startDisp.textContent = fmtDisplay(s);
+    startDisp.classList.toggle('active', !!s);
+    endDisp.textContent   = fmtDisplay(e);
+    endDisp.classList.toggle('active', !!e);
+
+    if (!s || !e) {
+      badge.style.display = 'none';
+      content.innerHTML = '<div class="empty-state">← Select both dates to calculate →</div>';
+      return;
+    }
+
+    const r = calcDiff(s, e);
+
+    // Badge
+    badge.style.display = 'inline-flex';
+    if (r.direction === 'same') {
+      badge.className = 'direction-badge same';
+      badge.textContent = '✦ Same Day';
+    } else if (r.direction === 'future') {
+      badge.className = 'direction-badge';
+      badge.textContent = '▲ Start is before End';
+    } else {
+      badge.className = 'direction-badge past';
+      badge.textContent = '▼ Start is after End';
+    }
+
+    if (r.direction === 'same') {
+      content.innerHTML = `
+        <div class="stats-row">
+          <div class="stat-box"><div class="stat-value" style="color:var(--accent3)">0</div><div class="stat-unit">Years</div></div>
+          <div class="stat-box"><div class="stat-value" style="color:var(--accent3)">0</div><div class="stat-unit">Months</div></div>
+          <div class="stat-box"><div class="stat-value" style="color:var(--accent3)">0</div><div class="stat-unit">Days</div></div>
+        </div>
+        <div class="extra-stats">
+          <div class="extra-stat"><span class="es-label">Total Days</span><span class="es-val">0</span></div>
+          <div class="extra-stat"><span class="es-label">Total Weeks</span><span class="es-val">0</span></div>
+          <div class="extra-stat"><span class="es-label">Total Hours</span><span class="es-val">0</span></div>
+        </div>`;
+      return;
+    }
+
+    content.innerHTML = `
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-value" id="sv-years">${r.years}</div>
+          <div class="stat-unit">Years</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="sv-months">${r.months}</div>
+          <div class="stat-unit">Months</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="sv-days">${r.days}</div>
+          <div class="stat-unit">Days</div>
+        </div>
+      </div>
+      <div class="extra-stats">
+        <div class="extra-stat">
+          <span class="es-label">Total Days</span>
+          <span class="es-val">${r.totalDays.toLocaleString()}</span>
+        </div>
+        <div class="extra-stat">
+          <span class="es-label">Total Weeks</span>
+          <span class="es-val">${r.totalWeeks.toLocaleString()}</span>
+        </div>
+        <div class="extra-stat">
+          <span class="es-label">Total Hours</span>
+          <span class="es-val">${r.totalHours.toLocaleString()}</span>
+        </div>
+      </div>`;
+
+    // Animate numbers
+    ['years','months','days'].forEach(k => {
+      const el = document.getElementById(`sv-${k}`);
+      if (el) { el.classList.remove('updated'); void el.offsetWidth; el.classList.add('updated'); }
+    });
+  }
+
+  function resetDates() {
+    startInput.value = '';
+    setToday();
+    render();
+  }
+
+  startInput.addEventListener('change', render);
+  endInput.addEventListener('change', render);
+
+  // Init
+  setToday();
+  render();
+</script>
+    <script src="qalyx-bridge.js"></script>
+</body>
+</html>

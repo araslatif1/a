@@ -1,0 +1,4963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+            
+ 
+   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+   
+
+  <title>بەدواداچوونی کڕین</title>
+ 
+  <style>
+    /* Enhanced CSS with Kurdish RTL support */
+    * {
+      box-sizing: border-box;
+      font-family: 'Rabar_027', 'Rabar_021', 'K24 Kurdish Bold Bow', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    :root {
+      --primary-color: #4169E1;
+      --primary-light: #E3F2FD;
+      --secondary-color: #34A853;
+      --warning-color: #FBBC05;
+      --danger-color: #EA4335;
+      --light-gray: #f5f5f5;
+      --border-radius: 10px;
+      --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --transition: all 0.3s ease;
+    }
+
+    body {
+      margin: 0;
+      padding: 15px;
+      background-color: #f9f9fb;
+      color: #333;
+      line-height: 1.6;
+      max-width: 100%;
+      overflow-x: hidden;
+      direction: rtl;
+      text-align: right;
+    }
+
+    /* Logo and Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding: 15px;
+      background-color: #fff;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: "📝";
+      font-size: 24px;
+      margin-left: 10px;
+    }
+
+    .header::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 150px;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(65, 105, 225, 0.1) 0%, rgba(65, 105, 225, 0) 100%);
+      z-index: 1;
+    }
+
+    .income-container {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .income-container label {
+      margin-left: 10px;
+      font-weight: 600;
+      color: #444;
+      display: flex;
+      align-items: center;
+    }
+
+    .income-container label::before {
+      content: "💰";
+      margin-left: 5px;
+    }
+
+    .income-container input, 
+    .income-container select {
+      padding: 10px 15px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      transition: var(--transition);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .income-container input:focus, 
+    .income-container select:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(65, 105, 225, 0.2);
+      outline: none;
+    }
+
+    .income-container input {
+      width: 180px;
+    }
+
+    .currency-converter {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background-color: var(--primary-light);
+      padding: 10px 15px;
+      border-radius: 8px;
+      margin-top: 8px;
+      border-right: 3px solid var(--primary-color);
+    }
+
+    .currency-converter::before {
+      content: "🔄";
+      font-size: 16px;
+    }
+
+    .currency-converter input {
+      width: 100px;
+    }
+
+    .add-note-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 50px;
+      
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 24px;
+      transition: var(--transition);
+      box-shadow: 0 4px 10px rgba(65, 105, 225, 0.3);
+      position: relative;
+      float: left;
+    }
+
+    /* Notes Grid */
+    .notes-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-bottom: 30px;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      min-height: 200px;
+      position: relative;
+    }
+
+    .note {
+      position: relative;
+      height: 180px;
+      padding: 15px;
+      background-color: #fff9c4;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    }
+
+    .note:nth-child(4n+1) {
+      background-color: #ffecb3;
+    }
+
+    .note:nth-child(4n+2) {
+      background-color: #e1f5fe;
+    }
+
+    .note:nth-child(4n+3) {
+      background-color: #e8f5e9;
+    }
+
+    .note:nth-child(4n+4) {
+      background-color: #f3e5f5;
+    }
+
+    .note:hover {
+      transform: translateY(-6px) rotate(-1deg);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+    }
+
+    .note::after {
+      content: "";
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      width: 25px;
+      height: 25px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='none' d='M0 0h24v24H0z'/%3E%3Cpath d='M21 15l-6 5.996L4.002 21A.998.998 0 0 1 3 20.007V3.993C3 3.445 3.445 3 3.993 3h16.014c.548 0 .993.456.993 1.002V15zM19 5H5v14h8v-5a1 1 0 0 1 .883-.993L14 13h5V5zm-.829 9.999L15 15v3.169l3.171-3.17z' fill='rgba(0,0,0,0.2)'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      opacity: 0.5;
+      transform: scaleX(-1);
+    }
+
+    .note-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .note-checkbox {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      border-radius: 4px;
+      accent-color: var(--primary-color);
+    }
+
+    .note-options {
+      width: 25px;
+      height: 25px;
+      cursor: pointer;
+      text-align: center;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: var(--transition);
+    }
+
+    .note-options:hover {
+      background-color: rgba(0,0,0,0.1);
+    }
+
+    .note-options::after {
+      content: "⋮";
+      font-size: 20px;
+    }
+
+    .note-options-menu {
+      position: absolute;
+      left: 0;
+      top: 35px;
+      background: white;
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 10;
+      display: none;
+      overflow: hidden;
+      width: 150px;
+    }
+
+    .note-options-menu.active {
+      display: block;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .note-options-menu button {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      padding: 10px 15px;
+      text-align: right;
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .note-options-menu button:hover {
+      background-color: #f5f5f5;
+    }
+
+    .note-options-menu button::before {
+      margin-left: 8px;
+      font-size: 16px;
+    }
+
+    .note-options-menu button:nth-child(1)::before {
+      content: "✏️";
+    }
+
+    .note-options-menu button:nth-child(2)::before {
+      content: "🗑️";
+    }
+
+    .note-options-menu button:nth-child(3)::before {
+      content: "📋";
+    }
+
+    .note-title {
+      font-weight: 700;
+      margin-bottom: 6px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: #333;
+      font-size: 15px;
+    }
+
+    .note-date {
+      font-size: 11px;
+      color: #777;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+    }
+
+    .note-date::before {
+      content: "🕒";
+      margin-left: 5px;
+      font-size: 10px;
+    }
+
+    .note-check {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 20px;
+      color: var(--secondary-color);
+    }
+
+    .note-content {
+      flex: 1;
+      overflow-y: auto;
+      font-size: 13px;
+      line-height: 1.4;
+      color: #555;
+      padding-left: 5px;
+    }
+
+    .note-content::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    /* Summary Section */
+    .summary-section {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+      padding: 20px 15px;
+      background-color: #fff;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      gap: 10px;
+      position: relative;
+      flex-wrap: nowrap;
+    }
+
+    .summary-section::before {
+      content: "📊 پوختە";
+      position: absolute;
+      top: -12px;
+      right: 20px;
+      background-color: var(--secondary-color);
+      color: white;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .summary-box {
+      flex: 1;
+      min-width: auto;
+      padding: 16px 10px;
+      background-color: #f9f9f9;
+      border-radius: 12px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: var(--transition);
+      border-bottom: 3px solid transparent;
+    }
+
+    .summary-box:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+    }
+
+    .summary-box:nth-child(1) {
+      border-bottom-color: var(--primary-color);
+      background-color: rgba(65, 105, 225, 0.05);
+    }
+
+    .summary-box:nth-child(2) {
+      border-bottom-color: var(--secondary-color);
+      background-color: rgba(52, 168, 83, 0.05);
+    }
+
+    .summary-box:nth-child(3) {
+      border-bottom-color: var(--warning-color);
+      background-color: rgba(251, 188, 5, 0.05);
+    }
+
+    .summary-box:nth-child(4) {
+      border-bottom-color: var(--danger-color); 
+      background-color: rgba(234, 67, 53, 0.05);
+    }
+
+    .summary-box::before {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 14px;
+    }
+
+    .summary-box:nth-child(1)::before {
+      content: "💰";
+    }
+
+    .summary-box:nth-child(2)::before {
+      content: "📈";
+    }
+
+    .summary-box:nth-child(3)::before {
+      content: "📉";
+    }
+
+    .summary-box:nth-child(4)::before {
+      content: "⚖️";
+    }
+
+    .summary-box h3 {
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      color: #555;
+      font-weight: 600;
+    }
+
+    .summary-box p {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: #333;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+      display: flex;
+      justify-content: flex-start;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .action-button {
+      padding: 12px 20px;
+      background-color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: var(--transition);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .action-button::before {
+      margin-left: 8px;
+      font-size: 16px;
+    }
+
+    .action-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.12);
+    }
+
+    #delete-selected-btn {
+      background-color: #FEECEC;
+      color: var(--danger-color);
+    }
+
+    #delete-selected-btn:hover {
+      background-color: #FDD9D7;
+    }
+
+    #delete-selected-btn::before {
+      content: "🗑️";
+    }
+
+    #select-all-btn {
+      background-color: #E3F2FD;
+      color: var(--primary-color);
+    }
+
+    #select-all-btn:hover {
+      background-color: #BBDEFB;
+    }
+
+    #select-all-btn::before {
+      content: "✓";
+    }
+
+    #backup-btn {
+      background-color: #E8F5E9;
+      color: var(--secondary-color);
+    }
+
+    #backup-btn:hover {
+      background-color: #C8E6C9;
+    }
+
+    #backup-btn::before {
+      content: "💾";
+    }
+
+    #restore-btn {
+      background-color: #FFF3E0;
+      color: #E65100;
+    }
+
+    #restore-btn:hover {
+      background-color: #FFE0B2;
+    }
+
+    #restore-btn::before {
+      content: "📂";
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.6);
+      z-index: 100;
+      backdrop-filter: blur(3px);
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal-content {
+      position: relative;
+      width: 90%;
+      max-width: 600px;
+      margin: 60px auto;
+      padding: 25px;
+      background-color: #fff;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      max-height: 85vh;
+      overflow-y: auto;
+      animation: slideUp 0.4s ease;
+      direction: rtl;
+      text-align: right;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 15px;
+      left: 20px;
+      font-size: 24px;
+      cursor: pointer;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background-color: #f5f5f5;
+      transition: var(--transition);
+    }
+
+    .close-modal:hover {
+      background-color: #e0e0e0;
+      transform: rotate(-90deg);
+    }
+
+    .note-form {
+      margin-top: 25px;
+    }
+
+    .note-form input, 
+    .note-form button, 
+    .note-form select,
+    .note-form textarea {
+      width: 100%;
+      padding: 12px 15px;
+      margin-bottom: 18px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      transition: var(--transition);
+      font-size: 15px;
+      text-align: right;
+    }
+
+    .note-form input:focus,
+    .note-form select:focus,
+    .note-form textarea:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(65, 105, 225, 0.2);
+      outline: none;
+    }
+
+    .note-form button {
+      background-color: var(--secondary-color);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 16px;
+      box-shadow: 0 4px 10px rgba(52, 168, 83, 0.2);
+    }
+
+    .note-form button:hover {
+      background-color: #2D9549;
+      box-shadow: 0 6px 12px rgba(52, 168, 83, 0.3);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  direction: ltr; /* Changed from RTL to LTR */
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem;
+  background-color: #f4f7fa;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  position: relative;
+  max-height: 100px;
+  min-height: 60px;
+  width: 100%;
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden;
+  text-align: left; /* Changed from right to left */
+}
+
+.item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-direction: row; /* Changed from row-reverse to row */
+}
+
+.item-name{
+  font-size: 1.3rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-price {
+  font-size: 1.4rem;
+  font-weight: 600;
+    white-space: nowrap;
+  color: blue;
+  min-width: 70px;
+  margin-top: -2rem;
+  margin-right: 15rem;;
+}
+
+.item-date {
+  font-size: 0.6rem;
+  color: #7f8c8d;
+  margin-top: -0.9rem;
+  margin-right: 18rem;
+}
+
+.item-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: 1rem; /* Changed from margin-right to margin-left */
+}
+
+.delete-item,
+.edit-item {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+}
+
+.delete-item {
+  color: #e74c3c;
+  background-color: #fee2e2;
+    margin-top: 0.5rem;
+  margin-right: 3rem;;
+}
+}
+
+.edit-item {
+  color: #3498db;
+  background-color: #e1f0ff;
+}
+
+.delete-item:hover {
+  background-color: #fecaca;
+}
+
+.edit-item:hover {
+  background-color: #bfdbfe;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    .total-section {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 25px;
+      padding: 18px 15px;
+      border-top: 2px dashed #ddd;
+      font-weight: 700;
+      font-size: 18px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+    }
+
+    .export-options, 
+    .import-options {
+      display: none;
+      position: absolute;
+      background-color: white;
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+      z-index: 101;
+      overflow: hidden;
+      width: 180px;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .export-options.active, 
+    .import-options.active {
+      display: block;
+    }
+
+    .export-option, 
+    .import-option {
+      padding: 12px 20px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+    }
+
+    .export-option::before, 
+    .import-option::before {
+      margin-left: 8px;
+      font-size: 16px;
+    }
+
+    .export-option:nth-child(1)::before {
+      content: "📄";
+    }
+
+    .export-option:nth-child(2)::before {
+      content: "📊";
+    }
+
+    .import-option::before {
+      content: "📥";
+    }
+
+    .export-option:hover, 
+    .import-option:hover {
+      background-color: #f5f5f5;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* Custom App Logo */
+    .app-logo {
+      display: flex;
+      align-items: center;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+
+    .app-logo::before {
+      content: "📝";
+      margin-left: 10px;
+    }
+
+    /* Responsive Design - Optimized for Galaxy S24 Ultra */
+    @media (max-width: 1400px) {
+      .notes-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .notes-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .notes-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .summary-section {
+        flex-wrap: nowrap;
+        gap: 8px;
+      }
+      
+      .summary-box {
+        padding: 12px 8px;
+      }
+      
+      .summary-box h3 {
+        font-size: 12px;
+      }
+      
+      .summary-box p {
+        font-size: 16px;
+      }
+    }
+
+    /* Galaxy S24 Ultra specific (428px width) */
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+      
+      .header1 {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+        padding: 15px;
+      }
+      
+         
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+        padding: 15px;
+      }
+      
+      .income-container {
+        width: 100%;
+        justify-content: space-between;
+      }
+      
+      .income-container input {
+        width: 140px;
+      }
+      
+      .notes-grid {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 15px;
+        gap: 10px;
+      }
+      
+      .note {
+        height: 160px;
+        padding: 12px;
+      }
+      
+      .summary-section {
+        padding: 15px 10px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 6px;
+      }
+      
+      .summary-box {
+        min-width: 85px;
+        padding: 10px 5px;
+      }
+      
+      .summary-box h3 {
+        font-size: 11px;
+        margin-bottom: 6px;
+      }
+      
+      .summary-box p {
+        font-size: 14px;
+      }
+      
+      .summary-box::before {
+        top: 8px;
+        right: 8px;
+        font-size: 12px;
+      }
+      
+      .action-buttons {
+        justify-content: flex-start;
+        gap: 8px;
+      }
+      
+      .action-button {
+        padding: 10px 12px;
+        font-size: 12px;
+      }
+      
+      .modal-content {
+        width: 95%;
+        padding: 20px;
+        margin: 20px auto;
+      }
+    }
+
+    /* Ultra-small screens */
+    @media (max-width: 400px) {
+      .summary-box {
+        min-width: 75px;
+        padding: 8px 4px;
+      }
+      
+      .summary-box h3 {
+        font-size: 10px;
+      }
+      
+      .summary-box p {
+        font-size: 13px;
+      }
+      
+      .action-button {
+        padding: 8px 10px;
+        font-size: 11px;
+      }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .item-price div {
+      font-size: 10px !important;
+      color: #777 !important;
+      margin-top: 2px !important;
+      line-height: 1.2;
+    }
+
+    .note-footer {
+      display: flex;
+      position: relative;
+      margin-top: 10px;
+      align-items: flex-start;
+    }
+
+    .folder-icon {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      opacity: 0.7;
+    }
+
+    .content-list {
+      position: absolute;
+      left: 40px;
+      bottom: 15px;
+      text-align: center;
+      max-width: 70%;
+      max-height: 152px;
+      padding: 5px 8px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+
+    .content-list::-webkit-scrollbar-thumb {
+      background-color: #ccc;
+      border-radius: 4px;
+    }
+
+    .list-item {
+      font-size: 0.65rem;
+      color: red;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: -4px;
+    }
+
+    .note {
+      position: relative;
+      min-height: 70px;
+      padding-bottom: 7px;
+    }
+
+.summary-box p {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+    transition: color 0.3s ease; /* Add this line */
+}
+
+
+
+
+
+
+
+
+.calendar-wrapper {
+  max-width: 100%;
+  margin-top: 30px;
+  padding: 10px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: var(--box-shadow);
+}
+
+.calendar-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.month-row {
+  display: flex;
+  gap: 15px;
+}
+
+.month {
+  flex: 1;
+  background: #f9f9f9;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: var(--box-shadow);
+  font-size: 12px;
+}
+
+.month h4 {
+  text-align: center;
+  margin-bottom: 5px;
+  font-size: 10px;
+  color: #4169E1;
+}
+
+.day-names,
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.day-name,
+.day {
+  text-align: center;
+  font-size: 6px;
+  padding: 4px 0;
+  border-radius: 4px;
+}
+
+.day-name {
+  font-weight: bold;
+  background-color: #f0f0f0;
+}
+
+.day {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  cursor: default;
+}
+
+.day.empty {
+  background-color: transparent;
+  border: none;
+}
+
+.day.highlight-payment {
+  background-color: #ffe082;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.day.highlight-payment:hover {
+  background-color: #ffd54f;
+}
+
+.note-details-popup {
+  margin-top: 20px;
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid var(--primary-color);
+  font-size: 14px;
+  max-width: 450px;
+  transition: all 0.2s ease-in-out;
+  line-height: 1.5;
+  color: #333;
+}
+
+.note-details-popup:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.note-details-popup .title {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: var(--primary-color);
+}
+
+.note-details-popup .content {
+  margin-bottom: 12px;
+}
+
+.note-details-popup .footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #777;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 10px;
+  margin-top: 8px;
+}
+.note-details-popup .matched-item {
+  color: red;
+  font-weight: bold;
+}
+.matched-item {
+  color: red !important;
+  font-weight: bold;
+}
+
+
+
+/* Optional dark mode support */
+@media (prefers-color-scheme: dark) {
+  .note-details-popup {
+    background: #1e1e1e;
+    color: #e0e0e0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  .note-details-popup .footer {
+    color: #a0a0a0;
+    border-top: 1px solid #333;
+  }
+}
+
+
+.note-options-menu button:nth-child(2)::before {
+  content: "⎘";
+  margin-left: 8px;
+  font-size: 16px;
+}
+
+
+
+
+ .chart-container {
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      position: relative;
+    }
+
+    .chart-container::before {
+      content: "📊 ڕێنما";
+      position: absolute;
+      top: -12px;
+      right: 20px;
+      background-color: var(--primary-color);
+      color: white;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .chart-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .chart-type-selector, .chart-data-selector {
+      padding: 8px 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background-color: white;
+      font-size: 14px;
+    }
+
+    .chart-canvas {
+  max-height: 400px;
+  height: 400px;
+  width: 100%;
+}
+
+
+    .chart-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+      justify-content: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      font-size: 12px;
+      padding: 4px 8px;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+    }
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-left: 5px;
+    }
+
+    @media (max-width: 900px) {
+      .chart-canvas {
+        height: 300px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .chart-controls {
+        flex-direction: column;
+      }
+      .chart-canvas {
+        height: 250px;
+      }
+    }
+    
+    
+ 
+ 
+ 
+ 
+ 
+    /* Add these new styles for calendar improvements */
+    .calendar-controls {
+      background: white;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    
+    .calendar-controls label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    
+    .day.highlight-payment {
+      background-color: #ffe082;
+      font-weight: bold;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .day.highlight-payment:hover {
+      background-color: #ffd54f;
+    }
+
+    .day.highlight-payment::after {
+      content: '';
+      position: absolute;
+      bottom: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 6px;
+      height: 6px;
+      background-color: var(--primary-color);
+      border-radius: 50%;
+    }
+
+    .note.highlight-matching-date {
+      box-shadow: 0 0 0 2px var(--primary-color);
+      transform: scale(1.02);
+      transition: all 0.2s ease;
+    }
+
+    .matched-item {
+      color: red !important;
+      font-weight: bold;
+      background-color: #cacfeb;
+      padding: 2px 5px;
+      border-radius: 3px;
+    }
+    
+    .non-matched-item {
+      color: white !important;
+      font-weight: normal;
+      background-color: transparent;
+    }
+
+    .day-details {
+      margin-top: 20px;
+      background: #ffffff;
+      padding: 16px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border-left: 4px solid var(--primary-color);
+      font-size: 14px;
+      max-width: 450px;
+      transition: all 0.2s ease-in-out;
+      line-height: 1.5;
+      color: #333;
+    }
+
+    .day-details .items-list {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border-radius: 5px;
+    }
+
+    .day-details .note-header {
+      margin-top: 15px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #eee;
+      color: var(--primary-color);
+    }
+
+    .day-details .item-date {
+      font-size: 0.8em;
+      color: #777;
+      margin-left: 10px;
+    }
+    
+    
+    
+    .calculation-section {
+    transition: all 0.3s ease;
+    direction: rtl;
+}
+
+#calculation-result {
+    border-right: 4px solid #4169E1;
+    border-left: none;
+    text-align: right;
+}
+
+#calculate-btn {
+    transition: all 0.2s ease;
+    font-family: 'Rabar_027', 'Rabar_021', 'K24 Kurdish Bold Bow', sans-serif;
+}
+
+#calculate-btn:hover {
+    background-color: #3a5fcd;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+#base-value-display {
+    padding: 5px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+#difference-calculation {
+    font-family: monospace;
+    color: #666;
+}
+
+/* Ensure RTL layout for all calculation elements */
+.calculation-section select,
+.calculation-section input {
+    text-align: right;
+    font-family: 'Rabar_027', 'Rabar_021', 'K24 Kurdish Bold Bow', sans-serif;
+}
+
+
+
+
+  
+  
+  /* Add this to your existing CSS */
+.day.highlight-selected-note {
+  background-color: #ffcccc !important;
+  border: 1px solid #ff6666 !important;
+  font-weight: bold;
+  position: relative;
+}
+
+.day.highlight-selected-note::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  background-color: #ff0000;
+  border-radius: 50%;
+}  
+  
+  
+  
+  
+  
+  .calculation-info {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #4169E1;
+}
+
+.calculation-info table {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.calculation-info th {
+    text-align: right;
+    padding: 8px;
+    width: 30%;
+}
+
+.calculation-info td {
+    padding: 8px;
+    text-align: left;
+    width: 70%;
+}
+
+
+
+
+
+#merge-notes-btn {
+  background-color: #E1BEE7;
+  color: #7B1FA2;
+}
+
+#merge-notes-btn:hover {
+  background-color: #CE93D8;
+}
+
+#merge-notes-btn::before {
+  content: "🔀";
+}
+
+
+    
+
+</style> 
+ 
+ 
+ 
+ 
+ 
+ 
+</head>
+<body>
+<div style="margin-bottom: 10px; text-align: right;">
+    <label>
+        <input type="checkbox" id="show-income-checkbox">
+        نیشاندانی بەشی داهات
+    </label>
+</div>
+<div class="header1" id="income-header" style="display:none;">
+    <div class="income-container">
+        <label for="monthly-income">داهاتی مانگانە:</label>
+        <input type="number" id="monthly-income" placeholder="بڕی داهات">
+        <select id="income-currency">
+            <option value="IQD">دینار (IQD)</option>
+            <option value="USD">دۆلار ($)</option>
+        </select>
+    </div>
+</div>
+
+
+
+
+
+  
+    <div class="add-note-btn" id="add-note-btn">+</div>
+  <br><br>
+    <div class="currency-converter" id="income-currency-converter">
+        <span>١ دۆلار =</span>
+        <input type="number" id="exchange-rate" placeholder="دینار" step="0.01">
+        <span>دینار</span>
+        <button id="save-exchange-btn" style="padding: 6px 12px; background-color: #4169E1; color: white; border: none; border-radius: 6px; cursor: pointer;">
+            پاشەکەوت
+        </button>
+    </div>
+    <br>
+  
+    <div class="notes-grid" id="notes-grid">
+        <!-- Notes will be dynamically added here -->
+    </div>
+
+    <div class="summary-section">
+        <div class="summary-box">
+            <h3>کۆی خەرجی</h3>
+            <p id="total-expenses">٠.٠٠ دینار</p>
+        </div>
+        <div class="summary-box">
+            <h3>بودجەی ماوە</h3>
+            <p id="remaining-budget">٠.٠٠ دینار</p>
+        </div>
+    </div>
+
+
+
+
+
+
+
+<!-- Calculation Tool -->
+<div style="margin-top: 15px; text-align: right;">
+    <label>
+        <input type="checkbox" id="show-calculation-checkbox">
+     
+        پیشاندانی ئامرازی ژمێریاری
+   
+   
+    </label>
+</div>
+
+<div class="calculation-section" style="margin-top: 20px; display: none; direction: rtl;">
+    <div style="background-color: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+        <h3 style="margin-top: 0; color: #4169E1; text-align: right;">ئامرازی ژمێریاری</h3>
+        
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; text-align: right;">نرخی بنەڕەت:</label>
+            <select id="calculation-base" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; text-align: right;">
+                <option value="total-expenses">کۆی خەرجی</option>
+                <option value="remaining-budget">بودجەی ماوە</option>
+            </select>
+            <div id="base-value-display" style="margin-top: 5px; font-size: 14px; color: #555;"></div>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; text-align: right;">کردار:</label>
+            <select id="calculation-operation" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; text-align: right;">
+                <option value="divide">دابەشکردن بە</option>
+                <option value="multiply">لێکدان بە</option>
+                <option value="add">کۆکردنەوە</option>
+                <option value="subtract">کەمکردنەوە</option>
+            </select>
+            <input type="number" id="calculation-value" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; margin-top: 5px; text-align: right;" placeholder="نرخی دەستکاری">
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label style="display: flex; align-items: center; justify-content: flex-end;">
+                <input type="checkbox" id="round-up-checkbox" style="margin-left: 5px;">
+                گەورەکردن بۆ نزیکترین:
+            </label>
+            <select id="round-up-value" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; margin-top: 5px; text-align: right;" disabled>
+                <option value="250">٢٥٠ دینار</option>
+                <option value="500">٥٠٠ دینار</option>
+                <option value="750">٧٥٠ دینار</option>
+                <option value="1000">١٠٠٠ دینار</option>
+            </select>
+        </div>
+        
+        <button id="calculate-btn" style="background-color: #4169E1; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; float: right;">ژمێریاری</button>
+        <div style="clear: both;"></div>
+        
+        <div id="calculation-result" style="margin-top: 15px; padding: 10px; background-color: #f5f5f5; border-radius: 5px; display: none; text-align: right;">
+            <div style="font-weight: bold;">ئەنجام: <span id="result-value"></span></div>
+            <div style="margin-top: 5px;">جیاوازی: <span id="result-difference"></span></div>
+            <div style="margin-top: 5px; font-size: 14px; color: #555;">(<span id="difference-calculation"></span>)</div>
+        </div>
+    </div>
+    
+    
+    
+    <div style="margin-bottom: 15px;">
+    <label style="font-weight: bold;">
+        <input type="checkbox" id="include-calculation-info" style="margin-right: 8px;">
+        پیشاندانی زانیارییەکانی ژمێریاری لە چاپکردندا
+    </label>
+</div>
+
+
+</div>
+
+
+
+<div class="action-buttons">
+    <!-- Other buttons... -->
+    <div class="action-button" id="print-btn">چاپ</div>
+    <div class="action-button" id="export-btn">هەناردن</div>
+    <div class="action-button" id="import-btn">هاوردن</div>
+    <div class="action-button" id="share-btn">هاوبەشکردن</div>
+    <div class="action-button" id="select-all-btn">هەڵبژاردنی هەموو</div>
+    <div class="action-button" id="delete-selected-btn">سڕینەوەی دیاریکراوەکان</div>
+    <div class="action-button" id="merge-notes-btn">یەکخستنی هەڵبژێردراوەکان</div>
+    <div class="action-button" id="backup-btn">پاشەکەوتکردنی هەموو</div>
+    <div class="action-button" id="restore-btn">گەڕاندنەوەی پاشەکەوت</div>
+    
+    
+    
+    
+    
+    <button id="print-multiple-merged-btn" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 8px;">
+  چاپی هەموو تێبینییە یەککراوەکان
+</button>
+
+
+</div>
+
+
+
+
+
+
+    <div style="margin-bottom: 15px;">
+        <label style="font-weight: bold;">
+            <input type="checkbox" id="include-income-summary" style="margin-right: 8px;font-size:5px">
+            پیشاندانی داهاتی مانگانە و بودجەی ماوە لە چاپکردندا
+        </label>
+    </div>
+
+    <!-- Export Options Menu -->
+    <div class="export-options" id="export-options">
+        <div class="export-option" data-format="csv">CSV</div>
+        <div class="export-option" data-format="json">JSON</div>
+    </div>
+
+    <!-- Import Options Menu -->
+    <div class="import-options" id="import-options">
+        <div class="import-option" data-format="json">JSON</div>
+        <div class="import-option" data-format="csv">CSV</div>
+    </div>
+
+    <input type="file" id="file-input" class="file-input" accept=".json,.csv">
+    <input type="file" id="backup-file-input" class="file-input" webkitdirectory directory multiple style="display: none;">
+    <input type="file" id="restore-file-input" class="file-input" accept=".json" style="display: none;">
+
+    <!-- Add/Edit Note Modal -->
+    <div class="modal" id="note-modal">
+        <div class="currency-converter" id="item-currency-converter">
+            <span>١ دۆلار =</span>
+            <input type="number" id="item-exchange-rate" placeholder="دینار" step="0.01" value="1450">
+            <span>دینار</span>
+        </div>
+      
+        <div class="modal-content">
+            <span class="close-modal" id="close-modal">&times;</span>
+            <h2 id="modal-title">زیادکردنی تێبینی نوێ</h2>
+            <div class="note-form">
+                <input type="text" id="note-name" placeholder="ناوی تێبینی">
+                <div id="items-container" style="display: flex; margin-bottom: 15px;">
+                    <input type="text" style="flex: 2; margin-right: 10px;" class="item-name-input" placeholder="ناوی کاڵا">
+                    <input type="number" style="flex: 1; margin-right: 10px;" class="item-price-input" placeholder="نرخ">
+                    <select style="width: 80px;" class="item-currency-input">
+                        <option value="IQD">دینار</option>
+                        <option value="USD">دۆلار</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button id="add-item-btn" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-family: 'Arial', sans-serif; font-size: 16px; font-weight: bold; transition: all 0.3s ease;">زیادکردنی کاڵا</button>
+            
+            <div class="items-list" id="items-list">
+                <!-- Items will be added here -->
+            </div>
+         <div style="display: flex; justify-content: space-between; background-color: #f8f9fa; padding: 15px 20px; border-radius: 8px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); margin: 20px 0; border-top: 2px solid #28a745; font-family: 'Tajawal', Arial, sans-serif; direction: rtl;">
+    <span style="font-size: 18px; font-weight: 600; color: #495057;">کۆی گشتی:</span>
+    <span id="note-total" style="font-size: 20px; font-weight: 700; color: #28a745; text-shadow: 0 1px 1px rgba(0,0,0,0.1);">٠.٠٠ دینار</span>
+</div>
+            <button id="save-note-btn" class="hidden">پاشەکەوتکردنی تێبینی</button>
+        </div>
+    </div>
+    
+    <div class="summary-box">
+        <h3>دراوی پیشاندان</h3>
+        <select id="display-currency">
+            <option value="IQD">دینار (IQD)</option>
+            <option value="USD">دۆلار ($)</option>
+        </select>
+        <div class="currency-converter" id="display-currency-converter">
+            <span>١ دۆلار =</span>
+            <input type="number" id="display-exchange-rate" placeholder="دینار" step="0.01" value="1450">
+            <span>دینار</span>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+     
+ <div id="calendar" class="calendar-container"></div>
+<div id="day-details" class="note-details-popup hidden"></div>
+
+
+<div class="calendar-wrapper">
+  <div id="calendar" class="calendar-grid"></div>
+  <div id="day-details" class="note-details-popup hidden"></div>
+</div>
+
+ 
+  <!-- Calendar Controls -->
+  <div class="calendar-controls-container">
+    <div class="calendar-controls">
+      <label>
+        <input type="checkbox" id="show-all-items"> 
+        نیشاندانی هەموو کڵاکانی تێبینییەکان کە بەرواری هاوشێوەیان هەیە
+      </label>
+    </div>
+  </div>
+
+
+
+  <!-- Add the chart container here -->
+  <div class="chart-container">
+    <div class="chart-controls">
+      <select id="chart-type" class="chart-type-selector">
+        <option value="pie">پیت چارت</option>
+        <option value="bar">هێڵی ستونی</option>
+        <option value="line">هێڵ</option>
+        <option value="doughnut">پەپکە</option>
+        
+      </select>
+      
+   <select id="chart-data" class="chart-data-selector">
+  <option value="by-item">بەپێی کاڵا</option>
+  <option value="by-note">بەپێی تێبینی</option>
+  <option value="by-category">بەپێی جۆر</option>
+  <option value="by-date">بەپێی بەروار</option>
+  <option value="by-price-range">بەپێی نرخ</option>
+  <option value="by-month">بە پێی مانگ</option> <!-- New option -->
+</select>
+      
+      <select id="chart-value" class="chart-data-selector">
+        <option value="amount">بڕی پارە</option>
+        <option value="percentage">ڕێژەی سەدی</option>
+        <option value="count">ژمارە</option>
+      </select>
+      
+      
+      <button id="generate-chart-btn" style="padding: 8px 15px; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer;">
+        نیشاندان
+      </button>
+      
+      <label style="margin-right: 10px;">
+    <input type="checkbox" id="chart-selected-only" style="margin-left: 5px;">
+    تەنیا بۆ تێبینییە هەڵبژێردراوەکان
+  </label>
+    </div>
+    
+    <canvas id="expense-chart" class="chart-canvas"></canvas>
+    <div id="chart-legend" class="chart-legend"></div>
+  </div>
+
+  <!-- Keep your single calendar wrapper -->
+  <div class="calendar-wrapper">
+    <div id="calendar" class="calendar-grid"></div>
+    <div id="day-details" class="note-details-popup hidden"></div>
+  </div>
+
+  <!-- Your footer remains unchanged -->
+  <div style="font-family: Arial, sans-serif; text-align: center; color: #666; margin-top: 20px;">
+    دروستکراوە لەلایەن: 
+    <span style="font-weight: bold; color: #3366cc; border-bottom: 1px solid #3366cc;">ئاراس لەتیف</span>
+  </div>
+
+
+
+<!-- Place this in the <head> or before     <script src="qalyx-bridge.js"></script>
+</body> -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  <!-- Calendar Wrapper -->
+  <div class="calendar-wrapper">
+    <div id="calendar" class="calendar-grid"></div>
+    <div id="day-details" class="day-details hidden"></div>
+  </div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+</body>
+
+
+    
+            
+            
+    <script>
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof Chart === 'undefined') {
+    console.error('Chart.js failed to load');
+  }
+});
+
+     
+      
+    // Initialize data storage
+    let monthlyIncome = 0;
+    let notes = [];
+    let currentNoteId = null;
+    let selectedNotes = [];
+    let incomeCurrency = 'IQD';
+    let displayCurrency = 'IQD';
+    let exchangeRate = 1450; // Default exchange rate (1 USD = 1450 IQD)
+    let autoSaveTimeout = null;
+    let backupLocation = null;
+    const backupFileName = 'shopping_notes_backup.json';
+
+    // DOM Elements
+    const monthlyIncomeInput = document.getElementById('monthly-income');
+    
+    const saveExchangeBtn = document.getElementById('save-exchange-btn');
+    
+    const incomeCurrencySelect = document.getElementById('income-currency');
+    const displayCurrencySelect = document.getElementById('display-currency');
+    const exchangeRateInput = document.getElementById('exchange-rate');
+    const displayExchangeRateInput = document.getElementById('display-exchange-rate');
+    const itemExchangeRateInput = document.getElementById('item-exchange-rate');
+    const incomeCurrencyConverter = document.getElementById('income-currency-converter');
+    const displayCurrencyConverter = document.getElementById('display-currency-converter');
+    const itemCurrencyConverter = document.getElementById('item-currency-converter');
+    const notesGrid = document.getElementById('notes-grid');
+    const addNoteBtn = document.getElementById('add-note-btn');
+    const noteModal = document.getElementById('note-modal');
+    const closeModal = document.getElementById('close-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const noteNameInput = document.getElementById('note-name');
+    const addItemBtn = document.getElementById('add-item-btn');
+    const itemsList = document.getElementById('items-list');
+    const saveNoteBtn = document.getElementById('save-note-btn');
+    const totalExpenses = document.getElementById('total-expenses');
+    const remainingBudget = document.getElementById('remaining-budget');
+    const printBtn = document.getElementById('print-btn');
+    const exportBtn = document.getElementById('export-btn');
+    const importBtn = document.getElementById('import-btn');
+    const shareBtn = document.getElementById('share-btn');
+    const selectAllBtn = document.getElementById('select-all-btn');
+    const deleteSelectedBtn = document.getElementById('delete-selected-btn');
+    const backupBtn = document.getElementById('backup-btn');
+    const restoreBtn = document.getElementById('restore-btn');
+    const exportOptions = document.getElementById('export-options');
+    const importOptions = document.getElementById('import-options');
+    const fileInput = document.getElementById('file-input');
+    const backupFileInput = document.getElementById('backup-file-input');
+    const restoreFileInput = document.getElementById('restore-file-input');
+    const itemNameInput = document.querySelector('.item-name-input');
+    const itemPriceInput = document.querySelector('.item-price-input');
+    const itemCurrencyInput = document.querySelector('.item-currency-input');
+    
+    
+    
+    
+    
+    
+    // Add chart variables
+    let expenseChart = null;
+    const chartTypeSelect = document.getElementById('chart-type');
+    const chartDataSelect = document.getElementById('chart-data');
+    const chartValueSelect = document.getElementById('chart-value');
+    const generateChartBtn = document.getElementById('generate-chart-btn');
+    const chartCanvas = document.getElementById('expense-chart');
+    const chartLegend = document.getElementById('chart-legend');
+
+
+
+
+    
+    function formatDateToDDMMYYYY(dateInput = new Date()) {
+  if (typeof dateInput === 'string' && dateInput.includes('/')) {
+    // Already formatted
+    return dateInput;
+  }
+
+  const d = new Date(dateInput);
+  if (isNaN(d)) {
+    return '??/??/????';
+  }
+
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
+
+function getCurrentDate() {
+  const now = new Date();
+  const day = String(now.getDate()).padStart(2, '0');
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const year = now.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
+    
+    // Add this function at the top of your script section
+function toArabicNumerals(number, currency) {
+    if (currency === 'IQD') {
+        const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+        return number.toString().replace(/[0-9]/g, (digit) => arabicNumerals[digit]);
+    }
+    return number.toString();
+}
+
+
+
+    // Format currency based on selected display currency
+// Replace the existing formatCurrency function with this:
+function formatCurrency(amount, currency = displayCurrency) {
+    let formattedAmount;
+    const numberAmount = Number(amount);
+    
+    if (currency === 'USD') {
+        formattedAmount = numberAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return `$${formattedAmount}`;
+    } else {
+        formattedAmount = numberAmount.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return `${toArabicNumerals(formattedAmount, 'IQD')} دينار`;
+    }
+}
+    // Convert amount between currencies
+    function convertCurrency(amount, fromCurrency, toCurrency, customRate = exchangeRate) {
+        if (fromCurrency === toCurrency) return amount;
+        if (fromCurrency === 'USD' && toCurrency === 'IQD') {
+            return amount * customRate;
+        }
+        if (fromCurrency === 'IQD' && toCurrency === 'USD') {
+            return amount / customRate;
+        }
+        return amount;
+    }
+
+    // Get current date and time
+    function getCurrentDateTime() {
+  const now = new Date();
+  const day = ('0' + now.getDate()).slice(-2);
+  const month = ('0' + (now.getMonth() + 1)).slice(-2);
+  const year = now.getFullYear();
+  const hours = ('0' + now.getHours()).slice(-2);
+  const minutes = ('0' + now.getMinutes()).slice(-2);
+  return `${day}/${month}/${year} ${hours}:${minutes}`;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // Update the generateChart function
+  function generateChart() {
+  const chartType = chartTypeSelect.value;
+  const dataType = chartDataSelect.value;
+  const valueType = chartValueSelect.value;
+  const selectedOnly = document.getElementById('chart-selected-only').checked;
+
+  // Get notes to use for chart
+  const notesToChart = selectedOnly && selectedNotes.length > 0
+    ? notes.filter(note => selectedNotes.includes(note.id))
+    : notes;
+
+  if (notesToChart.length === 0) {
+    alert('تکایە لانی کەم یەک تێبینی هەڵبژێرە بۆ بینینی ڕێنما');
+    return;
+  }
+
+  // === SAFETY CHECKS ===
+  if (typeof Chart === 'undefined') {
+    chartCanvas.outerHTML = "<div style='color:red'>Chart.js هێنانی نەکرا</div>";
+    return;
+  }
+
+  if (!chartCanvas || !chartCanvas.getContext) {
+    chartCanvas.outerHTML = "<div style='color:red'>Browser does not support canvas</div>";
+    return;
+  }
+
+  // === GET DATA ===
+  let chartData;
+  switch (dataType) {
+    case 'by-note':
+      chartData = getDataByNote(notesToChart, valueType);
+      break;
+    case 'by-item':
+      chartData = getDataByItem(notesToChart, valueType);
+      break;
+    case 'by-category':
+      chartData = getDataByCategory(notesToChart, valueType);
+      break;
+    case 'by-date':
+      chartData = getDataByDate(notesToChart, valueType);
+      break;
+    case 'by-price-range':
+      chartData = getDataByPriceRange(notesToChart, valueType);
+      break;
+    case 'by-month':
+      chartData = getDataByMonth(notesToChart, valueType);
+      break;
+    default:
+      alert('نەگونجاوە chart data');
+      return;
+  }
+
+  // === DESTROY OLD CHART ===
+  if (expenseChart) {
+    expenseChart.destroy();
+  }
+
+  const ctx = chartCanvas.getContext('2d');
+  const colors = generateColors(chartData.values.length);
+
+  expenseChart = new Chart(ctx, {
+    type: chartType,
+    data: {
+      labels: chartData.labels,
+      datasets: [{
+        data: chartData.values,
+        backgroundColor: colors,
+        borderColor: '#fff',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          callbacks: {
+            label: function (context) {
+              let label = context.label || '';
+              let value = context.raw;
+
+              if (valueType === 'percentage') {
+                return `${label}: ${value}%`;
+              } else if (valueType === 'amount') {
+                return `${label}: ${formatCurrency(value, displayCurrency)}`;
+              } else {
+                return `${label}: ${value}`;
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // === LEGEND ===
+  updateChartLegend(chartData.labels, colors, selectedOnly && selectedNotes.length > 0);
+
+  // === RESIZE OBSERVER ===
+  let resizeTimeout;
+  new ResizeObserver(() => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      if (expenseChart) expenseChart.resize();
+    }, 100);
+  }).observe(chartCanvas);
+}
+
+function getDataByMonth(notes, valueType) {
+  const monthNames = [
+    "کانوونی دووەم (١)", 
+    "شوبات (٢)", 
+    "ئازار (٣)", 
+    "نیسان (٤)", 
+    "ئایار (٥)", 
+    "حوزەیران (٦)",
+    "تەمموز (٧)", 
+    "ئاب (٨)", 
+    "ئەیلوول (٩)", 
+    "تشرینی یەکەم (١٠)", 
+    "تشرینی دووەم (١١)", 
+    "کانوونی یەکەم (١٢)"
+  ];
+ 
+  
+  const monthMap = {};
+  
+  // Initialize all months with 0
+  monthNames.forEach((_, index) => {
+    monthMap[index] = 0;
+  });
+  
+  notes.forEach(note => {
+    note.items.forEach(item => {
+      // Parse the date from the item (format: DD/MM/YYYY or DD/MM/YYYY HH:MM)
+      let dateParts = item.date.split(' ')[0].split('/');
+      if (dateParts.length === 3) {
+        const monthIndex = parseInt(dateParts[1]) - 1; // Convert to 0-based index
+        if (monthIndex >= 0 && monthIndex < 12) {
+          const amount = convertCurrency(item.price, item.currency, displayCurrency);
+          monthMap[monthIndex] += valueType === 'count' ? 1 : amount;
+        }
+      }
+    });
+  });
+  
+  // Filter out months with no data if needed
+  const labels = [];
+  const values = [];
+  
+  monthNames.forEach((name, index) => {
+    if (monthMap[index] > 0) {
+      labels.push(name);
+      values.push(monthMap[index]);
+    }
+  });
+  
+  if (valueType === 'percentage') {
+    const sum = values.reduce((a, b) => a + b, 0);
+    return {
+      labels: labels,
+      values: values.map(v => (v / sum * 100).toFixed(1))
+    };
+  }
+  
+  return { 
+    labels: labels, 
+    values: values 
+  };
+}
+
+function updateChartLegend(labels, colors, showSelectedOnly) {
+  chartLegend.innerHTML = '';
+  
+  if (showSelectedOnly) {
+    const info = document.createElement('div');
+    info.className = 'legend-info';
+    info.textContent = `نیشاندان بۆ ${selectedNotes.length} تێبینی هەڵبژێردراو`;
+    chartLegend.appendChild(info);
+  }
+  
+  labels.forEach((label, i) => {
+    const legendItem = document.createElement('div');
+    legendItem.className = 'legend-item';
+    legendItem.innerHTML = `
+      <span>${label}</span>
+      <div class="legend-color" style="background-color: ${colors[i]};"></div>
+    `;
+    chartLegend.appendChild(legendItem);
+  });
+}
+
+function generateColors(count) {
+  const colors = [];
+  const hueStep = 360 / count;
+  
+  for (let i = 0; i < count; i++) {
+    const hue = i * hueStep;
+    colors.push(`hsl(${hue}, 70%, 60%)`);
+  }
+  
+  return colors;
+}
+
+    // Update the updateChartLegend function
+    function updateChartLegend(labels, colors, showSelectedOnly) {
+      chartLegend.innerHTML = '';
+      
+      if (showSelectedOnly) {
+        const info = document.createElement('div');
+        info.className = 'legend-info';
+        info.textContent = `نیشاندان بۆ ${selectedNotes.length} تێبینی هەڵبژێردراو`;
+        chartLegend.appendChild(info);
+      }
+      
+      labels.forEach((label, i) => {
+        const legendItem = document.createElement('div');
+        legendItem.className = 'legend-item';
+        legendItem.innerHTML = `
+          <span>${label}</span>
+          <div class="legend-color" style="background-color: ${colors[i]};"></div>
+        `;
+        chartLegend.appendChild(legendItem);
+      });
+    }
+
+    
+    
+
+    function getDataByNote(notes, valueType) {
+      const labels = [];
+      const values = [];
+      
+      notes.forEach(note => {
+        const total = note.items.reduce((sum, item) => {
+          return sum + convertCurrency(item.price, item.currency, displayCurrency);
+        }, 0);
+        
+        labels.push(note.name);
+        values.push(valueType === 'count' ? note.items.length : total);
+      });
+      
+      if (valueType === 'percentage') {
+        const sum = values.reduce((a, b) => a + b, 0);
+        return {
+          labels: labels,
+          values: values.map(v => (v / sum * 100).toFixed(1))
+        };
+      }
+      
+      return { labels, values };
+    }
+
+    // Add other chart data functions (getDataByItem, getDataByCategory, etc.) here
+    // These should be similar to the examples I provided earlier
+
+
+
+
+function getDataByItem(notes, valueType) {
+  const itemMap = {};
+  
+  notes.forEach(note => {
+    note.items.forEach(item => {
+      const key = item.name;
+      const value = convertCurrency(item.price, item.currency, displayCurrency);
+      
+      if (itemMap[key]) {
+        itemMap[key] += value;
+      } else {
+        itemMap[key] = value;
+      }
+    });
+  });
+  
+  // Sort by value and take top 15
+  const sortedItems = Object.entries(itemMap)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 15);
+  
+  const labels = sortedItems.map(item => item[0]);
+  const values = sortedItems.map(item => valueType === 'count' ? 
+    notes.reduce((count, note) => count + note.items.filter(i => i.name === item[0]).length, 0) : 
+    item[1]);
+  
+  if (valueType === 'percentage') {
+    const sum = values.reduce((a, b) => a + b, 0);
+    return {
+      labels: labels,
+      values: values.map(v => (v / sum * 100).toFixed(1))
+    };
+  }
+  
+  return { labels, values };
+}
+
+function getDataByCategory(notes, valueType) {
+  // Simple category detection - can be enhanced
+  const categories = {
+    'خواردن': ['بەرێژ', 'نانی ڕۆژانە', 'سەوزە', 'میوە', 'گۆشت'],
+    'پێویستییەکان': ['شامپۆ', 'دەستمال', 'پاراستن', 'دەرمان'],
+    'ئامێرەکان': ['مۆبایل', 'کۆمپیوتەر', 'پەڕگە'],
+    'جیاواز': []
+  };
+  
+  const categoryMap = {};
+  Object.keys(categories).forEach(cat => categoryMap[cat] = 0);
+  
+  notes.forEach(note => {
+    note.items.forEach(item => {
+      let found = false;
+      for (const [cat, keywords] of Object.entries(categories)) {
+        if (keywords.some(kw => item.name.includes(kw))) {
+          categoryMap[cat] += convertCurrency(item.price, item.currency, displayCurrency);
+          found = true;
+          break;
+        }
+      }
+      if (!found) categoryMap['جیاواز'] += convertCurrency(item.price, item.currency, displayCurrency);
+    });
+  });
+  
+  // Filter out empty categories
+  const filtered = Object.entries(categoryMap).filter(([_, value]) => value > 0);
+  
+  const labels = filtered.map(([cat, _]) => cat);
+  const values = filtered.map(([_, value]) => valueType === 'count' ? 
+    notes.reduce((count, note) => count + note.items.filter(item => {
+      const itemCat = getItemCategory(item.name);
+      return itemCat === cat || (cat === 'جیاواز' && itemCat === null);
+    }).length, 0) : 
+    value);
+  
+  if (valueType === 'percentage') {
+    const sum = values.reduce((a, b) => a + b, 0);
+    return {
+      labels: labels,
+      values: values.map(v => (v / sum * 100).toFixed(1))
+    };
+  }
+  
+  return { labels, values };
+}
+
+function getDataByDate(notes, valueType) {
+  const dateMap = {};
+  
+  notes.forEach(note => {
+    note.items.forEach(item => {
+      const date = item.date.split('/').slice(0, 2).join('/'); // Day/Month only
+      const value = convertCurrency(item.price, item.currency, displayCurrency);
+      
+      if (dateMap[date]) {
+        dateMap[date] += value;
+      } else {
+        dateMap[date] = value;
+      }
+    });
+  });
+  
+  // Sort dates chronologically
+  const sortedDates = Object.entries(dateMap).sort((a, b) => {
+    const [dayA, monthA] = a[0].split('/').map(Number);
+    const [dayB, monthB] = b[0].split('/').map(Number);
+    return monthA - monthB || dayA - dayB;
+  });
+  
+  const labels = sortedDates.map(([date, _]) => date);
+  const values = sortedDates.map(([_, value]) => valueType === 'count' ? 
+    notes.reduce((count, note) => count + note.items.filter(i => {
+      const itemDate = i.date.split('/').slice(0, 2).join('/');
+      return itemDate === date;
+    }).length, 0) : 
+    value);
+  
+  return { labels, values };
+}
+
+function getDataByPriceRange(notes, valueType) {
+  const ranges = [
+    { min: 0, max: 5000, label: '٥٠٠٠> دینار' },
+    { min: 5000, max: 10000, label: '١٠٠٠٠-٥٠٠٠ دینار' },
+    { min: 10000, max: 20000, label: '٢٠٠٠٠-١٠٠٠٠ دینار' },
+    { min: 20000, max: 50000, label: '٥٠٠٠٠-٢٠٠٠٠ دینار' },
+    { min: 50000, max: Infinity, label: '٥٠٠٠٠< دینار' }
+  ];
+  
+  const rangeMap = {};
+  ranges.forEach(range => rangeMap[range.label] = 0);
+  
+  notes.forEach(note => {
+    note.items.forEach(item => {
+      const amount = convertCurrency(item.price, item.currency, 'IQD'); // Always in IQD for ranges
+      for (const range of ranges) {
+        if (amount >= range.min && amount < range.max) {
+          rangeMap[range.label] += valueType === 'count' ? 1 : 
+            convertCurrency(item.price, item.currency, displayCurrency);
+          break;
+        }
+      }
+    });
+  });
+  
+  const labels = ranges.map(r => r.label);
+  const values = ranges.map(r => rangeMap[r.label]);
+  
+  if (valueType === 'percentage') {
+    const sum = values.reduce((a, b) => a + b, 0);
+    return {
+      labels: labels,
+      values: values.map(v => (v / sum * 100).toFixed(1))
+    };
+  }
+  
+  return { labels, values };
+}
+
+
+
+
+function getItemCategory(itemName) {
+  const categories = {
+    'خواردن': ['بەرێژ', 'نانی ڕۆژانە', 'سەوزە', 'میوە', 'گۆشت'],
+    'پێویستییەکان': ['شامپۆ', 'دەستمال', 'پاراستن', 'دەرمان'],
+    'ئامێرەکان': ['مۆبایل', 'کۆمپیوتەر', 'پەڕگە']
+  };
+  
+  for (const [cat, keywords] of Object.entries(categories)) {
+    if (keywords.some(kw => itemName.includes(kw))) {
+      return cat;
+    }
+  }
+  return null;
+}
+
+
+
+
+    function generateColors(count) {
+      const colors = [];
+      const hueStep = 360 / count;
+      
+      for (let i = 0; i < count; i++) {
+        const hue = i * hueStep;
+        colors.push(`hsl(${hue}, 70%, 60%)`);
+      }
+      
+      return colors;
+    }
+
+    function updateChartLegend(labels, colors) {
+      chartLegend.innerHTML = '';
+      
+      labels.forEach((label, i) => {
+        const legendItem = document.createElement('div');
+        legendItem.className = 'legend-item';
+        legendItem.innerHTML = `
+          <span>${label}</span>
+          <div class="legend-color" style="background-color: ${colors[i]};"></div>
+        `;
+        chartLegend.appendChild(legendItem);
+      });
+    }
+
+
+
+
+
+
+
+
+
+    // Load data from localStorage
+  function loadData() {
+    const savedIncome = localStorage.getItem('monthlyIncome');
+    const savedNotes = localStorage.getItem('notes');
+    const savedIncomeCurrency = localStorage.getItem('incomeCurrency');
+    const savedDisplayCurrency = localStorage.getItem('displayCurrency');
+    const savedExchangeRate = localStorage.getItem('exchangeRate');
+    const savedBackupLocation = localStorage.getItem('backupLocation');
+    
+    if (savedIncome) {
+        monthlyIncome = parseFloat(savedIncome);
+        monthlyIncomeInput.value = monthlyIncome;
+    }
+    
+    if (savedNotes) {
+        notes = JSON.parse(savedNotes);
+        removeDuplicateNotesByName(); // Remove duplicates before rendering
+        renderNotes();
+    }
+    
+    if (savedIncomeCurrency) {
+        incomeCurrency = savedIncomeCurrency;
+        incomeCurrencySelect.value = incomeCurrency;
+    }
+    
+    if (savedDisplayCurrency) {
+        displayCurrency = savedDisplayCurrency;
+        displayCurrencySelect.value = displayCurrency;
+    }
+    
+    if (savedExchangeRate) {
+        exchangeRate = parseFloat(savedExchangeRate);
+        exchangeRateInput.value = exchangeRate;
+        displayExchangeRateInput.value = exchangeRate;
+        itemExchangeRateInput.value = exchangeRate;
+    }
+    
+    if (savedBackupLocation) {
+        backupLocation = savedBackupLocation;
+    }
+    
+    notes.forEach(note => {
+    note.items.forEach(item => {
+        if (item.date && !item.date.includes('/')) {
+            item.date = formatDateToDDMMYYYY(item.date);
+        }
+    });
+});
+
+    
+    updateCurrencyConverters();
+    updateSummary();
+}
+
+    // Save data to localStorage
+    function saveData() {
+        localStorage.setItem('monthlyIncome', monthlyIncome);
+        localStorage.setItem('notes', JSON.stringify(notes));
+        localStorage.setItem('incomeCurrency', incomeCurrency);
+        localStorage.setItem('displayCurrency', displayCurrency);
+        localStorage.setItem('exchangeRate', exchangeRate);
+    }
+
+    // Auto-save note changes
+    function autoSaveNote() {
+      
+    if (addItemBtn.disabled) {
+        //alert('Note name already exists. Please enter a unique name.');
+        return;
+    }
+        if (autoSaveTimeout) {
+            clearTimeout(autoSaveTimeout);
+        }
+        
+        autoSaveTimeout = setTimeout(() => {
+            saveNote();
+        }, 2000);
+        loadData();
+    }
+
+    // Update currency converter visibility and sync rates
+    function updateCurrencyConverters() {
+        // Income currency converter
+        if (incomeCurrencySelect.value === 'USD') {
+            incomeCurrencyConverter.style.display = 'flex';
+        } else {
+            incomeCurrencyConverter.style.display = 'none';
+        }
+        
+        // Display currency converter
+        if (displayCurrencySelect.value === 'USD') {
+            displayCurrencyConverter.style.display = 'flex';
+        } else {
+            displayCurrencyConverter.style.display = 'none';
+        }
+        
+        // Item currency converter (always visible in modal)
+        itemCurrencyConverter.style.display = 'flex';
+        
+        // Sync all exchange rates
+        displayExchangeRateInput.value = exchangeRate;
+        itemExchangeRateInput.value = exchangeRate;
+    }
+
+    // Render notes in the grid
+    function renderNotes() {
+        notesGrid.innerHTML = '';
+        
+        notes.forEach(note => {
+            const noteElement = document.createElement('div');
+            noteElement.className = 'note';
+            noteElement.setAttribute('data-id', note.id);
+            
+            const totalAmount = note.items.reduce((sum, item) => {
+                return sum + convertCurrency(item.price, item.currency, displayCurrency);
+            }, 0);
+            
+          
+       noteElement.innerHTML = `
+  <div class="note-header">
+    <input type="checkbox" class="note-checkbox" ${selectedNotes.includes(note.id) ? 'checked' : ''}>
+    <div class="note-options">⋮</div>
+    <div class="note-options-menu">
+      <button class="edit-note">Edit</button>
+      <button class="duplicate-note">Duplicate</button>
+      <button class="delete-note">Delete</button>
+      <button class="share-note">Share</button>
+      <button class="print-note">Print</button>
+    </div>
+  </div>
+  ${note.isComplete ? '<div class="note-check">✓</div>' : ''}
+  <div class="note-title">${note.name}</div>
+  <div class="note-date">${note.date}</div>
+  <div class="note-content">
+    <div style="font-weight: bold; color: blue;">${formatCurrency(totalAmount)}</div>
+    <div class="note-items">${note.items.length} items</div>
+  </div>
+  <div class="note-footer">
+    <div class="content-list">
+      ${note.items.map(item => `<div class="list-item">${item.name}</div>`).join('')}
+    </div>
+  </div>
+`;
+
+
+
+          
+          
+          
+            
+            // Event listeners for note
+            noteElement.addEventListener('click', (e) => {
+                if (!e.target.closest('.note-checkbox') && !e.target.closest('.note-options')) {
+                    openNoteModal(note.id);
+                }
+            });
+            
+            const checkbox = noteElement.querySelector('.note-checkbox');
+            checkbox.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleNoteSelection(note.id);
+            });
+            
+            const optionsBtn = noteElement.querySelector('.note-options');
+            const optionsMenu = noteElement.querySelector('.note-options-menu');
+            
+            optionsBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                optionsMenu.classList.toggle('active');
+            });
+            
+            const editBtn = noteElement.querySelector('.edit-note');
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                optionsMenu.classList.remove('active');
+                openNoteModal(note.id);
+            });
+            
+            
+            
+            const duplicateBtn = noteElement.querySelector('.duplicate-note');
+duplicateBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    duplicateNote(note.id);
+    optionsMenu.classList.remove('active');
+});
+
+
+
+            const deleteBtn = noteElement.querySelector('.delete-note');
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                deleteNote(note.id);
+                optionsMenu.classList.remove('active');
+            });
+            
+            const shareNoteBtn = noteElement.querySelector('.share-note');
+            shareNoteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                shareNotes([note.id]);
+                optionsMenu.classList.remove('active');
+            });
+            
+            const printNoteBtn = noteElement.querySelector('.print-note');
+            printNoteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                printNotes([note.id]);
+                optionsMenu.classList.remove('active');
+            });
+            
+            notesGrid.appendChild(noteElement);
+        });
+    }
+    
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function generateCalendarWithPayments() {
+  const calendar = document.getElementById('calendar');
+  const dayDetails = document.getElementById('day-details');
+  calendar.innerHTML = '';
+  dayDetails.innerHTML = '';
+
+  const showAllItemsCheckbox = document.getElementById('show-all-items');
+
+const currentYear = new Date().getFullYear();
+const months = [
+  'کانوونی دووەم (١)', 
+  'شوبات (٢)', 
+  'ئازار (٣)', 
+  'نیسان (٤)', 
+  'ئایار (٥)', 
+  'حوزەیران (٦)',
+  'تەمموز (٧)', 
+  'ئاب (٨)', 
+  'ئەیلوول (٩)', 
+  'تشرینی یەکەم (١٠)', 
+  'تشرینی دووەم (١١)', 
+  'کانوونی یەکەم (١٢)'
+];
+const dayNames = ['شەم', 'یەک', 'دوو', 'سێ', 'چوار', 'پێنج', 'هەینی'];
+
+  // Create a map of all dates with their items and notes
+  const dateMap = {};
+  const noteToItemsMap = {};
+
+  notes.forEach(note => {
+    noteToItemsMap[note.name] = note.items;
+    
+    note.items.forEach(item => {
+      // Parse the date string
+      let dateObj;
+      if (item.date.includes('/')) {
+        const [datePart, timePart] = item.date.split(' ');
+        const [day, month, year] = datePart.split('/').map(Number);
+        dateObj = new Date(year, month - 1, day);
+      } else if (item.date) {
+        dateObj = new Date(item.date);
+      } else {
+        dateObj = new Date();
+      }
+
+      if (isNaN(dateObj.getTime())) return;
+
+      const normalizedDate = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
+
+      if (!dateMap[normalizedDate]) {
+        dateMap[normalizedDate] = [];
+      }
+      dateMap[normalizedDate].push({
+        noteName: note.name,
+        itemName: item.name,
+        itemPrice: item.price,
+        itemCurrency: item.currency,
+        fullDate: item.date,
+        dateObj: dateObj,
+        normalizedDate: normalizedDate
+      });
+    });
+  });
+
+  // Create set of dates from selected notes
+  const selectedNoteDates = new Set();
+  if (selectedNotes.length > 0) {
+    notes.filter(note => selectedNotes.includes(note.id)).forEach(note => {
+      note.items.forEach(item => {
+        const [datePart] = item.date.split(' ');
+        const [day, month, year] = datePart.split('/').map(Number);
+        const normalizedDate = `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
+        selectedNoteDates.add(normalizedDate);
+      });
+    });
+  }
+
+  function showDayDetails(normalizedDate) {
+    document.querySelectorAll('.matched-item, .highlight-matching-date').forEach(el => {
+      el.classList.remove('matched-item', 'highlight-matching-date');
+    });
+
+    dayDetails.classList.remove('hidden');
+    dayDetails.innerHTML = `
+      <h4>کاڵاکانی بەرواری ${normalizedDate}</h4>
+      <div class="items-list"></div>
+    `;
+
+    const itemsList = dayDetails.querySelector('.items-list');
+    const showAll = showAllItemsCheckbox.checked;
+
+    const notesWithThisDate = {};
+    dateMap[normalizedDate]?.forEach(item => {
+      notesWithThisDate[item.noteName] = true;
+    });
+
+    if (showAll) {
+      Object.keys(notesWithThisDate).forEach(noteName => {
+        const noteHeader = document.createElement('div');
+        noteHeader.className = 'note-header';
+        noteHeader.innerHTML = `<strong>${noteName}</strong>`;
+        itemsList.appendChild(noteHeader);
+
+        noteToItemsMap[noteName].forEach(item => {
+          const itemDiv = document.createElement('div');
+          const itemDateOnly = item.date.split(' ')[0];
+          const isMatchingDate = itemDateOnly === normalizedDate;
+          itemDiv.className = isMatchingDate ? 'matched-item' : 'non-matched-item';
+          itemDiv.innerHTML = `
+            - ${item.name} (${formatCurrency(item.price, item.currency)}) 
+            <span class="item-date">${item.date}</span>
+          `;
+          itemsList.appendChild(itemDiv);
+        });
+      });
+    } else {
+      if (dateMap[normalizedDate]) {
+        const notesMap = {};
+        dateMap[normalizedDate].forEach(item => {
+          if (!notesMap[item.noteName]) {
+            notesMap[item.noteName] = [];
+          }
+          notesMap[item.noteName].push(item);
+        });
+
+        Object.entries(notesMap).forEach(([noteName, items]) => {
+          const noteHeader = document.createElement('div');
+          noteHeader.className = 'note-header';
+          noteHeader.innerHTML = `<strong>${noteName}</strong>`;
+          itemsList.appendChild(noteHeader);
+
+          items.forEach(item => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'matched-item';
+            itemDiv.innerHTML = `
+              - ${item.itemName} (${formatCurrency(item.itemPrice, item.itemCurrency)}) 
+              <span class="item-date">${item.fullDate}</span>
+            `;
+            itemsList.appendChild(itemDiv);
+          });
+        });
+      }
+    }
+
+    document.querySelectorAll('.note').forEach(noteEl => {
+      const noteName = noteEl.querySelector('.note-title').textContent;
+      if (notesWithThisDate[noteName]) {
+        noteEl.classList.add('highlight-matching-date');
+        
+        const listItems = noteEl.querySelectorAll('.list-item');
+        listItems.forEach(li => {
+          const itemText = li.textContent.trim();
+          if (showAll) {
+            const hasMatchingItem = dateMap[normalizedDate]?.some(
+              item => item.noteName === noteName && item.itemName === itemText
+            );
+            if (hasMatchingItem) {
+              li.classList.add('matched-item');
+            }
+          } else {
+            li.classList.add('matched-item');
+          }
+        });
+      }
+    });
+  }
+
+  for (let row = 0; row < 3; row++) {
+    const rowDiv = document.createElement('div');
+    rowDiv.className = 'month-row';
+    rowDiv.style.display = 'flex';
+    rowDiv.style.gap = '15px';
+    rowDiv.style.marginBottom = '15px';
+
+    for (let col = 0; col < 4; col++) {
+      const monthIndex = row * 4 + col;
+      if (monthIndex >= months.length) break;
+
+      const monthDiv = document.createElement('div');
+      monthDiv.className = 'month';
+      monthDiv.style.flex = '1';
+      monthDiv.innerHTML = `<h4>${months[monthIndex]}</h4><div class="day-names"></div><div class="days"></div>`;
+
+      const dayNamesDiv = monthDiv.querySelector('.day-names');
+      const daysDiv = monthDiv.querySelector('.days');
+
+      dayNames.forEach(day => {
+        const div = document.createElement('div');
+        div.className = 'day-name';
+        div.textContent = day;
+        dayNamesDiv.appendChild(div);
+      });
+
+      const firstDay = new Date(currentYear, monthIndex, 1);
+      let startDay = (firstDay.getDay() + 1) % 7;
+      const daysInMonth = new Date(currentYear, monthIndex + 1, 0).getDate();
+
+      for (let i = 0; i < startDay; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'day empty';
+        daysDiv.appendChild(empty);
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const normalizedDate = `${String(day).padStart(2, '0')}/${String(monthIndex + 1).padStart(2, '0')}/${currentYear}`;
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'day';
+        dayDiv.textContent = day;
+        dayDiv.setAttribute('data-date', normalizedDate);
+
+        const matchingDates = Object.keys(dateMap).filter(d => {
+          const [dDay, dMonth, dYear] = d.split('/').map(Number);
+          return dDay === day && dMonth === monthIndex + 1;
+        });
+
+        if (matchingDates.length > 0) {
+          dayDiv.classList.add('highlight-payment');
+          const itemCount = matchingDates.reduce((sum, date) => sum + dateMap[date].length, 0);
+          dayDiv.title = `${itemCount} کاڵا لەم بەروارە`;
+          
+          dayDiv.addEventListener('click', () => {
+            showDayDetails(normalizedDate);
+          });
+        }
+
+        // Highlight if date is in selected notes
+        if (selectedNoteDates.has(normalizedDate)) {
+          dayDiv.classList.add('highlight-selected-note');
+          if (!dayDiv.classList.contains('highlight-payment')) {
+            dayDiv.addEventListener('click', () => {
+              showDayDetails(normalizedDate);
+            });
+          }
+        }
+
+        const today = new Date();
+        const isToday = today.getFullYear() === currentYear &&
+          today.getMonth() === monthIndex &&
+          today.getDate() === day;
+
+        if (isToday) {
+          dayDiv.style.border = '2px solid var(--primary-color)';
+          dayDiv.style.backgroundColor = '#c5cae9';
+          dayDiv.style.fontWeight = 'bold';
+        }
+
+        daysDiv.appendChild(dayDiv);
+      }
+
+      rowDiv.appendChild(monthDiv);
+    }
+
+    calendar.appendChild(rowDiv);
+  }
+
+ showAllItemsCheckbox.addEventListener('change', () => {
+    const currentDate = dayDetails.querySelector('h4')?.textContent.replace('کاڵاکانی بەرواری ', '');
+    generateCalendarWithPayments();
+    if (currentDate) {
+        showDayDetails(currentDate);
+    }
+});
+}
+
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', () => {
+      loadData();
+      generateCalendarWithPayments();
+    });
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+  
+  
+
+
+
+
+
+    // Toggle note selection
+function toggleNoteSelection(noteId) {
+    const index = selectedNotes.indexOf(noteId);
+    if (index === -1) {
+        selectedNotes.push(noteId);
+    } else {
+        selectedNotes.splice(index, 1);
+    }
+    updateSummary();
+    generateCalendarWithPayments();
+}
+
+    // Select all notes
+   function selectAllNotes() {
+    if (selectedNotes.length === notes.length) {
+        selectedNotes = [];
+    } else {
+        selectedNotes = notes.map(note => note.id);
+    }
+    renderNotes();
+    updateSummary();
+    generateCalendarWithPayments();
+}
+
+    // Open the note modal for adding or editing
+    function openNoteModal(noteId = null) {
+        currentNoteId = noteId;
+        
+        if (noteId) {
+            const note = notes.find(n => n.id === noteId);
+            modalTitle.textContent = note.name;
+            noteNameInput.value = note.name;
+            renderNoteItems(note.items);
+        } else {
+            modalTitle.textContent = 'Add New Note';
+            noteNameInput.value = '';
+            itemsList.innerHTML = '';
+        }
+        
+        noteModal.style.display = 'block';
+        updateNoteTotal();
+        
+        
+          noteModal.style.display = 'block';
+    updateNoteTotal();
+    validateNoteName(); 
+    
+        //itemNameInput.focus(); // Auto-focus on item name input
+    }
+
+    // Render items in the note modal
+ 
+ function renderNoteItems(items) {
+    itemsList.innerHTML = '';
+    
+    // Calculate totals for each section
+    const sectionTotals = {};
+    let currentSectionId = null;
+    
+    items.forEach(item => {
+        if (item.isHeader) {
+            currentSectionId = item.noteId;
+            sectionTotals[currentSectionId] = 0;
+        } else if (currentSectionId && !isNaN(item.price)) {
+            sectionTotals[currentSectionId] += convertCurrency(item.price, item.currency, displayCurrency);
+        }
+    });
+
+    // Render all items
+    items.forEach((item, index) => {
+        const itemElement = document.createElement('div');
+        itemElement.className = 'item';
+        itemElement.setAttribute('data-index', index);
+        
+        const [datePart, timePart] = item.date.split(' ') || [getCurrentDate(), '00:00'];
+        
+        if (item.isHeader) {
+            // Header with name, total, and add button
+            itemElement.style.backgroundColor = item.color || '#f5f5f5';
+            itemElement.style.borderLeft = `4px solid ${item.color ? darkenColor(item.color, 20) : '#ddd'}`;
+            itemElement.style.marginTop = index > 0 ? '15px' : '0';
+            itemElement.style.borderRadius = '8px 8px 0 0';
+            itemElement.style.padding = '10px';
+            
+            itemElement.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                    <div style="font-weight: bold; font-size: 1.1rem; flex: 1; text-align: right;">${item.name}</div>
+                    <div style="font-weight: bold; color: #4169E1; min-width: 120px; text-align: center;">
+                        ${formatCurrency(sectionTotals[item.noteId] || 0)}
+                    </div>
+                    <button class="add-to-section" data-noteid="${item.noteId}" 
+                            style="background: #4CAF50; color: white; border: none; 
+                                   border-radius: 50%; width: 30px; height: 30px;
+                                   font-size: 1.2rem; cursor: pointer; flex-shrink: 0;">+</button>
+                </div>
+            `;
+            
+            itemElement.querySelector('.add-to-section').addEventListener('click', function(e) {
+                e.stopPropagation();
+                addItemToSection(item.noteId);
+            });
+        } else {
+            // Normal item
+            itemElement.innerHTML = `
+                <div class="item-controls">
+                    <span class="edit-item">✏️</span>
+                    <span class="delete-item">✕</span>
+                </div>
+                <div class="item-content">
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-price" data-original-price="${item.price}" data-original-currency="${item.currency}">
+                        ${formatCurrency(item.price, item.currency)}
+                        <div>${formatCurrency(convertCurrency(item.price, item.currency, item.currency === 'IQD' ? 'USD' : 'IQD'), item.currency === 'IQD' ? 'USD' : 'IQD')}</div>
+                    </div>
+                    <div class="item-date">${item.date}</div>
+                </div>
+                <div class="item-edit-form hidden">
+                    <input type="text" class="edit-item-name" value="${item.name}" placeholder="Item Name">
+                    <input type="number" class="edit-item-price" value="${item.price}" placeholder="Price" step="0.01">
+                    <select class="edit-item-currency">
+                        <option value="IQD" ${item.currency === 'IQD' ? 'selected' : ''}>IQD</option>
+                        <option value="USD" ${item.currency === 'USD' ? 'selected' : ''}>USD</option>
+                    </select>
+                    <input type="date" class="edit-item-date" value="${formatDateForInput(datePart)}">
+                    <input type="time" class="edit-item-time" value="${timePart || '00:00'}">
+                    <button class="save-item-edit">Save</button>
+                    <button class="cancel-item-edit">Cancel</button>
+                </div>
+            `;
+            
+            const priceElement = itemElement.querySelector('.item-price');
+            priceElement.addEventListener('click', () => {
+                const originalPrice = parseFloat(priceElement.getAttribute('data-original-price'));
+                const originalCurrency = priceElement.getAttribute('data-original-currency');
+                const newCurrency = originalCurrency === 'IQD' ? 'USD' : 'IQD';
+                const convertedPrice = convertCurrency(originalPrice, originalCurrency, newCurrency);
+                
+                priceElement.innerHTML = `
+                    ${formatCurrency(convertedPrice, newCurrency)}
+                    <div>${formatCurrency(originalPrice, originalCurrency)}</div>
+                `;
+                priceElement.setAttribute('data-original-price', convertedPrice);
+                priceElement.setAttribute('data-original-currency', newCurrency);
+            });
+            
+            const editBtn = itemElement.querySelector('.edit-item');
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const itemIndex = parseInt(itemElement.getAttribute('data-index'));
+                const note = currentNoteId ? notes.find(n => n.id === currentNoteId) : { 
+                    items: Array.from(itemsList.children).map(item => {
+                        if (item.querySelector('.item-name')) {
+                            const itemName = item.querySelector('.item-name').textContent;
+                            const priceText = item.querySelector('.item-price').getAttribute('data-original-price');
+                            const itemPrice = parseFloat(priceText);
+                            const itemCurrency = item.querySelector('.item-price').getAttribute('data-original-currency');
+                            const itemDate = item.querySelector('.item-date').textContent;
+                            return { name: itemName, price: itemPrice, currency: itemCurrency, date: itemDate };
+                        }
+                        return null;
+                    }).filter(Boolean)
+                };
+                
+                const item = note.items[itemIndex];
+                itemElement.querySelector('.item-content').classList.add('hidden');
+                itemElement.querySelector('.item-edit-form').classList.remove('hidden');
+            });
+            
+            const saveEditBtn = itemElement.querySelector('.save-item-edit');
+            saveEditBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const itemIndex = parseInt(itemElement.getAttribute('data-index'));
+                const note = currentNoteId ? notes.find(n => n.id === currentNoteId) : { 
+                    items: Array.from(itemsList.children).map(item => {
+                        if (item.querySelector('.item-name')) {
+                            const itemName = item.querySelector('.item-name').textContent;
+                            const priceText = item.querySelector('.item-price').getAttribute('data-original-price');
+                            const itemPrice = parseFloat(priceText);
+                            const itemCurrency = item.querySelector('.item-price').getAttribute('data-original-currency');
+                            const itemDate = item.querySelector('.item-date').textContent;
+                            return { name: itemName, price: itemPrice, currency: itemCurrency, date: itemDate };
+                        }
+                        return null;
+                    }).filter(Boolean)
+                };
+                
+                const editForm = itemElement.querySelector('.item-edit-form');
+                const name = editForm.querySelector('.edit-item-name').value.trim();
+                const price = parseFloat(editForm.querySelector('.edit-item-price').value);
+                const currency = editForm.querySelector('.edit-item-currency').value;
+                const date = editForm.querySelector('.edit-item-date').value;
+                const time = editForm.querySelector('.edit-item-time').value;
+                
+                if (name && !isNaN(price)) {
+                    note.items[itemIndex] = {
+                        name,
+                        price,
+                        currency,
+                        date: `${formatDateFromInput(date)} ${time}`,
+                        parentNoteId: item.parentNoteId
+                    };
+                    
+                    if (currentNoteId) {
+                        saveData();
+                        renderNotes();
+                    }
+                    
+                    renderNoteItems(note.items);
+                    updateNoteTotal();
+                }
+            });
+            
+            const cancelEditBtn = itemElement.querySelector('.cancel-item-edit');
+            cancelEditBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                itemElement.querySelector('.item-content').classList.remove('hidden');
+                itemElement.querySelector('.item-edit-form').classList.add('hidden');
+            });
+            
+            const deleteItemBtn = itemElement.querySelector('.delete-item');
+            deleteItemBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const itemIndex = parseInt(itemElement.getAttribute('data-index'));
+                items.splice(itemIndex, 1);
+                renderNoteItems(items);
+                updateNoteTotal();
+                autoSaveNote();
+            });
+        }
+        
+        itemsList.appendChild(itemElement);
+    });
+}
+
+function addItemToSection(noteId) {
+    const name = prompt('ناوی کاڵای نوێ:');
+    if (!name) return;
+    
+    const price = parseFloat(prompt('نرخی کاڵا:'));
+    if (isNaN(price)) return;
+    
+    const currency = prompt('جۆری دراو (IQD/USD):', 'IQD');
+    
+    const newItem = {
+        name,
+        price,
+        currency,
+        date: getCurrentDateTime(),
+        parentNoteId: noteId
+    };
+    
+    const mergedNote = notes.find(n => n.isMergedNote && n.subNotes.includes(noteId));
+    if (mergedNote) {
+        const headerIndex = mergedNote.items.findIndex(item => item.isHeader && item.noteId === noteId);
+        if (headerIndex !== -1) {
+            mergedNote.items.splice(headerIndex + 1, 0, newItem);
+            saveData();
+            renderNoteItems(mergedNote.items);
+            updateNoteTotal();
+        }
+    }
+}
+
+function darkenColor(color, percent) {
+    const num = parseInt(color.replace('#', ''), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = (num >> 16) - amt;
+    const G = (num >> 8 & 0x00FF) - amt;
+    const B = (num & 0x0000FF) - amt;
+    return '#' + (
+        0x1000000 +
+        (R < 0 ? 0 : R) * 0x10000 +
+        (G < 0 ? 0 : G) * 0x100 +
+        (B < 0 ? 0 : B)
+    ).toString(16).slice(1);
+}
+
+function mergeNotes(keepSeparate) {
+    const noteName = prompt('ناوی نوێی تێبینییە یەکخراوەکە بنووسە:', 'تێبینیی یەکخراو');
+    if (!noteName) return;
+
+    const notesToMerge = notes.filter(note => selectedNotes.includes(note.id));
+    const mergedItems = [];
+    const noteColors = ['#FFECB3', '#E1F5FE', '#E8F5E9', '#F3E5F5', '#FFCCBC', '#D7CCC8'];
+    
+    if (keepSeparate) {
+        notesToMerge.forEach((note, index) => {
+            // Add header with color, total will be calculated in render
+            mergedItems.push({
+                name: note.name,
+                price: 0,
+                currency: 'IQD',
+                date: note.date,
+                isHeader: true,
+                color: noteColors[index % noteColors.length],
+                noteId: note.id
+            });
+            
+            // Add all items from this note
+            mergedItems.push(...note.items.map(item => ({
+                ...item,
+                parentNoteId: note.id
+            })));
+        });
+    } else {
+        // Simple merge
+        notesToMerge.forEach(note => {
+            mergedItems.push(...note.items);
+        });
+    }
+
+    const mergedNote = {
+        id: Date.now().toString(),
+        name: noteName,
+        items: mergedItems,
+        isComplete: false,
+        date: getCurrentDateTime(),
+        isMergedNote: true,
+        subNotes: keepSeparate ? notesToMerge.map(note => note.id) : []
+    };
+
+    notes = notes.filter(note => !selectedNotes.includes(note.id));
+    notes.push(mergedNote);
+    selectedNotes = [];
+    
+    saveData();
+    renderNotes();
+    updateSummary();
+    generateCalendarWithPayments();
+    openNoteModal(mergedNote.id);
+}
+
+function addItemToSection(noteId) {
+    const name = prompt('ناوی کاڵای نوێ:');
+    if (!name) return;
+    
+    const price = parseFloat(prompt('نرخی کاڵا:'));
+    if (isNaN(price)) return;
+    
+    const currency = prompt('جۆری دراو (IQD/USD):', 'IQD');
+    
+    const newItem = {
+        name,
+        price,
+        currency,
+        date: getCurrentDateTime(),
+        parentNoteId: noteId
+    };
+    
+    // Find the merged note
+    const mergedNote = notes.find(n => n.isMergedNote && n.subNotes.includes(noteId));
+    if (mergedNote) {
+        // Find position after the header
+        const headerIndex = mergedNote.items.findIndex(item => item.isHeader && item.noteId === noteId);
+        if (headerIndex !== -1) {
+            mergedNote.items.splice(headerIndex + 1, 0, newItem);
+            saveData();
+            renderNoteItems(mergedNote.items);
+            updateNoteTotal();
+        }
+    }
+}
+
+function darkenColor(color, percent) {
+    // Helper function to darken colors for borders
+    const num = parseInt(color.replace('#', ''), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = (num >> 16) - amt;
+    const G = (num >> 8 & 0x00FF) - amt;
+    const B = (num & 0x0000FF) - amt;
+    return '#' + (
+        0x1000000 +
+        (R < 0 ? 0 : R) * 0x10000 +
+        (G < 0 ? 0 : G) * 0x100 +
+        (B < 0 ? 0 : B)
+    ).toString(16).slice(1);
+}
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+
+// Helper function to format date for input[type="date"]
+function formatDateForInput(dateStr) {
+    if (!dateStr) return '';
+    const [day, month, year] = dateStr.split('/');
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+}
+
+// Helper function to format date from input[type="date"] to DD/MM/YYYY
+function formatDateFromInput(dateStr) {
+    if (!dateStr) return getCurrentDate();
+    const [year, month, day] = dateStr.split('-');
+    return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+}
+   
+
+    function addNewItem() {
+    saveNote();
+
+    const name = itemNameInput.value.trim();
+    const price = parseFloat(itemPriceInput.value);
+    const currency = itemCurrencyInput.value;
+
+    if (name && price && !isNaN(price)) {
+        let items = [];
+        let noteExists = false;
+
+        if (currentNoteId) {
+            const note = notes.find(n => n.id === currentNoteId);
+            if (note) {
+                items = note.items;
+                noteExists = true;
+            }
+        } else {
+            // For new notes, create items array from existing items in the list
+            items = Array.from(itemsList.children).map(item => {
+                const itemName = item.querySelector('.item-name').textContent;
+                const priceText = item.querySelector('.item-price').getAttribute('data-original-price');
+                const itemPrice = parseFloat(priceText);
+                const itemCurrency = item.querySelector('.item-price').getAttribute('data-original-currency');
+                const itemDate = item.querySelector('.item-date').textContent;
+                return { name: itemName, price: itemPrice, currency: itemCurrency, date: itemDate };
+            });
+        }
+
+        // ✅ Add new item with full date & time
+        items.push({
+            name,
+            price,
+            currency,
+            date: getCurrentDateTime()  // ← Use date + time here
+        });
+
+        itemNameInput.value = '';
+        itemPriceInput.value = '';
+
+        renderNoteItems(items);
+        updateNoteTotal();
+
+        if (!currentNoteId && !noteExists) {
+            saveNote();
+        } else {
+            autoSaveNote();
+        }
+
+        itemNameInput.focus();
+    }
+}
+
+
+    // Update the total in the note modal
+    function updateNoteTotal() {
+        const noteTotal = document.getElementById('note-total');
+        let total = 0;
+        
+        if (currentNoteId) {
+            const note = notes.find(n => n.id === currentNoteId);
+            if (note) {
+                total = note.items.reduce((sum, item) => {
+                    return sum + convertCurrency(item.price, item.currency, displayCurrency);
+                }, 0);
+            }
+        } else {
+            const items = Array.from(itemsList.children).map(item => {
+                const name = item.querySelector('.item-name').textContent;
+                const priceText = item.querySelector('.item-price').textContent;
+                const price = parseFloat(priceText.replace(/[^0-9.]/g, ''));
+                const currency = priceText.includes('دينار') ? 'IQD' : 'USD';
+                return { name, price, currency };
+            });
+            
+            total = items.reduce((sum, item) => {
+                return sum + convertCurrency(item.price, item.currency, displayCurrency);
+            }, 0);
+        }
+        
+        noteTotal.textContent = formatCurrency(total);
+    }
+
+    // Save the current note
+    function saveNote() {
+        const name = noteNameInput.value.trim();
+        
+        
+   
+    if (addItemBtn.disabled) {
+        alert('Note name already exists. Please enter a unique name.');
+        return;
+    }
+
+    if (!name) {
+        alert('Please enter a note name');
+        return;
+    }
+
+    // ...rest of your saveNote logic...
+    
+    
+        if (!name) {
+            alert('Please enter a note name');
+            return;
+        }
+        
+        let items = [];
+        
+        // Get items from the items list
+        items = Array.from(itemsList.children).map(item => {
+            const name = item.querySelector('.item-name').textContent;
+            const originalPrice = parseFloat(item.querySelector('.item-price').getAttribute('data-original-price'));
+            const originalCurrency = item.querySelector('.item-price').getAttribute('data-original-currency');
+            const rawDate = item.querySelector('.item-date')?.textContent || new Date();
+const date = formatDateToDDMMYYYY(rawDate);
+return { name, price: originalPrice, currency: originalCurrency, date };
+        });
+        
+        if (currentNoteId) {
+            // Update existing note
+            const index = notes.findIndex(n => n.id === currentNoteId);
+            notes[index].name = name;
+            notes[index].items = items;
+        } else {
+            // Add new note
+            const newNote = {
+                id: Date.now().toString(),
+                name,
+                items,
+                isComplete: false,
+                date: getCurrentDateTime()
+            };
+            notes.push(newNote);
+            currentNoteId = newNote.id;
+        }
+        
+        saveData();
+        renderNotes();
+        updateSummary();
+        loadData();
+    }
+
+    // Delete a note
+    function deleteNote(noteId) {
+        const index = notes.findIndex(n => n.id === noteId);
+        if (index !== -1) {
+            if (confirm('Are you sure you want to delete this note?')) {
+                notes.splice(index, 1);
+                
+                // Remove from selected notes if it was selected
+                const selectedIndex = selectedNotes.indexOf(noteId);
+                if (selectedIndex !== -1) {
+                    selectedNotes.splice(selectedIndex, 1);
+                }
+                
+                saveData();
+                renderNotes();
+                updateSummary();
+            }
+        }
+    }
+
+    // Delete selected notes
+    function deleteSelectedNotes() {
+        if (selectedNotes.length === 0) {
+            alert('Please select at least one note to delete');
+            return;
+        }
+        
+        if (confirm(`Are you sure you want to delete ${selectedNotes.length} selected notes?`)) {
+            notes = notes.filter(note => !selectedNotes.includes(note.id));
+            selectedNotes = [];
+            saveData();
+            renderNotes();
+            updateSummary();
+        }
+    }
+
+    // Update the summary section
+  function updateSummary() {
+    const status = getBudgetStatus();
+    const selectedNotesData = notes.filter(note => selectedNotes.includes(note.id));
+    const totalExpense = selectedNotesData.reduce((sum, note) => {
+        return sum + note.items.reduce((itemSum, item) => {
+            return itemSum + convertCurrency(item.price, item.currency, displayCurrency);
+        }, 0);
+    }, 0);
+    
+    totalExpenses.textContent = formatCurrency(totalExpense);
+    
+    const incomeInDisplayCurrency = convertCurrency(monthlyIncome, incomeCurrency, displayCurrency);
+    const remaining = incomeInDisplayCurrency - totalExpense;
+    
+    // Reset color first
+    remainingBudget.style.color = '';
+    
+    // Set color based on status
+    if (status === 'negative' || status === 'exceeded') {
+        remainingBudget.style.color = 'var(--danger-color)'; // or just 'red'
+    }
+    
+    remainingBudget.textContent = formatCurrency(remaining);
+}
+
+
+
+    // Backup all notes
+    function backupAllNotes() {
+        if (!backupLocation) {
+            // First time - ask for backup location
+            const backupDirInput = document.getElementById('backup-file-input');
+            backupDirInput.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    backupLocation = e.target.files[0].webkitRelativePath.split('/')[0];
+                    localStorage.setItem('backupLocation', backupLocation);
+                    performBackup();
+                }
+            });
+            backupDirInput.click();
+        } else {
+            performBackup();
+        }
+    }
+
+    function performBackup() {
+        const data = {
+            notes: notes,
+            monthlyIncome: monthlyIncome,
+            incomeCurrency: incomeCurrency,
+            displayCurrency: displayCurrency,
+            exchangeRate: exchangeRate,
+            backupDate: new Date().toISOString()
+        };
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = backupFileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        alert(`Backup saved to ${backupLocation}/${backupFileName}`);
+    }
+
+    // Restore backup
+    function restoreBackup() {
+        if (!backupLocation) {
+            backupLocation = localStorage.getItem('backupLocation');
+        }
+
+        if (backupLocation) {
+            const restoreInput = document.getElementById('restore-file-input');
+            restoreInput.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    const file = e.target.files[0];
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            
+                            if (confirm('This will overwrite all current notes. Continue?')) {
+                                notes = data.notes || [];
+                                monthlyIncome = data.monthlyIncome || 0;
+                                incomeCurrency = data.incomeCurrency || 'IQD';
+                                displayCurrency = data.displayCurrency || 'IQD';
+                                exchangeRate = data.exchangeRate || 1450;
+                                
+                                saveData();
+                                renderNotes();
+                                updateSummary();
+                                
+                                alert(`Restored backup from ${file.name}\nDate: ${data.backupDate || 'unknown'}`);
+                            }
+                        } catch (error) {
+                            console.error('Error restoring backup:', error);
+                            alert('Error restoring backup. Invalid file format.');
+                        }
+                    };
+                    
+                    reader.readAsText(file);
+                }
+            });
+            restoreInput.click();
+        } else {
+            // First time - ask for backup location
+            const backupDirInput = document.getElementById('backup-file-input');
+            backupDirInput.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    backupLocation = e.target.files[0].webkitRelativePath.split('/')[0];
+                    localStorage.setItem('backupLocation', backupLocation);
+                    restoreBackup(); // Retry after setting location
+                }
+            });
+            backupDirInput.click();
+        }
+    }
+
+ 
+
+
+
+
+
+function printNotes(noteIds = selectedNotes) {
+    if (noteIds.length === 0) {
+        alert('تکایە لانی کەم یەک تێبینی هەڵبژێرە بۆ چاپکردن');
+        return;
+    }
+
+    const notesToPrint = notes.filter(note => noteIds.includes(note.id));
+    let customTitle = 'تێبینییەکانی کڕین';
+
+    if (noteIds.length === 1) {
+        customTitle = notesToPrint[0].name;
+    } else {
+        const userTitle = prompt("ناونیشانێک بنوسە بۆ چاپکراوەکە:", "");
+        if (userTitle && userTitle.trim() !== "") {
+            customTitle = userTitle.trim();
+        } else {
+            customTitle = `کۆی ${noteIds.length} وەسڵ`;
+        }
+    }
+
+    const currentDate = getCurrentDateTime();
+    const includeIncomeSummary = document.getElementById('include-income-summary')?.checked;
+
+    let printContent = `
+        <html>
+        <head>
+            <title>${customTitle}</title>
+            <style>
+                @page { size: A4; margin: 1.5cm; }
+                body {
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    line-height: 1.6;
+                    color: #333;
+                    margin: 0;
+                    padding: 0;
+                    background-color: #fff;
+                    direction: rtl;
+                }
+                .header {
+                    text-align: center;
+                    margin-bottom: 30px;
+                    border-bottom: 2px solid #3498db;
+                    padding-bottom: 15px;
+                }
+                .document-title {
+                    font-size: 34px;
+                    font-weight: bold;
+                    color: #3498db;
+                }
+                .document-meta {
+                    display: flex;
+                    justify-content: space-between;
+                    font-size: 14px;
+                    color: #7f8c8d;
+                    margin-bottom: 15px;
+                }
+                .note {
+                    margin-bottom: 40px;
+                    page-break-inside: avoid;
+                    background-color: #f9f9f9;
+                    border-radius: 8px;
+                    padding: 20px;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                }
+                .note-header {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 15px;
+                    border-bottom: 1px solid #e0e0e0;
+                    padding-bottom: 10px;
+                }
+                .note-title {
+                    font-size: 20px;
+                    font-weight: bold;
+                    color: #2c3e50;
+                }
+                .note-date {
+                    font-size: 14px;
+                    color: #7f8c8d;
+                }
+                .items-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 10px;
+                }
+                .items-table th {
+                    background-color: #3498db;
+                    color: white;
+                    padding: 12px 8px;
+                    text-align: right;
+                }
+                .items-table td {
+                    padding: 10px 8px;
+                    text-align: right;
+                    border-bottom: 1px solid #e0e0e0;
+                }
+                .items-table tr:nth-child(even) {
+                    background-color: #f2f2f2;
+                }
+                .total-row {
+                    font-weight: bold;
+                    background-color: #eaf2f8 !important;
+                }
+                .price-column {
+                    text-align: left;
+                }
+                .grand-total {
+                    margin-top: 30px;
+                    text-align: left;
+                    background-color: #2c3e50;
+                    color: white;
+                    border-radius: 5px;
+                    padding: 20px;
+                }
+                .grand-total h2 {
+                    margin: 8px 0;
+                    font-size: 22px;
+                }
+                .negative-budget {
+                    color: #ff5252 !important;
+                    font-weight: bold;
+                }
+                .currency-info {
+                    background-color: #f8f9fa;
+                    padding: 10px;
+                    border-radius: 5px;
+                    margin-bottom: 20px;
+                    font-size: 14px;
+                    color: #6c757d;
+                    border-right: 4px solid #3498db;
+                }
+                .footer {
+                    margin-top: 30px;
+                    text-align: center;
+                    font-size: 12px;
+                    color: #7f8c8d;
+                    border-top: 1px solid #e0e0e0;
+                    padding-top: 20px;
+                }
+                @media print {
+                    body {
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1 class="document-title">${customTitle}</h1>
+                <div class="document-meta">
+                    <span>بەروار: ${currentDate}</span>
+                    <span>ژمارەی تێبینییەکان: ${notesToPrint.length}</span>
+                </div>
+            </div>
+
+            <div class="currency-info">
+                <strong>زانیاری دراو:</strong> دراوی نیشاندراو: ${displayCurrency === 'IQD' ? 'دینار (IQD)' : 'دۆلار ($)'} |
+                نرخی گۆڕینەوە: ١ دۆلار = ${exchangeRate} دینار
+            </div>
+    `;
+
+    let grandTotal = 0;
+
+    notesToPrint.forEach(note => {
+        const noteTotal = note.items.reduce((sum, item) => {
+            return sum + convertCurrency(item.price, item.currency, displayCurrency);
+        }, 0);
+        grandTotal += noteTotal;
+
+        printContent += `
+            <div class="note">
+                <div class="note-header">
+                    <div class="note-title">${note.name}</div>
+                    <div class="note-date">دروستکراوە لە: ${note.date}</div>
+                </div>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>کاڵا</th>
+                            <th class="price-column">نرخ (${displayCurrency})</th>
+                            <th>بەروار</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        note.items.forEach(item => {
+            const priceConverted = convertCurrency(item.price, item.currency, displayCurrency);
+            printContent += `
+                <tr>
+                    <td>${item.name}</td>
+                    <td class="price-column">${formatCurrency(priceConverted, displayCurrency)}</td>
+                    <td>${item.date}</td>
+                </tr>
+            `;
+        });
+
+        printContent += `
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td>کۆی گشتی</td>
+                            <td class="price-column">${formatCurrency(noteTotal, displayCurrency)}</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        `;
+    });
+
+
+
+
+// Add calculation information if enabled
+const includeCalcInfo = document.getElementById('include-calculation-info').checked;
+if (includeCalcInfo) {
+    const calcBase = document.getElementById('calculation-base').value;
+    const calcOperation = document.getElementById('calculation-operation').value;
+    const calcValue = document.getElementById('calculation-value').value;
+    const calcResult = document.getElementById('result-value').textContent;
+    const calcDifference = document.getElementById('result-difference').textContent;
+
+    printContent += `
+        <div class="calculation-info">
+            <h3>زانیارییەکانی ژمێریاری</h3>
+            <table>
+                <tr><th>بنەڕەت:</th><td>${calcBase === 'total-expenses' ? 'کۆی خەرجی' : 'بودجەی ماوە'}</td></tr>
+                <tr><th>کردار:</th><td>${document.getElementById('calculation-operation').selectedOptions[0].text}</td></tr>
+                <tr><th>بڕ (نەفەر):</th><td>${calcValue}</td></tr>
+                <tr><th>ئەنجام:</th><td>${calcResult}</td></tr>
+                <tr><th>ماوە:</th><td>${calcDifference}</td></tr>
+            </table>
+        </div>
+    `;
+}
+
+
+    if (notesToPrint.length > 1 || includeIncomeSummary) {
+        const incomeInDisplayCurrency = convertCurrency(monthlyIncome, incomeCurrency, displayCurrency);
+        const remaining = incomeInDisplayCurrency - grandTotal;
+        const isNegativeBudget = remaining < 0 || grandTotal > incomeInDisplayCurrency;
+
+        printContent += `
+            <div class="grand-total">
+                <h2>کۆی گشتی: ${formatCurrency(grandTotal, displayCurrency)}</h2>
+        `;
+
+        if (includeIncomeSummary) {
+            printContent += `
+                <h2>داهاتی مانگانە: ${formatCurrency(incomeInDisplayCurrency, displayCurrency)}</h2>
+                <h2 class="${isNegativeBudget ? 'negative-budget' : ''}">بودجەی ماوە: ${formatCurrency(remaining, displayCurrency)}</h2>
+            `;
+        }
+
+        printContent += `</div>`;
+    }
+
+    printContent += `
+            <div class="footer">
+                <p>© ${new Date().getFullYear()} بەڕێوەبەری تێبینییەکان | ئەم بەرنامەیە دروستکراوە لەلایەن ئاراس لەتیف (٠٧٥٠٤٩١٣٨٩١)</p>
+            </div>
+        </body>
+        </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+
+    setTimeout(() => {
+        printWindow.print();
+    }, 500);
+}
+
+
+ 
+ 
+ 
+ 
+
+    // Export selected notes
+    function exportNotes(format) {
+        if (selectedNotes.length === 0) {
+            alert('Please select at least one note to export');
+            return;
+        }
+        
+        const notesToExport = notes.filter(note => selectedNotes.includes(note.id));
+        let exportData;
+        let fileName;
+        let mimeType;
+        
+        switch (format) {
+            case 'csv':
+                exportData = 'Note,Item,Price,Currency,Date Added\n';
+                notesToExport.forEach(note => {
+                    note.items.forEach(item => {
+                        exportData += `"${note.name}","${item.name}","${item.price}","${item.currency}","${item.date}"\n`;
+                    });
+                });
+                fileName = 'shopping_notes.csv';
+                mimeType = 'text/csv';
+                break;
+                
+            case 'json':
+                exportData = JSON.stringify(notesToExport, null, 2);
+                fileName = 'shopping_notes.json';
+                mimeType = 'application/json';
+                break;
+        }
+        
+        const blob = new Blob([exportData], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // Import notes from file
+    function importNotes(file, format) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            try {
+                let importedNotes = [];
+                
+                if (format === 'json') {
+                    importedNotes = JSON.parse(e.target.result);
+                } else if (format === 'csv') {
+                    const lines = e.target.result.split('\n');
+                    const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+                    
+                    // Group items by note name
+                    const notesMap = {};
+                    
+                    for (let i = 1; i < lines.length; i++) {
+                        if (!lines[i].trim()) continue;
+                        
+                        const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+                            .map(v => v.replace(/^"|"$/g, '').trim());
+                        
+                        const noteName = values[0];
+                        const item = {
+                            name: values[1],
+                            price: parseFloat(values[2]),
+                            currency: values[3] || 'IQD',
+                            date: values[4] || getCurrentDateTime()
+                        };
+                        
+                        if (!notesMap[noteName]) {
+                            notesMap[noteName] = {
+                                name: noteName,
+                                items: [],
+                                date: item.date
+                            };
+                        }
+                        
+                        notesMap[noteName].items.push(item);
+                    }
+                    
+                    importedNotes = Object.values(notesMap);
+                }
+                
+                // Add imported notes to existing notes
+                importedNotes.forEach(note => {
+                    notes.push({
+                        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                        name: note.name,
+                        items: note.items || [],
+                        isComplete: false,
+                        date: note.date || getCurrentDateTime()
+                    });
+                });
+                
+                saveData();
+                renderNotes();
+                updateSummary();
+                alert(`Successfully imported ${importedNotes.length} notes`);
+            } catch (error) {
+                console.error('Error importing notes:', error);
+                alert('Error importing notes. Please check the file format.');
+            }
+        };
+        
+        reader.readAsText(file);
+    }
+
+    // Share notes (simplified implementation)
+    function shareNotes(noteIds = selectedNotes) {
+        if (noteIds.length === 0) {
+            alert('Please select at least one note to share');
+            return;
+        }
+        
+        if (navigator.share) {
+            const notesToShare = notes.filter(note => noteIds.includes(note.id));
+            const shareText = notesToShare.map(note => {
+                const items = note.items.map(item => {
+                    const price = convertCurrency(item.price, item.currency, displayCurrency);
+                    return `${item.name}: ${formatCurrency(price, displayCurrency)} (${item.date})`;
+                }).join('\n- ');
+                
+                const total = note.items.reduce((sum, item) => {
+                    return sum + convertCurrency(item.price, item.currency, displayCurrency);
+                }, 0);
+                
+                return `${note.name} (${note.date})\n- ${items}\nTotal: ${formatCurrency(total, displayCurrency)}`;
+            }).join('\n\n');
+            
+            navigator.share({
+                title: 'Shopping Notes',
+                text: shareText
+            }).catch(error => {
+                console.error('Error sharing:', error);
+                alert('Could not share the notes. You can export them instead.');
+            });
+        } else {
+            alert('Sharing is not supported on this browser. You can export the notes instead.');
+        }
+    }
+
+    // Close the note modal
+    function closeNoteModal() {
+        noteModal.style.display = 'none';
+        currentNoteId = null;
+    }
+
+    // Event Listeners
+  document.addEventListener('DOMContentLoaded', () => {
+    loadData();
+    generateCalendarWithPayments();
+});
+    
+noteNameInput.addEventListener('input', validateNoteName);
+
+
+
+    monthlyIncomeInput.addEventListener('change', () => {
+        monthlyIncome = parseFloat(monthlyIncomeInput.value) || 0;
+        saveData();
+        updateSummary();
+    });
+
+    incomeCurrencySelect.addEventListener('change', () => {
+        incomeCurrency = incomeCurrencySelect.value;
+        updateCurrencyConverters();
+        saveData();
+        updateSummary();
+    });
+
+    displayCurrencySelect.addEventListener('change', () => {
+        displayCurrency = displayCurrencySelect.value;
+        updateCurrencyConverters();
+        saveData();
+        renderNotes();
+        updateSummary();
+        if (noteModal.style.display === 'block') {
+            updateNoteTotal();
+        }
+    });
+
+    exchangeRateInput.addEventListener('change', () => {
+        exchangeRate = parseFloat(exchangeRateInput.value) || 1450;
+        displayExchangeRateInput.value = exchangeRate;
+        itemExchangeRateInput.value = exchangeRate;
+        saveData();
+        renderNotes();
+        updateSummary();
+        if (noteModal.style.display === 'block') {
+            updateNoteTotal();
+        }
+    });
+
+    displayExchangeRateInput.addEventListener('change', () => {
+        exchangeRate = parseFloat(displayExchangeRateInput.value) || 1450;
+        exchangeRateInput.value = exchangeRate;
+        itemExchangeRateInput.value = exchangeRate;
+        saveData();
+        renderNotes();
+        updateSummary();
+        if (noteModal.style.display === 'block') {
+            updateNoteTotal();
+        }
+    });
+
+    itemExchangeRateInput.addEventListener('change', () => {
+        exchangeRate = parseFloat(itemExchangeRateInput.value) || 1450;
+        exchangeRateInput.value = exchangeRate;
+        displayExchangeRateInput.value = exchangeRate;
+        saveData();
+        renderNotes();
+        updateSummary();
+        if (noteModal.style.display === 'block') {
+            updateNoteTotal();
+        }
+    });
+
+    addNoteBtn.addEventListener('click', () => openNoteModal());
+    closeModal.addEventListener('click', closeNoteModal);
+    
+    window.addEventListener('click', (e) => {
+        if (e.target === noteModal) {
+            closeNoteModal();
+        }
+        
+        // Close any open note option menus when clicking elsewhere
+        const openMenus = document.querySelectorAll('.note-options-menu.active');
+        openMenus.forEach(menu => {
+            if (!menu.contains(e.target) && !e.target.closest('.note-options')) {
+                menu.classList.remove('active');
+            }
+        });
+        
+        // Close export options menu when clicking elsewhere
+        if (exportOptions.classList.contains('active') && 
+            !exportOptions.contains(e.target) && 
+            e.target !== exportBtn) {
+            exportOptions.classList.remove('active');
+        }
+        
+        // Close import options menu when clicking elsewhere
+        if (importOptions.classList.contains('active') && 
+            !importOptions.contains(e.target) && 
+            e.target !== importBtn) {
+            importOptions.classList.remove('active');
+        }
+    });
+
+    addItemBtn.addEventListener('click', addNewItem);
+    saveNoteBtn.addEventListener('click', saveNote);
+
+    // Auto-save when note name changes
+    noteNameInput.addEventListener('input', autoSaveNote);
+
+    // Export menu handling
+    exportBtn.addEventListener('click', (e) => {
+        const rect = e.target.getBoundingClientRect();
+        exportOptions.style.top = `${rect.bottom + window.scrollY}px`;
+        exportOptions.style.left = `${rect.left + window.scrollX}px`;
+        exportOptions.classList.toggle('active');
+        importOptions.classList.remove('active');
+    });
+
+    document.querySelectorAll('.export-option').forEach(option => {
+        option.addEventListener('click', () => {
+            const format = option.getAttribute('data-format');
+            exportNotes(format);
+            exportOptions.classList.remove('active');
+        });
+    });
+
+    // Import menu handling
+    importBtn.addEventListener('click', (e) => {
+        const rect = e.target.getBoundingClientRect();
+        importOptions.style.top = `${rect.bottom + window.scrollY}px`;
+        importOptions.style.left = `${rect.left + window.scrollX}px`;
+        importOptions.classList.toggle('active');
+        exportOptions.classList.remove('active');
+    });
+
+    document.querySelectorAll('.import-option').forEach(option => {
+        option.addEventListener('click', () => {
+            const format = option.getAttribute('data-format');
+            fileInput.setAttribute('accept', `.${format}`);
+            fileInput.onchange = (e) => {
+                if (e.target.files.length > 0) {
+                    importNotes(e.target.files[0], format);
+                }
+            };
+            fileInput.click();
+            importOptions.classList.remove('active');
+        });
+    });
+
+    printBtn.addEventListener('click', () => printNotes());
+    shareBtn.addEventListener('click', () => shareNotes());
+    selectAllBtn.addEventListener('click', selectAllNotes);
+    deleteSelectedBtn.addEventListener('click', deleteSelectedNotes);
+    backupBtn.addEventListener('click', backupAllNotes);
+    restoreBtn.addEventListener('click', restoreBackup);
+
+    // Allow pressing Enter to add items
+    document.querySelectorAll('.item-name-input, .item-price-input').forEach(input => {
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addNewItem();
+            }
+        });
+    });
+   
+   
+   
+   
+   
+   
+   
+   
+  function removeDuplicateNotesByName() {
+    const uniqueNotes = [];
+    const seenNames = new Set();
+    
+    // Process notes in reverse order to keep the most recent one
+    for (let i = notes.length - 1; i >= 0; i--) {
+        const note = notes[i];
+        const name = note.name.trim();
+        
+        if (!seenNames.has(name)) {
+            seenNames.add(name);
+            uniqueNotes.unshift(note); // Add to beginning to maintain original order
+        }
+    }
+    
+    notes = uniqueNotes;
+    saveData();
+    
+    // Only render if we actually removed duplicates
+    if (notes.length !== uniqueNotes.length) {
+        renderNotes();
+        updateSummary();
+    }
+}
+
+
+    
+    
+    
+  function validateNoteName() {
+    const name = noteNameInput.value.trim();
+    const exists = notes.some(n => n.name.trim() === name && n.id !== currentNoteId);
+
+    if (exists || name === "") {
+        noteNameInput.style.borderColor = 'red';
+        addItemBtn.disabled = true;
+        addItemBtn.style.opacity = 0.5;
+    } else {
+        noteNameInput.style.borderColor = '';
+        addItemBtn.disabled = false;
+        addItemBtn.style.opacity = 1;
+    }
+}  
+    
+ saveExchangeBtn.addEventListener('click', () => {
+    exchangeRate = parseFloat(exchangeRateInput.value) || 1450;
+    displayExchangeRateInput.value = exchangeRate;
+    itemExchangeRateInput.value = exchangeRate;
+    saveData();
+    renderNotes();
+    updateSummary();
+    if (noteModal.style.display === 'block') {
+        updateNoteTotal();
+    }
+    //alert("Exchange rate saved!");
+});   
+    
+  
+  
+  
+  
+  function getBudgetStatus() {
+    const incomeInDisplayCurrency = convertCurrency(monthlyIncome, incomeCurrency, displayCurrency);
+    const selectedNotesData = notes.filter(note => selectedNotes.includes(note.id));
+    const totalExpense = selectedNotesData.reduce((sum, note) => {
+        return sum + note.items.reduce((itemSum, item) => {
+            return itemSum + convertCurrency(item.price, item.currency, displayCurrency);
+        }, 0);
+    }, 0);
+    
+    const remaining = incomeInDisplayCurrency - totalExpense;
+    
+    if (remaining < 0) {
+        return 'negative';
+    } else if (totalExpense > incomeInDisplayCurrency) {
+        return 'exceeded';
+    }
+    return 'normal';
+}
+
+
+
+
+
+
+
+    // Add event listener for chart generation
+    generateChartBtn.addEventListener('click', generateChart);
+
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', () => {
+      loadData();
+      generateCalendarWithPayments();
+      // Generate initial chart after a short delay to ensure everything is loaded
+      setTimeout(generateChart, 5);
+    });
+    
+    
+
+  document.addEventListener('DOMContentLoaded', function() {
+        const checkbox = document.getElementById('show-income-checkbox');
+        const header = document.getElementById('income-header');
+        
+        // Set initial state based on checkbox
+        header.style.display = checkbox.checked ? 'block' : 'none';
+        
+        // Add event listener for checkbox changes
+        checkbox.addEventListener('change', function() {
+            header.style.display = this.checked ? 'block' : 'none';
+        });
+    });
+
+
+
+
+
+
+// Toggle calculation section
+document.getElementById('show-calculation-checkbox').addEventListener('change', function() {
+    const section = document.querySelector('.calculation-section');
+    section.style.display = this.checked ? 'block' : 'none';
+    if (this.checked) updateBaseValueDisplay();
+});
+
+// Update base value display when selection changes
+document.getElementById('calculation-base').addEventListener('change', updateBaseValueDisplay);
+
+function updateBaseValueDisplay() {
+    const baseSelect = document.getElementById('calculation-base');
+    const displayElement = document.getElementById('base-value-display');
+    
+    if (baseSelect.value === 'total-expenses') {
+        displayElement.textContent = 'نرخی ئێستا: ' + document.getElementById('total-expenses').textContent;
+    } else {
+        displayElement.textContent = 'نرخی ئێستا: ' + document.getElementById('remaining-budget').textContent;
+    }
+}
+
+// Toggle round-up options
+document.getElementById('round-up-checkbox').addEventListener('change', function() {
+    document.getElementById('round-up-value').disabled = !this.checked;
+});
+
+// Calculation function with improved difference calculation
+document.getElementById('calculate-btn').addEventListener('click', function() {
+    const baseSelect = document.getElementById('calculation-base');
+    const operation = document.getElementById('calculation-operation').value;
+    const valueInput = document.getElementById('calculation-value').value;
+    const shouldRound = document.getElementById('round-up-checkbox').checked;
+    const roundValue = parseInt(document.getElementById('round-up-value').value);
+    
+    // Validate input
+    if (!valueInput || isNaN(parseFloat(valueInput))) {
+        alert('تکایە نرخی دروست بنووسە بۆ ژمێریاری');
+        return;
+    }
+    const value = parseFloat(valueInput);
+    
+    // Get base value (supporting Arabic numerals)
+    let baseText = '';
+    if (baseSelect.value === 'total-expenses') {
+        baseText = document.getElementById('total-expenses').textContent;
+    } else {
+        baseText = document.getElementById('remaining-budget').textContent;
+    }
+    
+    // Convert Arabic numerals to English for calculation
+    const baseAmount = parseFloat(convertArabicNumeralsToEnglish(baseText));
+    
+    // Perform calculation
+    let result = 0;
+    switch (operation) {
+        case 'divide':
+            result = baseAmount / value;
+            break;
+        case 'multiply':
+            result = baseAmount * value;
+            break;
+        case 'add':
+            result = baseAmount + value;
+            break;
+        case 'subtract':
+            result = baseAmount - value;
+            break;
+    }
+    
+    // Round up if needed
+    let roundedResult = result;
+    if (shouldRound) {
+        roundedResult = Math.ceil(result / roundValue) * roundValue;
+    }
+    
+    // Calculate difference properly
+    let difference = 0;
+    let differenceCalculation = '';
+    
+    if (operation === 'divide') {
+        difference = (roundedResult * value) - baseAmount;
+        differenceCalculation = `(${formatCurrency(roundedResult)} × ${value}) - ${formatCurrency(baseAmount)}`;
+    } else if (operation === 'multiply') {
+        difference = (roundedResult / value) - baseAmount;
+        differenceCalculation = `(${formatCurrency(roundedResult)} ÷ ${value}) - ${formatCurrency(baseAmount)}`;
+    } else {
+        difference = roundedResult - baseAmount;
+        differenceCalculation = `${formatCurrency(roundedResult)} - ${formatCurrency(baseAmount)}`;
+    }
+    
+    // Display results
+    const resultElement = document.getElementById('result-value');
+    const differenceElement = document.getElementById('result-difference');
+    const differenceCalcElement = document.getElementById('difference-calculation');
+    
+    resultElement.textContent = formatCurrency(roundedResult);
+    differenceElement.textContent = formatCurrency(difference);
+    differenceCalcElement.textContent = differenceCalculation;
+    
+    document.getElementById('calculation-result').style.display = 'block';
+});
+
+// Helper function to convert Arabic numerals to English
+function convertArabicNumeralsToEnglish(text) {
+    const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    return text.replace(/[٠-٩]/g, function(d) {
+        return arabicNumerals.indexOf(d);
+    }).replace(/[^0-9.]/g, '');
+}
+
+
+
+
+
+
+// Duplicate a note
+function duplicateNote(noteId) {
+    const index = notes.findIndex(n => n.id === noteId);
+    if (index !== -1) {
+        const originalNote = notes[index];
+        const newNote = {
+            id: Date.now().toString(),
+            name: `${originalNote.name} (Copy)`,
+            items: JSON.parse(JSON.stringify(originalNote.items)), // Deep copy items
+            isComplete: false,
+            date: getCurrentDateTime()
+        };
+        notes.push(newNote);
+        saveData();
+        renderNotes();
+    }
+}
+
+
+
+
+
+
+document.getElementById('merge-notes-btn').addEventListener('click', function() {
+    if (selectedNotes.length < 2) {
+        alert('تکایە لانی کەم ٢ تێبینی هەڵبژێرە بۆ یەکخستن');
+        return;
+    }
+
+    // Create a custom dialog
+    const dialog = document.createElement('div');
+    dialog.style.position = 'fixed';
+    dialog.style.top = '50%';
+    dialog.style.left = '50%';
+    dialog.style.transform = 'translate(-50%, -50%)';
+    dialog.style.backgroundColor = 'white';
+    dialog.style.padding = '20px';
+    dialog.style.borderRadius = '10px';
+    dialog.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+    dialog.style.zIndex = '1000';
+    dialog.style.width = '300px';
+    dialog.style.textAlign = 'center';
+    dialog.style.direction = 'rtl';
+    
+    dialog.innerHTML = `
+        <h3>هەڵبژاردنی شێوازی یەکخستن</h3>
+        <p>دەیەوێت تێبینییەکان جیا بکرێنەوە بە ناوی خۆیان یان بە سادەیی یەکبخرێن؟</p>
+        <div style="display: flex; justify-content: space-around; margin-top: 20px;">
+            <button id="merge-separate" style="padding: 8px 16px; background-color: #4CAF50; color: white; border: none; border-radius: 4px;">بە جیاوازی (ئەی)</button>
+            <button id="merge-simple" style="padding: 8px 16px; background-color: #2196F3; color: white; border: none; border-radius: 4px;">بە سادەیی (نەخێر)</button>
+            <button id="merge-cancel" style="padding: 8px 16px; background-color: #f44336; color: white; border: none; border-radius: 4px;">پاشگەزبوونەوە</button>
+        </div>
+    `;
+    
+    document.body.appendChild(dialog);
+    
+    // Add overlay
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+    overlay.style.zIndex = '999';
+    document.body.appendChild(overlay);
+    
+    // Handle merge options
+    document.getElementById('merge-separate').addEventListener('click', function() {
+        mergeNotes(true);
+        document.body.removeChild(dialog);
+        document.body.removeChild(overlay);
+    });
+    
+    document.getElementById('merge-simple').addEventListener('click', function() {
+        mergeNotes(false);
+        document.body.removeChild(dialog);
+        document.body.removeChild(overlay);
+    });
+    
+    document.getElementById('merge-cancel').addEventListener('click', function() {
+        document.body.removeChild(dialog);
+        document.body.removeChild(overlay);
+    });
+});
+
+
+
+
+function mergeNotes(keepSeparate) {
+    const noteName = prompt('ناوی نوێی تێبینییە یەکخراوەکە بنووسە:', 'تێبینیی یەکخراو');
+    if (!noteName) return;
+
+    const notesToMerge = notes.filter(note => selectedNotes.includes(note.id));
+    const mergedItems = [];
+    const noteColors = ['#FFECB3', '#E1F5FE', '#E8F5E9', '#F3E5F5', '#FFCCBC', '#D7CCC8'];
+    
+    if (keepSeparate) {
+        notesToMerge.forEach((note, index) => {
+            // Add header with color and + button
+            mergedItems.push({
+                name: note.name,
+                price: 0,
+                currency: 'IQD',
+                date: note.date,
+                isHeader: true,
+                color: noteColors[index % noteColors.length],
+                noteId: note.id // Keep original ID for reference
+            });
+            
+            // Add all items from this note
+            mergedItems.push(...note.items.map(item => ({
+                ...item,
+                parentNoteId: note.id // Track which note this item belongs to
+            })));
+        });
+    } else {
+        // Simple merge - just combine all items
+        notesToMerge.forEach(note => {
+            mergedItems.push(...note.items);
+        });
+    }
+
+    const mergedNote = {
+        id: Date.now().toString(),
+        name: noteName,
+        items: mergedItems,
+        isComplete: false,
+        date: getCurrentDateTime(),
+        isMergedNote: true,
+        subNotes: keepSeparate ? notesToMerge.map(note => note.id) : []
+    };
+
+    notes = notes.filter(note => !selectedNotes.includes(note.id));
+    notes.push(mergedNote);
+    selectedNotes = [];
+    
+    saveData();
+    renderNotes();
+    updateSummary();
+    generateCalendarWithPayments();
+    openNoteModal(mergedNote.id);
+}
+
+
+
+
+
+
+
+document.getElementById('print-multiple-merged-btn').addEventListener('click', function () {
+  const mergedNotes = notes.filter(note => selectedNotes.includes(note.id) && note.isMergedNote);
+  if (mergedNotes.length === 0) {
+    alert("تکایە لانی کەم یەک تێبینی یەککراو هەلبژێرە.");
+    return;
+  }
+
+  const sectionColors = ['#FFECB3', '#E1F5FE', '#E8F5E9', '#F3E5F5', '#FFCCBC', '#D7CCC8'];
+  let fullHtml = `
+    <h1 style="text-align:center; margin-bottom: 30px; color: #333;">گزارشی تێبینییە یەککراوەکان</h1>
+  `;
+
+  mergedNotes.forEach((mergedNote, noteIndex) => {
+    fullHtml += `<div style="border: 3px dashed #607d8b; padding: 20px; margin-bottom: 35px; border-radius: 12px; background-color: #f9f9f9;">`;
+    fullHtml += `<h2 style="color:#444; margin-bottom: 20px;">${mergedNote.name}</h2>`;
+
+    let colorIndex = 0;
+    let currentSection = '';
+    let sectionColor = '';
+    let itemList = '';
+
+    mergedNote.items.forEach(item => {
+      if (item.isHeader) {
+        if (itemList) {
+          fullHtml += `
+            <div style="background-color:${sectionColor}; padding:15px; border-radius:10px; margin-bottom:15px;">
+              <h3 style="margin-bottom:10px;">${currentSection}</h3>
+              <ul style="padding-right:20px;">${itemList}</ul>
+            </div>
+          `;
+          itemList = '';
+        }
+
+        currentSection = item.name;
+        sectionColor = item.color || sectionColors[colorIndex % sectionColors.length];
+        colorIndex++;
+      } else {
+        const amount = convertCurrency(item.price, item.currency, displayCurrency);
+        if (amount > 0) {
+          itemList += `<li style="margin-bottom:4px;">${item.name} - ${formatCurrency(amount)}</li>`;
+        }
+      }
+    });
+
+    // Print final section of this note
+    if (itemList) {
+      fullHtml += `
+        <div style="background-color:${sectionColor}; padding:15px; border-radius:10px; margin-bottom:15px;">
+          <h3 style="margin-bottom:10px;">${currentSection}</h3>
+          <ul style="padding-right:20px;">${itemList}</ul>
+        </div>
+      `;
+    }
+
+    fullHtml += `</div>`; // close merged note block
+  });
+
+  const printWindow = window.open('', '', 'width=900,height=800');
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>گزارشی تێبینییە یەککراوەکان</title>
+        <style>
+          body {
+            font-family: "Segoe UI", sans-serif;
+            direction: rtl;
+            padding: 40px;
+            background-color: #f0f0f0;
+            color: #333;
+          }
+          h1, h2, h3 {
+            font-weight: bold;
+          }
+          ul {
+            list-style-type: disc;
+            padding-right: 30px;
+          }
+          li {
+            font-size: 15px;
+            margin: 6px 0;
+          }
+        </style>
+      </head>
+      <body>
+        ${fullHtml}
+      </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.print();
+});
+
+
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  // Add Export Function
+  const exportBtn = document.getElementById("export-local-btn");
+  const resetBtn = document.getElementById("reset-local-btn");
+
+  exportBtn?.addEventListener("click", function () {
+    const localData = {};
+    for (let key in localStorage) {
+      if (localStorage.hasOwnProperty(key)) {
+        // Optional: only include your app's keys
+        if (key.includes("note") || key.includes("income") || key.includes("budget") || key.includes("exchange") || key.includes("rate")) {
+          localData[key] = localStorage.getItem(key);
+        }
+      }
+    }
+
+    const blob = new Blob([JSON.stringify(localData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "shopping-local-backup.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  // Add Reset Function
+  resetBtn?.addEventListener("click", function () {
+    const confirmed = confirm("دڵنیایت دەتەوێت هەموو داتاکانی ناوخۆ بسڕیتەوە؟");
+
+    if (confirmed) {
+      for (let key in localStorage) {
+        if (localStorage.hasOwnProperty(key)) {
+          if (key.includes("note") || key.includes("income") || key.includes("budget") || key.includes("exchange") || key.includes("rate")) {
+            localStorage.removeItem(key);
+          }
+        }
+      }
+
+      alert("هەموو داتا سڕایەوە. تکایە پەڕەکە تازە بکەوە.");
+      location.reload();
+    }
+  });
+});
+
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  const importBtn = document.getElementById("import-local-btn");
+  const fileInput = document.getElementById("import-local-file");
+
+  importBtn?.addEventListener("click", () => {
+    fileInput.click();
+  });
+
+  fileInput?.addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        const data = JSON.parse(e.target.result);
+
+        // Fix `notes` key: handle it as parsed array
+        if (typeof data.notes === "string") {
+          data.notes = JSON.parse(data.notes);
+        }
+
+        // Filter only shopping notes (with 'name' and 'items')
+        const filteredNotes = data.notes.filter(n => n.name && Array.isArray(n.items));
+        data.notes = JSON.stringify(filteredNotes);
+
+        // Save all other keys
+        for (const key in data) {
+          localStorage.setItem(key, typeof data[key] === 'object' ? JSON.stringify(data[key]) : data[key]);
+        }
+
+        alert("داتای هاوردکراو بەسەرکەوتوویی هێنراوە. تکایە پەڕەکە تازە بکەوە.");
+        location.reload();
+      } catch (err) {
+        alert("هه‌ڵه‌ له‌ هاوردنی فایل! تکایە دڵنیابە لە فایلەکە.");
+        console.error(err);
+      }
+    };
+
+    reader.readAsText(file);
+  });
+});
+
+
+
+
+</script>
+
+
+
+
+<button class="action-button" id="export-local-btn">📤 هەناردنی ناوخۆ</button>
+<button class="action-button" id="reset-local-btn" style="background-color: #d32f2f; color: white;">🗑️ سڕینەوەی ناوخۆ</button>
+
+
+<button class="action-button" id="import-local-btn" style="background-color: #FFB300; color: white;">📥 هاوردنی داتای ناوخۆ</button>
+<input type="file" id="import-local-file" accept=".json" style="display: none;">
+
+
+
+
+
+
+</body>
+</html>
+
+

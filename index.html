@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HTML Library</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ================= Header ================= -->
+  <header class="topbar">
+    <h1 id="site-title">My HTML Library</h1>
+
+    <div class="topbar-controls">
+      <button id="theme-toggle" class="icon-btn" title="Toggle light / dark mode">🌙</button>
+    </div>
+  </header>
+
+  <!-- ================= Toolbar: search + sort ================= -->
+  <section class="toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">🔎</span>
+      <input
+        type="text"
+        id="search-box"
+        placeholder="Search by filename or title..."
+        autocomplete="off"
+      />
+    </div>
+
+    <select id="sort-select" title="Sort pages">
+      <option value="alphabetical">Alphabetical</option>
+      <option value="newest">Newest first</option>
+      <option value="oldest">Oldest first</option>
+      <option value="favorites">Favorites first</option>
+    </select>
+  </section>
+
+  <!-- ================= Status line ================= -->
+  <p id="status-line" class="status-line"></p>
+
+  <!-- ================= Card grid ================= -->
+  <main id="card-grid" class="card-grid">
+    <!-- Cards are injected here by script.js -->
+  </main>
+
+  <!-- ================= Empty / error states ================= -->
+  <div id="empty-state" class="empty-state" hidden>
+    <p>No pages found.</p>
+  </div>
+
+  <div id="server-warning" class="server-warning" hidden>
+    <strong>Local API server not detected.</strong>
+    <p>
+      To enable automatic page discovery, run the included tiny server:
+    </p>
+    <pre>node server.js</pre>
+    <p>...then open this app via <code>http://localhost:8080</code> instead of a <code>file://</code> path.</p>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

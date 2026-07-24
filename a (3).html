@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <title>لیستی دەوام</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4f2ee;
+      --surface: #ffffff;
+      --surface2: #f9f8f5;
+      --border: #ddd8cf;
+      --accent: #5a4fcf;
+      --accent2: #7c6ecc;
+      --green: #1a9e5a;
+      --red: #c0392b;
+      --yellow: #d4920a;
+      --text: #1a1a2e;
+      --muted: #8a8499;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font-mono); background: var(--bg); min-height: 100vh; color: var(--text); direction: rtl; padding: 16px; }
+    .container { max-width: 680px; margin: 0 auto; background: var(--bg); border-radius: 16px; }
+    .header { text-align: center; padding: 36px 20px 28px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+    .header-label { font-size: 10px; letter-spacing: 4px; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; }
+    .header h1 { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; color: var(--accent); letter-spacing: -1px; line-height: 1; }
+    .header-sub { font-size: 11px; color: var(--muted); margin-top: 8px; letter-spacing: 2px; }
+    .stamp { display: inline-block; border: 2px solid var(--accent2); border-radius: 6px; padding: 8px 24px; color: var(--accent2); font-size: 12px; opacity: 0.65; transform: rotate(-3deg); margin: 20px auto 0; letter-spacing: 1.5px; }
+    .stamp-name { font-weight: 700; font-size: 15px; display: block; margin-top: 2px; color: var(--accent2); }
+    .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+    .tab { padding: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); font-family: var(--font-mono); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px; text-align: center; }
+    .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .tab:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .important-note { background: rgba(192,57,43,0.06); border: 1px solid rgba(192,57,43,0.4); border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; text-align: center; }
+    .important-note strong { color: var(--red); font-size: 13px; display: block; letter-spacing: 2px; animation: blink 1.5s infinite; }
+    .important-note span { color: var(--red); font-size: 12px; margin-top: 4px; display: block; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+    .action-btn { padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; font-family: var(--font-mono); font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px; }
+    .uncheck-btn { background: rgba(212,146,10,0.08); color: var(--yellow); border-color: rgba(212,146,10,0.3); }
+    .uncheck-btn:hover { background: rgba(212,146,10,0.15); }
+    .reset-btn { background: rgba(192,57,43,0.08); color: var(--red); border-color: rgba(192,57,43,0.3); }
+    .reset-btn:hover { background: rgba(192,57,43,0.15); }
+    .add-item-section { background: var(--surface); border: 1.5px dashed var(--accent2); border-radius: 8px; padding: 14px; margin-bottom: 20px; }
+    .add-item-label { font-size: 10px; letter-spacing: 3px; color: var(--accent2); margin-bottom: 10px; text-transform: uppercase; }
+    .add-item-form { display: flex; gap: 8px; }
+    .add-item-input { flex: 1; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; font-family: var(--font-mono); font-size: 13px; color: var(--text); transition: border-color 0.2s; }
+    .add-item-input:focus { outline: none; border-color: var(--accent2); }
+    .add-item-input::placeholder { color: var(--muted); }
+    .add-item-btn { padding: 10px 18px; background: var(--accent2); color: white; border: none; border-radius: 6px; font-family: var(--font-mono); font-size: 12px; font-weight: 700; cursor: pointer; transition: opacity 0.2s; letter-spacing: 0.5px; white-space: nowrap; }
+    .add-item-btn:hover { opacity: 0.85; }
+    .checklist { display: flex; flex-direction: column; gap: 6px; }
+    .checklist-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .checklist-item::before { content:''; position:absolute; right:0; top:0; bottom:0; width:3px; background:transparent; transition:background 0.2s; }
+    .checklist-item:hover { border-color: rgba(90,79,207,0.35); background: #f0eefb; }
+    .checklist-item:hover::before { background: var(--accent); }
+    .checklist-item.checked { border-color: rgba(26,158,90,0.35); background: #edf7f2; }
+    .checklist-item.checked::before { background: var(--green); }
+    .checklist-item.critical { border-color: rgba(192,57,43,0.45); background: #fdf0ee; animation: pulse-red 2.5s infinite; }
+    .checklist-item.critical::before { background: var(--red); }
+    .checklist-item.critical.checked { border-color: rgba(26,158,90,0.35); background: #edf7f2; animation: none; }
+    .checklist-item.critical.checked::before { background: var(--green); }
+    @keyframes pulse-red { 0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,0)} 50%{box-shadow:0 0 12px 2px rgba(192,57,43,0.15)} }
+    .checkbox { width:20px; height:20px; border:1.5px solid var(--border); border-radius:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+    .checklist-item.checked .checkbox { background: var(--green); border-color: var(--green); }
+    .checkbox::after { content:'✓'; color:#fff; font-size:12px; font-weight:900; display:none; }
+    .checklist-item.checked .checkbox::after { display:block; }
+    .item-icon { font-size:20px; min-width:28px; text-align:center; flex-shrink:0; }
+    .item-text { flex:1; font-size:14px; font-weight:500; color:var(--text); letter-spacing:0.3px; }
+    .checklist-item.checked .item-text { text-decoration:line-through; color:var(--muted); }
+    .checklist-item.critical .item-text { color:var(--red); font-weight:700; }
+    .checklist-item.critical.checked .item-text { color:var(--muted); }
+    .delete-btn { background:rgba(192,57,43,0.08); color:var(--red); border:1px solid rgba(192,57,43,0.25); padding:4px 10px; border-radius:4px; cursor:pointer; font-size:11px; font-family:var(--font-mono); opacity:0; transition:all 0.2s; white-space:nowrap; }
+    .checklist-item:hover .delete-btn { opacity:1; }
+    .delete-btn:hover { background:rgba(192,57,43,0.15); }
+    .stats { margin-top:20px; padding:14px 18px; background:var(--surface); border:1px solid var(--border); border-radius:8px; display:flex; align-items:center; justify-content:space-between; font-size:12px; color:var(--muted); box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+    .stats-bar-wrap { flex:1; height:4px; background:var(--border); border-radius:2px; margin:0 16px; overflow:hidden; }
+    .stats-bar { height:100%; background:var(--green); border-radius:2px; transition:width 0.4s ease; }
+    .stats-text { color:var(--green); font-weight:700; }
+    .export-btn { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:14px 20px; margin-top:24px; margin-bottom:8px; background:var(--accent); color:#fff; border:none; border-radius:8px; font-family:var(--font-mono); font-size:13px; font-weight:700; letter-spacing:1px; cursor:pointer; transition:opacity 0.2s, transform 0.15s; box-shadow:0 4px 14px rgba(90,79,207,0.25); }
+    .export-btn:hover { opacity:0.88; transform:translateY(-1px); }
+    .export-btn:active { transform:translateY(0); }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-label">✦ لیستی دەام ✦</div>
+    <h1>📋 دەوام</h1>
+  
+    <div class="stamp">
+      <span>دروست کراوە لە لایەن</span>
+      <span class="stamp-name">ئاراس لطیف</span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('departure',this)">🎒 چوون بۆ سەر ئەرک</button>
+    <button class="tab" onclick="switchTab('return',this)">🏠 گەڕانەوە</button>
+  </div>
+
+  <div id="departure" class="tab-content active">
+    <div class="action-buttons">
+      <button class="action-btn uncheck-btn" onclick="uncheckAll('departure')">❌ لابردنی هەموو نیشانەکان</button>
+      <button class="action-btn reset-btn" onclick="resetList('departure')">🔄 گەڕاندنەوە بۆ سەرەتا</button>
+    </div>
+    <div class="add-item-section">
+      <div class="add-item-label">➕ زیادکردنی بابەتی نوێ</div>
+      <div class="add-item-form">
+        <input type="text" id="departureInput" class="add-item-input" placeholder="ناوی بابەت بنووسە...">
+        <button onclick="addItem('departure')" class="add-item-btn">زیادکردن</button>
+      </div>
+    </div>
+    <div class="checklist" id="departureChecklist"></div>
+    <div class="stats" id="departureStats">
+      <span></span>
+      <div class="stats-bar-wrap"><div class="stats-bar" style="width:0%"></div></div>
+      <span class="stats-text">0 / 0</span>
+    </div>
+  </div>
+
+  <div id="return" class="tab-content">
+    <div class="important-note">
+      <strong>⚠️ زۆر زۆر گرنگ! ⚠️</strong>
+      <span>🚨 سجلی خەفارەت ئیمزا بکە 🚨</span>
+    </div>
+    <div class="action-buttons">
+      <button class="action-btn uncheck-btn" onclick="uncheckAll('return')">❌ لابردنی هەموو نیشانەکان</button>
+      <button class="action-btn reset-btn" onclick="resetList('return')">🔄 گەڕاندنەوە بۆ سەرەتا</button>
+    </div>
+    <div class="add-item-section">
+      <div class="add-item-label">➕ زیادکردنی بابەتی نوێ</div>
+      <div class="add-item-form">
+        <input type="text" id="returnInput" class="add-item-input" placeholder="ناوی بابەت بنووسە...">
+        <button onclick="addItem('return')" class="add-item-btn">زیادکردن</button>
+      </div>
+    </div>
+    <div class="checklist" id="returnChecklist"></div>
+    <div class="stats" id="returnStats">
+      <span></span>
+      <div class="stats-bar-wrap"><div class="stats-bar" style="width:0%"></div></div>
+      <span class="stats-text">0 / 0</span>
+    </div>
+  </div>
+
+  <button class="export-btn" onclick="exportHTML()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <polyline points="7 10 12 15 17 10"/>
+      <line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>
+   Copy list as Code ...
+  </button>
+
+</div>
+<script>
+/* ═══════════════════════════════════════════
+   DATA  — original items baked into the file
+═══════════════════════════════════════════ */
+var ORIG_DEP = [
+  { text: 'مێش کوژ', icon: '🦟' },
+  { text: 'هاڕدی خاریجی', icon: '💾' },
+  { text: 'موسی ڕیش تاشین', icon: '🪒' },
+  { text: 'دەمانچە', icon: '🔫' },
+  { text: 'خاولی', icon: '🧺' },
+  { text: 'شەهنی موبایل', icon: '🔌' },
+  { text: 'لاپتۆپ و شەحنەکەی', icon: '💻' },
+  { text: 'ئایپاد', icon: '📱' },
+  { text: 'تەقسیمی کارەبا', icon: '🔌' },
+  { text: 'عەینەک', icon: '👓' },
+  { text: 'گوڵەبەڕۆژە', icon: '🌻' },
+  { text: 'کێک و بیبسی', icon: '🍰' },
+  { text: 'میوە', icon: '🍎' },
+  { text: 'پێڵاوی ڕەش', icon: '👞' },
+  { text: 'جلکی عەسکەری', icon: '🪖' },
+  { text: 'قەند و چا', icon: '🍵' },
+  { text: 'فلچە و مەعجون', icon: '🪥' },
+  { text: 'هیدفۆن', icon: '🎧' },
+  { text: 'کلیل هەردوولا', icon: '🔑' },
+  { text: 'سپرای قژ', icon: '🧴' },
+  { text: 'شانە', icon: '🪮' },
+  { text: 'ستاندی موبایل', icon: '📱' },
+  { text: 'شامپۆ', icon: '🧴' },
+  { text: 'قەڵەم جاف', icon: '🖊️' },
+  { text: 'ڕاوتەری ئەنتەرنێت', icon: '📡' },
+  { text: 'داری ددان', icon: '🪥' },
+  { text: 'بێریە', icon: '🪖' },
+  { text: 'ماوس', icon: '🖱️' },
+  { text: 'بیجامە', icon: '🛌' },
+  { text: 'نیسکافە', icon: '☕' },
+  { text: 'کلینس', icon: '🧻' },
+  { text: 'پاتری قەلەمی', icon: '🔋' },
+  { text: 'SODAAA', icon: '🚰' },
+  { text: 'شۆرت', icon: '🩳' },
+  { text: 'گۆرەوی', icon: '🧦' },
+  { text: 'قۆری جا', icon: '🫖' },
+  { text: 'MAL7AMMM', icon: '🩹' }
+];
+
+var ORIG_RET = [
+  { text: 'تەقسیمی کارەبایی', icon: '🔌' },
+  { text: 'دەمانچە', icon: '🔫' },
+  { text: 'خاولی', icon: '🧺' },
+  { text: 'پێڵاو و جلک و بەرگ', icon: '👔' },
+  { text: 'ستاندی موبایل', icon: '📱' },
+  { text: 'ئایپاد', icon: '📱' },
+  { text: 'قەڵەمی ئایپاد', icon: '✏️' },
+  { text: 'شەحنی موبایل', icon: '🔌' },
+    { text: 'سجلی خەفارەت ئیمزا بکە', icon: '📋', critical: true }
+];
+
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+var lists = { departure: [], 'return': [] };
+var checked = { departure: {}, 'return': {} };
+
+function clone(arr) { return arr.map(function(i){ return Object.assign({}, i); }); }
+
+function loadData() {
+  try {
+    var sl = localStorage.getItem('tl_v3_lists');
+    var sc = localStorage.getItem('tl_v3_checked');
+    lists = sl ? JSON.parse(sl) : { departure: clone(ORIG_DEP), 'return': clone(ORIG_RET) };
+    checked = sc ? JSON.parse(sc) : { departure: {}, 'return': {} };
+  } catch(e) {
+    lists = { departure: clone(ORIG_DEP), 'return': clone(ORIG_RET) };
+    checked = { departure: {}, 'return': {} };
+  }
+}
+
+function saveData() {
+  try {
+    localStorage.setItem('tl_v3_lists', JSON.stringify(lists));
+    localStorage.setItem('tl_v3_checked', JSON.stringify(checked));
+  } catch(e) {}
+}
+
+/* ═══════════════════════════════════════════
+   UI ACTIONS
+═══════════════════════════════════════════ */
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  document.querySelectorAll('.tab-content').forEach(function(c){ c.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById(name).classList.add('active');
+}
+
+function addItem(lt) {
+  var inp = document.getElementById(lt + 'Input');
+  var txt = inp.value.trim();
+  if (!txt) return;
+  lists[lt].push({ text: txt, icon: '📌', custom: true });
+  inp.value = '';
+  saveData();
+  render(lt);
+}
+
+function deleteItem(lt, idx, ev) {
+  ev.stopPropagation();
+  if (!confirm('دڵنیای لە سڕینەوەی ئەم بابەتە؟')) return;
+  lists[lt].splice(idx, 1);
+  var nc = {};
+  Object.keys(checked[lt]).forEach(function(k) {
+    var n = parseInt(k);
+    if (n < idx) nc[n] = checked[lt][k];
+    else if (n > idx) nc[n - 1] = checked[lt][k];
+  });
+  checked[lt] = nc;
+  saveData();
+  render(lt);
+}
+
+function uncheckAll(lt) {
+  if (!confirm('دڵنیای لە لابردنی هەموو نیشانەکان؟')) return;
+  checked[lt] = {};
+  saveData();
+  render(lt);
+}
+
+function resetList(lt) {
+  if (!confirm('دڵنیای لە گەڕاندنەوەی لیستەکە بۆ حاڵەتی سەرەتایی؟')) return;
+  lists[lt] = clone(lt === 'departure' ? ORIG_DEP : ORIG_RET);
+  checked[lt] = {};
+  saveData();
+  render(lt);
+}
+
+function toggleItem(lt, idx) {
+  checked[lt][idx] = !checked[lt][idx];
+  saveData();
+  render(lt);
+}
+
+/* ═══════════════════════════════════════════
+   RENDER
+═══════════════════════════════════════════ */
+function render(lt) {
+  var el = document.getElementById(lt + 'Checklist');
+  el.innerHTML = '';
+  var origLen = (lt === 'departure' ? ORIG_DEP : ORIG_RET).length;
+
+  lists[lt].forEach(function(item, idx) {
+    var div = document.createElement('div');
+    div.className = 'checklist-item' +
+      (checked[lt][idx] ? ' checked' : '') +
+      (item.critical ? ' critical' : '');
+
+    var delBtn = idx < origLen ? '' :
+      '<button class="delete-btn" onclick="deleteItem(\'' + lt + '\',' + idx + ',event)">سڕینەوە</button>';
+
+    div.innerHTML =
+      '<div class="checkbox"></div>' +
+      '<div class="item-icon">' + (item.icon || '📌') + '</div>' +
+      '<div class="item-text">' + item.text + '</div>' +
+      delBtn;
+
+    div.addEventListener('click', (function(l, i){ return function(){ toggleItem(l, i); }; })(lt, idx));
+    el.appendChild(div);
+  });
+
+  updateStats(lt);
+}
+
+function updateStats(lt) {
+  var sd = document.getElementById(lt + 'Stats');
+  var total = lists[lt].length;
+  var done = Object.values(checked[lt]).filter(Boolean).length;
+  var pct = total ? Math.round(done / total * 100) : 0;
+  sd.querySelector('.stats-bar').style.width = pct + '%';
+  sd.querySelector('.stats-text').textContent = done + ' / ' + total;
+}
+
+/* ═══════════════════════════════════════════
+   EXPORT
+   Builds a complete standalone HTML file
+   purely from the live lists[] JS data.
+   No DOM scraping — hidden tabs don't matter.
+═══════════════════════════════════════════ */
+function exportHTML() {
+
+  function makeArray(name, arr) {
+    var txt = 'var ' + name + ' = [\n';
+
+    arr.forEach(function(item, index) {
+      txt += "  { text: " + JSON.stringify(item.text) +
+             ", icon: " + JSON.stringify(item.icon || '📌');
+
+      if (item.critical) txt += ', critical: true';
+      if (item.custom) txt += ', custom: true';
+
+      txt += ' }';
+
+      if (index !== arr.length - 1) {
+        txt += ',';
+      }
+
+      txt += '\n';
+    });
+
+    txt += '];\n';
+
+    return txt;
+  }
+
+  var result =
+    makeArray('ORIG_DEP', lists.departure) +
+    '\n' +
+    makeArray('ORIG_RET', lists['return']);
+
+  navigator.clipboard.writeText(result)
+    .then(function() {
+      alert('✅ هەموو بابەتەکان کۆپی کران بۆ Clipboard');
+    })
+    .catch(function(err) {
+      alert('❌ هەڵەیەک ڕوویدا');
+      console.error(err);
+    });
+}
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('departureInput').addEventListener('keypress', function(e){ if(e.key==='Enter') addItem('departure'); });
+  document.getElementById('returnInput').addEventListener('keypress', function(e){ if(e.key==='Enter') addItem('return'); });
+});
+
+loadData();
+render('departure');
+render('return');
+</script>
+    <script src="qalyx-bridge.js"></script>
+</body>
+</html>

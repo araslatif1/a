@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+   <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+    <title>نرخی دراوەکان - Currency Exchange</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: #4a5fc1;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .date {
+            color: #7f8c8d;
+            font-size: 18px;
+        }
+
+        .rates-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .rate-item {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+
+        .rate-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .currency-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .flag {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .currency-name {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .rate-value {
+            text-align: left;
+        }
+
+        .rate-number {
+            font-size: 28px;
+            font-weight: bold;
+            background: transparent;
+            border: none;
+            color: white;
+            width: 150px;
+            text-align: right;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .rate-number:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .rate-number:focus {
+            outline: 2px solid white;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .rate-unit {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .converter {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .converter h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 24px;
+        }
+
+        .currency-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .currency-select {
+            flex: 1;
+        }
+
+        .currency-select label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            background: white;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[readonly] {
+            background-color: #f0f0f0;
+            cursor: not-allowed;
+        }
+
+        .result-box {
+            background: #e8f4f8;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .result-label {
+            color: #2c3e50;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .result-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="container">
+        <div class="header">
+            <div class="logo">ARAS</div>
+            <h1>نرخی دراوەکان</h1>
+            <div class="date">2026-1-4</div>
+            <!-- ستامپی دروستکەر -->
+<div style="
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px 30px;
+">
+  <div style="
+    position: relative;
+    display: inline-block;
+    padding: 18px 40px;
+    border: 4px solid #4f8ef7;
+    border-radius: 12px;
+    font-family: 'Cairo', sans-serif;
+    text-align: center;
+    color: #4f8ef7;
+    opacity: 0.75;
+    transform: rotate(-4deg);
+    box-shadow:
+      0 0 0 2px #4f8ef7,
+      0 0 18px rgba(79,142,247,0.3),
+      inset 0 0 18px rgba(79,142,247,0.07);
+    background: transparent;
+    letter-spacing: 1px;
+    pointer-events: none;
+    user-select: none;
+  ">
+    <!-- ستێری سەرەوە -->
+    <div style="
+      position: absolute;
+      top: -1px; left: 50%;
+      transform: translateX(-50%) translateY(-50%);
+      background: inherit;
+      padding: 0 10px;
+      font-size: 13px;
+      color: #4f8ef7;
+      letter-spacing: 3px;
+      font-weight: 700;
+    ">✦ ✦ ✦</div>
+
+    <div style="font-size: 15px; font-weight: 700; margin-bottom: 4px; letter-spacing: 2px;">
+      دروست کراوە لە لایەن
+    </div>
+    <div style="font-size: 22px; font-weight: 900; letter-spacing: 1px;">
+      ئاراس لطیف
+    </div>
+
+    <!-- ستێری خوارەوە -->
+    <div style="
+      position: absolute;
+      bottom: -1px; left: 50%;
+      transform: translateX(-50%) translateY(50%);
+      background: inherit;
+      padding: 0 10px;
+      font-size: 13px;
+      color: #4f8ef7;
+      letter-spacing: 3px;
+      font-weight: 700;
+    ">✦ ✦ ✦</div>
+  </div>
+</div>
+<!-- کۆتایی ستامپ -->
+        </div>
+
+        
+        
+        <div class="converter">
+            <h2>گۆڕینی دراو</h2>
+            
+            <div class="currency-row">
+                <div class="currency-select">
+                    <label>دراوی یەکەم:</label>
+                    <select id="currency1" onchange="calculateConverter()">
+                        <option value="IQD">دینار عێراقی (IQD)</option>
+                        <option value="USD" selected>دۆلاری ئەمریکی (USD)</option>
+                        <option value="GBP">پاوەنی بەریتانی (GBP)</option>
+                        <option value="EUR">یۆرۆ (EUR)</option>
+                        <option value="TRY">لیرەی تورکی (TRY)</option>
+                        <option value="IRR">تۆمەنی ئێرانی (IRR)</option>
+                        <option value="CNY">یوانی چینی (CNY)</option>
+                    </select>
+                </div>
+                <div class="currency-select">
+                    <label>بڕ:</label>
+                    <input type="number" id="amount1" value="100" oninput="calculateConverter()">
+                </div>
+            </div>
+
+            <div class="currency-row">
+                <div class="currency-select">
+                    <label>دراوی دووەم:</label>
+                    <select id="currency2" onchange="calculateConverter()">
+                        <option value="IQD" selected>دینار عێراقی (IQD)</option>
+                        <option value="USD">دۆلاری ئەمریکی (USD)</option>
+                        <option value="GBP">پاوەنی بەریتانی (GBP)</option>
+                        <option value="EUR">یۆرۆ (EUR)</option>
+                        <option value="TRY">لیرەی تورکی (TRY)</option>
+                        <option value="IRR">تۆمەنی ئێرانی (IRR)</option>
+                        <option value="CNY">یوانی چینی (CNY)</option>
+                    </select>
+                </div>
+                <div class="currency-select">
+                    <label>بڕ:</label>
+                    <input type="number" id="amount2" readonly>
+                </div>
+            </div>
+
+            <div class="result-box">
+                <div class="result-label">ئەنجام:</div>
+                <div class="result-value" id="result">143.55</div>
+            </div>
+        </div>
+    </div>
+
+    
+    
+        <div class="rates-display">
+            <div class="rate-item">
+                <div class="currency-info">
+                    <div class="flag">🇺🇸</div>
+                    <div class="currency-name">100 دۆلار</div>
+                </div>
+                <div class="rate-value">
+                    <input type="number" class="rate-number" id="rate-usd" value="143.550" step="0.001" oninput="saveRate('usd'); calculateConverter()">
+                    <div class="rate-unit">دینار</div>
+                </div>
+            </div>
+
+            <div class="rate-item">
+                <div class="currency-info">
+                    <div class="flag">🇬🇧</div>
+                    <div class="currency-name">100 پاوەن</div>
+                </div>
+                <div class="rate-value">
+                    <input type="number" class="rate-number" id="rate-gbp" value="133.60" step="0.01" oninput="saveRate('gbp'); calculateConverter()">
+                    <div class="rate-unit">دۆلار</div>
+                </div>
+            </div>
+
+            <div class="rate-item">
+                <div class="currency-info">
+                    <div class="flag">🇪🇺</div>
+                    <div class="currency-name">100 یۆرۆ</div>
+                </div>
+                <div class="rate-value">
+                    <input type="number" class="rate-number" id="rate-eur" value="116.20" step="0.01" oninput="saveRate('eur'); calculateConverter()">
+                    <div class="rate-unit">دۆلار</div>
+                </div>
+            </div>
+
+            <div class="rate-item">
+                <div class="currency-info">
+                    <div class="flag">🇹🇷</div>
+                    <div class="currency-name">100 دۆلار</div>
+                </div>
+                <div class="rate-value">
+                    <input type="number" class="rate-number" id="rate-try" value="4.263" step="0.001" oninput="saveRate('try'); calculateConverter()">
+                    <div class="rate-unit">لیرە</div>
+                </div>
+            </div>
+
+            <div class="rate-item">
+                <div class="currency-info">
+                    <div class="flag">🇮🇷</div>
+                    <div class="currency-name">100 دۆلار</div>
+                </div>
+                <div class="rate-value">
+                    <input type="number" class="rate-number" id="rate-irr" value="13100000" step="1000" oninput="saveRate('irr'); calculateConverter()">
+                    <div class="rate-unit">تۆمەن</div>
+                </div>
+            </div>
+
+            <div class="rate-item">
+                <div class="currency-info">
+                    <div class="flag">🇨🇳</div>
+                    <div class="currency-name">100 یوان</div>
+                </div>
+                <div class="rate-value">
+                    <input type="number" class="rate-number" id="rate-cny" value="13.80" step="0.01" oninput="saveRate('cny'); calculateConverter()">
+                    <div class="rate-unit">دۆلار</div>
+                </div>
+            </div>
+        </div>
+
+    <script>
+        // Default rates
+        const defaultRates = {
+            usd: 143.550,
+            gbp: 133.60,
+            eur: 116.20,
+            try: 4.263,
+            irr: 13100000,
+            cny: 700.00
+        };
+
+        // Load saved rates from memory or use defaults
+        let savedRates = {...defaultRates};
+
+        // Load rates on page load
+        function loadRates() {
+            Object.keys(savedRates).forEach(currency => {
+                const element = document.getElementById(`rate-${currency}`);
+                if (element && savedRates[currency]) {
+                    element.value = savedRates[currency];
+                }
+            });
+        }
+
+        // Save rate to memory
+        function saveRate(currency) {
+            const element = document.getElementById(`rate-${currency}`);
+            if (element) {
+                savedRates[currency] = parseFloat(element.value);
+            }
+        }
+
+        function getRates() {
+            return {
+                USD: 1,
+                IQD: parseFloat(document.getElementById('rate-usd').value) / 100,
+                GBP: 100 / parseFloat(document.getElementById('rate-gbp').value),
+                EUR: 100 / parseFloat(document.getElementById('rate-eur').value),
+                TRY: parseFloat(document.getElementById('rate-try').value) / 100,
+                IRR: parseFloat(document.getElementById('rate-irr').value) / 100,
+                CNY: parseFloat(document.getElementById('rate-cny').value)/100
+            };
+        }
+
+        function calculateConverter() {
+            const rates = getRates();
+            const currency1 = document.getElementById('currency1').value;
+            const currency2 = document.getElementById('currency2').value;
+            const amount1 = parseFloat(document.getElementById('amount1').value) || 0;
+
+            // Convert to USD first, then to target currency
+            const amountInUSD = amount1 / rates[currency1];
+            const result = amountInUSD * rates[currency2];
+
+            document.getElementById('amount2').value = result.toFixed(2);
+            document.getElementById('result').textContent = result.toFixed(2);
+        }
+
+        // Initialize on page load
+        window.onload = function() {
+            loadRates();
+            calculateConverter();
+        };
+    </script>
+    <script src="qalyx-bridge.js"></script>
+</body>
+</html>

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ckb" dir="rtl">
+<head>
+   <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<title>لیستی بازار</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --card: #21253a;
+    --accent: #f5a623;
+    --accent2: #e8855a;
+    --text: #eef0f8;
+    --muted: #7a7f9a;
+    --bought: #3a4a3a;
+    --bought-text: #5a8a5a;
+    --danger: #c0392b;
+    --success: #27ae60;
+    --border: #2e3250;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Naskh Arabic', serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0 0 80px 0;
+    direction: rtl;
+  }
+  .header {
+    background: linear-gradient(135deg, #1a1d27 0%, #21253a 100%);
+    border-bottom: 2px solid var(--accent);
+    padding: 18px 20px 14px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.5);
+  }
+  .header h1 { font-size: 1.6rem; font-weight: 700; color: var(--accent); letter-spacing: 0.5px; }
+  .header .subtitle { font-size: 0.85rem; color: var(--muted); margin-top: 3px; }
+  .stats {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    padding: 10px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85rem;
+  }
+  .stat { color: var(--muted); }
+  .stat span { color: var(--accent); font-weight: 700; }
+  .stat.done span { color: var(--success); }
+  .add-section {
+    padding: 14px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    position: sticky;
+    top: 70px;
+    z-index: 90;
+  }
+  .add-section input {
+    flex: 1;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    font-size: 1rem;
+    font-family: 'Noto Naskh Arabic', serif;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+    direction: rtl;
+  }
+  .add-section input:focus { border-color: var(--accent); }
+  .add-section input::placeholder { color: var(--muted); }
+  .qty-input { width: 64px !important; flex: none !important; text-align: center; }
+  .btn-add {
+    background: var(--accent);
+    color: #111;
+    border: none;
+    border-radius: var(--radius);
+    padding: 12px 18px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .btn-add:active { transform: scale(0.94); background: var(--accent2); }
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    padding: 10px 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    color: var(--muted);
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-family: 'Noto Naskh Arabic', serif;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .filter-chip.active { background: var(--accent); border-color: var(--accent); color: #111; font-weight: 700; }
+  .list-container { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 1rem; }
+  .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+  .item-card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    animation: slideIn 0.2s ease;
+  }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+  .item-card:active { transform: scale(0.98); }
+  .item-card.bought { background: var(--bought); border-color: #3a5a3a; opacity: 0.75; }
+  .item-card.bought .item-name { text-decoration: line-through; color: var(--bought-text); }
+  .item-card.bought .item-qty { color: var(--bought-text); }
+  .check-circle {
+    width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--muted);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; flex-shrink: 0; transition: all 0.2s; background: transparent;
+  }
+  .bought .check-circle { background: var(--success); border-color: var(--success); color: #fff; }
+  .item-info { flex: 1; min-width: 0; }
+  .item-name { font-size: 1rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item-meta { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+  .item-qty { font-size: 0.82rem; font-weight: 700; color: var(--accent); background: rgba(245,166,35,0.12); border-radius: 8px; padding: 3px 10px; flex-shrink: 0; }
+  .btn-del { background: none; border: none; color: var(--muted); font-size: 1.1rem; cursor: pointer; padding: 4px 6px; border-radius: 8px; transition: color 0.15s, background 0.15s; flex-shrink: 0; line-height: 1; }
+  .btn-del:hover { color: var(--danger); background: rgba(192,57,43,0.12); }
+  .section-title { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; padding: 10px 4px 4px; border-bottom: 1px solid var(--border); margin-bottom: 2px; }
+  .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 10px 14px; display: flex; gap: 8px; z-index: 200; }
+  .btn-action { flex: 1; padding: 12px 8px; border: none; border-radius: var(--radius); font-family: 'Noto Naskh Arabic', serif; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .btn-action:active { transform: scale(0.96); }
+  .btn-reset { background: rgba(192,57,43,0.15); color: #e74c3c; border: 1.5px solid rgba(192,57,43,0.3); }
+  .btn-reset:hover { background: rgba(192,57,43,0.25); }
+  .btn-export { background: rgba(39,174,96,0.15); color: #2ecc71; border: 1.5px solid rgba(39,174,96,0.3); }
+  .btn-export:hover { background: rgba(39,174,96,0.25); }
+  .btn-clear-bought { background: rgba(245,166,35,0.1); color: var(--accent); border: 1.5px solid rgba(245,166,35,0.25); }
+  .btn-clear-bought:hover { background: rgba(245,166,35,0.2); }
+  .toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-20px); background: var(--success); color: #fff; padding: 10px 22px; border-radius: 30px; font-size: 0.9rem; font-weight: 600; z-index: 999; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 500; align-items: flex-end; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--surface); border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 20px 18px 30px; width: 100%; max-width: 480px; animation: slideUp 0.25s ease; border-top: 2px solid var(--border); }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal h3 { font-size: 1.1rem; margin-bottom: 14px; color: var(--accent); text-align: center; }
+  .modal p { font-size: 0.9rem; color: var(--muted); text-align: center; margin-bottom: 18px; }
+  .modal-btns { display: flex; gap: 10px; }
+  .modal-btns button { flex: 1; padding: 13px; border: none; border-radius: var(--radius); font-family: 'Noto Naskh Arabic', serif; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+  .modal-btns .btn-confirm { background: var(--danger); color: #fff; }
+  .modal-btns .btn-cancel { background: var(--card); color: var(--text); border: 1.5px solid var(--border); }
+  .progress-wrap { height: 3px; background: var(--border); margin: 0; }
+  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--success), #7dda8a); transition: width 0.4s ease; border-radius: 0 2px 2px 0; }
+
+  /* PNG Export Canvas */
+  #exportCanvas {
+    position: fixed;
+    top: -9999px;
+    left: -9999px;
+    width: 480px;
+    background: #0f1117;
+    font-family: 'Noto Naskh Arabic', serif;
+    direction: rtl;
+    padding: 24px;
+    pointer-events: none;
+    z-index: -1;
+  }
+  #exportCanvas .ex-header { text-align: center; margin-bottom: 18px; border-bottom: 2px solid #f5a623; padding-bottom: 14px; }
+  #exportCanvas .ex-title { font-size: 1.4rem; font-weight: 700; color: #f5a623; }
+  #exportCanvas .ex-date { font-size: 0.8rem; color: #7a7f9a; margin-top: 4px; }
+  #exportCanvas .ex-section { font-size: 0.75rem; color: #7a7f9a; letter-spacing: 1px; padding: 8px 0 4px; border-bottom: 1px solid #2e3250; margin-bottom: 6px; }
+  #exportCanvas .ex-item { display: flex; align-items: center; gap: 10px; background: #21253a; border: 1px solid #2e3250; border-radius: 10px; padding: 10px 12px; margin-bottom: 6px; }
+  #exportCanvas .ex-check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #7a7f9a; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0; }
+  #exportCanvas .ex-item.bought-ex .ex-check { background: #27ae60; border-color: #27ae60; color: #fff; }
+  #exportCanvas .ex-item.bought-ex { background: #3a4a3a; border-color: #3a5a3a; opacity: 0.8; }
+  #exportCanvas .ex-name { flex: 1; font-size: 0.95rem; font-weight: 600; color: #eef0f8; }
+  #exportCanvas .ex-item.bought-ex .ex-name { text-decoration: line-through; color: #5a8a5a; }
+  #exportCanvas .ex-qty { font-size: 0.78rem; font-weight: 700; color: #f5a623; background: rgba(245,166,35,0.12); border-radius: 6px; padding: 2px 8px; flex-shrink: 0; }
+  #exportCanvas .ex-item.bought-ex .ex-qty { color: #5a8a5a; }
+  #exportCanvas .ex-stats { display: flex; justify-content: center; gap: 20px; font-size: 0.8rem; color: #7a7f9a; margin-bottom: 16px; }
+  #exportCanvas .ex-stats span { color: #f5a623; font-weight: 700; }
+  #exportCanvas .ex-stats .done-s span { color: #27ae60; }
+  #exportCanvas .ex-watermark { text-align: center; margin-top: 20px; padding-top: 14px; border-top: 1px solid #2e3250; font-size: 0.75rem; color: #7a7f9a; }
+  #exportCanvas .ex-watermark strong { color: #f5a623; }
+
+  @media (max-width: 400px) { .btn-action { font-size: 0.78rem; padding: 11px 4px; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🛒 لیستی بازار</h1>
+  <div class="subtitle">کاڵاکانت لێرە دابنێ، پێش چوونە بازار</div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-bar" id="progressBar" style="width:0%"></div>
+</div>
+
+<div class="stats">
+  <div class="stat">کۆی گشتی: <span id="totalCount">0</span></div>
+  <div class="stat done">کڕاو: <span id="boughtCount">0</span></div>
+  <div class="stat">ماوە: <span id="remainCount">0</span></div>
+</div>
+
+<div class="add-section">
+  <input type="text" id="itemInput" placeholder="ناوی کاڵا بنووسە..." maxlength="60" autocomplete="off"/>
+  <input type="text" id="qtyInput" class="qty-input" placeholder="١" maxlength="10" autocomplete="off"/>
+  <button class="btn-add" id="addBtn" title="زیادکردن">+</button>
+</div>
+
+<div class="filter-bar" id="filterBar">
+  <button class="filter-chip active" data-filter="all">هەمووی</button>
+  <button class="filter-chip" data-filter="remaining">ماوەکان</button>
+  <button class="filter-chip" data-filter="bought">کڕاوەکان</button>
+</div>
+
+<div class="list-container" id="listContainer">
+  <div class="empty-state">
+    <div class="icon">🧺</div>
+    <div>هێشتا کاڵایەک نەزیادکراوە</div>
+    <div style="margin-top:6px;font-size:0.82rem;color:#555">ناوی کاڵا بنووسە و دەستپێبکە</div>
+  </div>
+</div>
+
+<!-- Hidden export canvas -->
+<div id="exportCanvas"></div>
+
+<div class="bottom-bar">
+  <button class="btn-action btn-clear-bought" id="clearBoughtBtn">✅ سڕینەوەی کڕاوەکان</button>
+  <button class="btn-action btn-export" id="exportBtn">📸 هەناردەکردن PNG</button>
+  <button class="btn-action btn-reset" id="resetBtn">🗑 سڕینەوەی هەمووی</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3 id="modalTitle">دڵنیایت؟</h3>
+    <p id="modalMsg"></p>
+    <div class="modal-btns">
+      <button class="btn-cancel" id="modalCancel">نەخێر</button>
+      <button class="btn-confirm" id="modalConfirm">بەڵێ، بسڕەوە</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'bazar_items_v1';
+let items = [];
+let currentFilter = 'all';
+let pendingAction = null;
+
+function load() {
+  try { const raw = localStorage.getItem(STORAGE_KEY); items = raw ? JSON.parse(raw) : []; }
+  catch(e) { items = []; }
+}
+
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
+
+function render() {
+  const container = document.getElementById('listContainer');
+  const total = items.length;
+  const bought = items.filter(i => i.bought).length;
+  const remain = total - bought;
+
+  document.getElementById('totalCount').textContent = total;
+  document.getElementById('boughtCount').textContent = bought;
+  document.getElementById('remainCount').textContent = remain;
+  document.getElementById('progressBar').style.width = total ? (bought / total * 100) + '%' : '0%';
+
+  let filtered = items;
+  if (currentFilter === 'remaining') filtered = items.filter(i => !i.bought);
+  else if (currentFilter === 'bought') filtered = items.filter(i => i.bought);
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="icon">${currentFilter === 'bought' ? '✅' : '🧺'}</div>
+      <div>${currentFilter === 'all' ? 'هێشتا کاڵایەک نەزیادکراوە' : currentFilter === 'remaining' ? 'هیچ کاڵایەکی ماوە نەماوە' : 'هیچ کاڵایەکی کڕاو نییە'}</div>
+    </div>`;
+    return;
+  }
+
+  const notBought = filtered.filter(i => !i.bought);
+  const boughtItems = filtered.filter(i => i.bought);
+  let html = '';
+
+  if (notBought.length && currentFilter !== 'bought') {
+    if (currentFilter === 'all' && boughtItems.length)
+      html += `<div class="section-title">📋 ماوەکان (${notBought.length})</div>`;
+    notBought.forEach(item => { html += itemHTML(item); });
+  }
+  if (boughtItems.length && currentFilter !== 'remaining') {
+    if (currentFilter === 'all' && notBought.length)
+      html += `<div class="section-title">✅ کڕاوەکان (${boughtItems.length})</div>`;
+    boughtItems.forEach(item => { html += itemHTML(item); });
+  }
+
+  container.innerHTML = html;
+
+  container.querySelectorAll('.item-card').forEach(card => {
+    card.addEventListener('click', (e) => { if (e.target.closest('.btn-del')) return; toggleBought(card.dataset.id); });
+  });
+  container.querySelectorAll('.btn-del').forEach(btn => {
+    btn.addEventListener('click', (e) => { e.stopPropagation(); deleteItem(btn.dataset.id); });
+  });
+}
+
+function itemHTML(item) {
+  const check = item.bought ? '✓' : '';
+  const cls = item.bought ? 'bought' : '';
+  const time = item.addedAt ? new Date(item.addedAt).toLocaleDateString('ckb-IQ', { month:'short', day:'numeric' }) : '';
+  return `<div class="item-card ${cls}" data-id="${item.id}">
+    <div class="check-circle">${check}</div>
+    <div class="item-info">
+      <div class="item-name">${escHtml(item.name)}</div>
+      ${time ? `<div class="item-meta">زیادکرا: ${time}</div>` : ''}
+    </div>
+    ${item.qty ? `<div class="item-qty">${escHtml(item.qty)}</div>` : ''}
+    <button class="btn-del" data-id="${item.id}" title="سڕینەوە">✕</button>
+  </div>`;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function addItem() {
+  const nameEl = document.getElementById('itemInput');
+  const qtyEl  = document.getElementById('qtyInput');
+  const name = nameEl.value.trim();
+  const qty  = qtyEl.value.trim();
+  if (!name) { nameEl.focus(); shake(nameEl); return; }
+  items.unshift({ id: Date.now().toString(36) + Math.random().toString(36).slice(2,5), name, qty, bought: false, addedAt: Date.now() });
+  save(); render();
+  nameEl.value = ''; qtyEl.value = ''; nameEl.focus();
+  toast('زیادکرا ✓');
+}
+
+function toggleBought(id) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  item.bought = !item.bought;
+  save(); render();
+}
+
+function deleteItem(id) { items = items.filter(i => i.id !== id); save(); render(); }
+
+function shake(el) {
+  el.style.animation = 'none'; el.style.borderColor = '#e74c3c';
+  setTimeout(() => { el.style.borderColor = ''; }, 700);
+}
+
+function toast(msg, color) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.background = color || 'var(--success)';
+  t.classList.add('show'); clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function confirmModal(title, msg, onConfirm) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalMsg').textContent = msg;
+  document.getElementById('modalOverlay').classList.add('show');
+  pendingAction = onConfirm;
+}
+
+document.getElementById('modalConfirm').addEventListener('click', () => {
+  document.getElementById('modalOverlay').classList.remove('show');
+  if (pendingAction) { pendingAction(); pendingAction = null; }
+});
+document.getElementById('modalCancel').addEventListener('click', () => {
+  document.getElementById('modalOverlay').classList.remove('show'); pendingAction = null;
+});
+document.getElementById('modalOverlay').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('modalOverlay')) {
+    document.getElementById('modalOverlay').classList.remove('show'); pendingAction = null;
+  }
+});
+
+// ── PNG Export ────────────────────────────────────────
+document.getElementById('exportBtn').addEventListener('click', async () => {
+  if (!items.length) { toast('لیست خاوەنە!', '#888'); return; }
+  toast('دروستکردنی وێنە...', '#7a7f9a');
+
+  const dateStr = new Date().toLocaleDateString('ckb-IQ', { year:'numeric', month:'long', day:'numeric' });
+  const total = items.length;
+  const bought = items.filter(i => i.bought).length;
+  const remain = total - bought;
+  const notBought = items.filter(i => !i.bought);
+  const boughtItems = items.filter(i => i.bought);
+
+  function exItem(item) {
+    const cls = item.bought ? 'bought-ex' : '';
+    const check = item.bought ? '✓' : '';
+    return `<div class="ex-item ${cls}">
+      <div class="ex-check">${check}</div>
+      <div class="ex-name">${escHtml(item.name)}</div>
+      ${item.qty ? `<div class="ex-qty">${escHtml(item.qty)}</div>` : ''}
+    </div>`;
+  }
+
+  let html = `
+    <div class="ex-header">
+      <div class="ex-title">🛒 لیستی بازار</div>
+      <div class="ex-date">${dateStr}</div>
+    </div>
+    <div class="ex-stats">
+      <div class="stat">کۆی گشتی: <span>${total}</span></div>
+      <div class="stat done-s">کڕاو: <span>${bought}</span></div>
+      <div class="stat">ماوە: <span>${remain}</span></div>
+    </div>
+  `;
+
+  if (notBought.length) {
+    html += `<div class="ex-section">📋 ماوەکان (${notBought.length})</div>`;
+    notBought.forEach(i => { html += exItem(i); });
+  }
+  if (boughtItems.length) {
+    html += `<div class="ex-section" style="margin-top:10px">✅ کڕاوەکان (${boughtItems.length})</div>`;
+    boughtItems.forEach(i => { html += exItem(i); });
+  }
+
+  html += `<div class="ex-watermark">دروست کراوە لە لایەن <strong>ئاراس لطيف</strong></div>`;
+
+  const canvas = document.getElementById('exportCanvas');
+  canvas.innerHTML = html;
+
+  // Wait for font rendering
+  await document.fonts.ready;
+  await new Promise(r => setTimeout(r, 400));
+
+  // Temporarily make visible for capture
+  canvas.style.position = 'fixed';
+  canvas.style.top = '0';
+  canvas.style.left = '0';
+  canvas.style.zIndex = '9999';
+  canvas.style.width = '480px';
+
+  try {
+    const result = await html2canvas(canvas, {
+      backgroundColor: '#0f1117',
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      allowTaint: true,
+    });
+
+    const link = document.createElement('a');
+    link.download = `لیستی-بازار-${Date.now()}.png`;
+    link.href = result.toDataURL('image/png');
+    link.click();
+    toast('وێنەکە هەناردەکرا ✓');
+  } catch(err) {
+    toast('هەڵەیەک ڕووی دا', '#e74c3c');
+    console.error(err);
+  } finally {
+    canvas.style.position = 'fixed';
+    canvas.style.top = '-9999px';
+    canvas.style.left = '-9999px';
+    canvas.style.zIndex = '-1';
+  }
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (!items.length) { toast('لیست خاوەنە!', '#888'); return; }
+  confirmModal('سڕینەوەی هەمووی', `دڵنیایت دەتەوێت هەموو ${items.length} کاڵاکە بسڕیتەوە؟`, () => {
+    items = []; save(); render(); toast('لیستەکە سڕایەوە', '#e74c3c');
+  });
+});
+
+document.getElementById('clearBoughtBtn').addEventListener('click', () => {
+  const bought = items.filter(i => i.bought);
+  if (!bought.length) { toast('هیچ کاڵایەکی کڕاو نییە', '#888'); return; }
+  confirmModal('سڕینەوەی کڕاوەکان', `${bought.length} کاڵای کڕاو دەسڕیتەوە؟`, () => {
+    items = items.filter(i => !i.bought); save(); render(); toast('کڕاوەکان سڕانەوە ✓');
+  });
+});
+
+document.getElementById('filterBar').addEventListener('click', (e) => {
+  const chip = e.target.closest('.filter-chip');
+  if (!chip) return;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  currentFilter = chip.dataset.filter;
+  render();
+});
+
+document.getElementById('addBtn').addEventListener('click', addItem);
+document.getElementById('itemInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { const qty = document.getElementById('qtyInput'); if (!qty.value.trim()) addItem(); else qty.focus(); }
+});
+document.getElementById('qtyInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') addItem(); });
+
+load();
+render();
+document.getElementById('itemInput').focus();
+</script>
+    <script src="qalyx-bridge.js"></script>
+</body>
+</html>

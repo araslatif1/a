@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+   <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<title>🌿 لیستی پیکنیک</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;600;700&display=swap');
+
+  :root {
+    --bg: #f5f0e8;
+    --surface: #fffdf7;
+    --green: #3d7a4a;
+    --green-light: #5a9e6a;
+    --green-pale: #e8f4eb;
+    --amber: #c17d2a;
+    --amber-light: #f0c060;
+    --red: #c0392b;
+    --text: #2c2416;
+    --text-muted: #7a6a50;
+    --border: #d4c9a8;
+    --shadow: rgba(60,40,10,0.12);
+    --checked-bg: #dff0e4;
+    --checked-text: #3d7a4a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans Arabic', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  /* Texture overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23a09070' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app { position: relative; z-index: 1; max-width: 520px; margin: 0 auto; padding: 0 12px; }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, var(--green) 0%, #2d5c38 100%);
+    margin: 0 -12px;
+    padding: 24px 20px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '🌿🌳🌻🏕️🌿';
+    position: absolute; top: -8px; left: 0; right: 0;
+    font-size: 40px; opacity: 0.15; letter-spacing: 8px;
+  }
+  header h1 {
+    color: #fff;
+    font-size: 1.8rem;
+    font-weight: 700;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    position: relative;
+  }
+  header p {
+    color: rgba(255,255,255,0.75);
+    font-size: 0.85rem;
+    margin-top: 4px;
+    position: relative;
+  }
+
+  /* Stats bar */
+  .stats {
+    background: var(--green);
+    margin: 0 -12px;
+    padding: 8px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: #fff;
+    border-bottom: 3px solid var(--amber-light);
+  }
+  .stats-count { font-weight: 700; font-size: 1rem; }
+  .progress-bar {
+    flex: 1; height: 6px; background: rgba(255,255,255,0.25);
+    border-radius: 3px; margin: 0 12px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: var(--amber-light);
+    border-radius: 3px; transition: width 0.4s ease;
+  }
+
+  /* Toolbar */
+  .toolbar {
+    padding: 12px 0 8px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    border: none; cursor: pointer;
+    border-radius: 20px;
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 7px 14px;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .btn:active { transform: scale(0.95); }
+  .btn-green { background: var(--green); color: #fff; }
+  .btn-green:hover { background: var(--green-light); }
+  .btn-amber { background: var(--amber); color: #fff; }
+  .btn-amber:hover { background: #d4892e; }
+  .btn-red { background: var(--red); color: #fff; }
+  .btn-red:hover { background: #e04030; }
+  .btn-outline {
+    background: transparent; color: var(--green);
+    border: 2px solid var(--green);
+  }
+  .btn-outline:hover { background: var(--green-pale); }
+
+  /* Cost toggle */
+  #costToggle {
+    background: linear-gradient(135deg, #8B5E3C, #a06830);
+    color: #fff;
+  }
+  #costToggle:hover { background: linear-gradient(135deg, #a06830, #b87840); }
+  #costToggle.active { background: linear-gradient(135deg, #3d7a4a, #2d5c38); }
+
+  /* Total cost */
+  #totalBox {
+    display: none;
+    background: linear-gradient(135deg, #fff8e8, #fef0cc);
+    border: 2px solid var(--amber-light);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--amber);
+    box-shadow: 0 2px 8px rgba(193,125,42,0.15);
+  }
+
+  /* Add item form */
+  .add-form {
+    display: flex; gap: 8px;
+    margin-bottom: 12px;
+  }
+  .add-form input {
+    flex: 1;
+    border: 2px solid var(--border);
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+    text-align: right;
+  }
+  .add-form input:focus { border-color: var(--green); }
+  .add-form button {
+    border-radius: 20px;
+    padding: 8px 18px;
+  }
+
+  /* Category sections */
+  .category {
+    margin-bottom: 10px;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px var(--shadow);
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+  }
+  .cat-header {
+    background: linear-gradient(90deg, var(--green-pale), #f0ede0);
+    padding: 8px 14px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--green);
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Item row */
+  .item {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    gap: 8px;
+    border-bottom: 1px solid #f0ead8;
+    transition: background 0.2s;
+    position: relative;
+  }
+  .item:last-child { border-bottom: none; }
+  .item:hover { background: #faf7f0; }
+  .item.checked { background: var(--checked-bg); }
+  .item.checked .item-name { text-decoration: line-through; color: var(--checked-text); opacity: 0.7; }
+
+  .item-emoji {
+    font-size: 1.5rem;
+    width: 36px; text-align: center;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .item { cursor: pointer; }
+  .item-actions button, .item-cost-box, .item-emoji { cursor: pointer; }
+
+  .item-name {
+    flex: 1;
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+  .item-name-edit {
+    flex: 1;
+    border: 2px solid var(--green);
+    border-radius: 8px;
+    padding: 3px 10px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    background: #fff;
+    color: var(--text);
+    outline: none;
+    text-align: right;
+  }
+
+  .item-cost-box {
+    display: none;
+    align-items: center;
+    gap: 4px;
+  }
+  .item-cost-box.visible { display: flex; }
+  .cost-input {
+    width: 80px;
+    border: 2px solid var(--amber-light);
+    border-radius: 8px;
+    padding: 3px 8px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    text-align: center;
+    background: #fff9ee;
+    color: var(--amber);
+    font-weight: 600;
+    outline: none;
+  }
+  .cost-input:focus { border-color: var(--amber); }
+  .cost-currency { font-size: 0.75rem; color: var(--text-muted); }
+
+  .item-actions {
+    display: flex; gap: 4px;
+  }
+  .icon-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 1rem; padding: 3px 4px;
+    border-radius: 6px;
+    transition: background 0.15s;
+    opacity: 0.55;
+  }
+  .icon-btn:hover { opacity: 1; background: rgba(0,0,0,0.06); }
+
+  /* Emoji picker - fixed overlay so it always appears on top */
+  #emojiOverlay {
+    display: none;
+    position: fixed;
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 8px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+    z-index: 9999;
+    flex-wrap: wrap;
+    gap: 4px;
+    width: 260px;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+  #emojiOverlay.open { display: flex; }
+  .emoji-opt {
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 3px;
+    border-radius: 6px;
+    transition: background 0.1s;
+  }
+  .emoji-opt:hover { background: var(--green-pale); }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: 18px;
+    padding: 24px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+    direction: rtl;
+  }
+  .modal h3 { margin-bottom: 12px; color: var(--green); font-size: 1.1rem; }
+  .modal textarea {
+    width: 100%; height: 200px;
+    border: 2px solid var(--border); border-radius: 10px;
+    padding: 10px; font-family: monospace; font-size: 0.72rem;
+    resize: none; background: #f5f5f0; direction: ltr;
+  }
+  .modal-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--green); color: #fff;
+    padding: 10px 22px; border-radius: 24px;
+    font-size: 0.85rem; font-weight: 600;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease;
+    z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .section-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    padding: 6px 12px 2px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* Buy button */
+  .btn-buy {
+    background: linear-gradient(135deg, #e67e22, #d35400);
+    color: #fff;
+    border: none; cursor: pointer;
+    border-radius: 14px;
+    font-family: inherit;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 9px;
+    transition: all 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .btn-buy:hover { background: linear-gradient(135deg, #d35400, #b94600); transform: scale(1.05); }
+  .btn-buy.in-list { background: linear-gradient(135deg, #7f8c8d, #6c7a7d); }
+  .btn-buy.in-list:hover { background: linear-gradient(135deg, #6c7a7d, #5a6a6d); }
+
+  /* Shopping list section */
+  #shopSection {
+    margin-top: 14px;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 14px rgba(211,84,0,0.18);
+    border: 2px solid #e67e22;
+    background: var(--surface);
+    display: none;
+  }
+  #shopSection.has-items { display: block; }
+  .shop-header {
+    background: linear-gradient(90deg, #fdebd0, #fef9f5);
+    padding: 9px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid #f0c080;
+  }
+  .shop-header-title {
+    font-size: 0.82rem; font-weight: 700; color: #d35400;
+  }
+  .shop-header-actions { display: flex; gap: 5px; }
+  .shop-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 12px;
+    border-bottom: 1px solid #fdebd0;
+    transition: background 0.2s;
+  }
+  .shop-item:last-child { border-bottom: none; }
+  .shop-item:hover { background: #fef6ee; }
+  .shop-item.bought {
+    background: #eafaf1;
+  }
+  .shop-item.bought .shop-item-name {
+    text-decoration: line-through;
+    color: #27ae60;
+    opacity: 0.7;
+  }
+  .shop-item-emoji { font-size: 1.3rem; flex-shrink: 0; }
+  .shop-item-name { flex: 1; font-size: 0.9rem; font-weight: 500; }
+  .shop-item-name-edit {
+    flex: 1; border: 2px solid #e67e22;
+    border-radius: 8px; padding: 3px 10px;
+    font-family: inherit; font-size: 0.9rem;
+    background: #fff; color: var(--text); outline: none; text-align: right;
+  }
+  .shop-check {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 2px solid #e67e22;
+    background: #fff;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .shop-check.done { background: #27ae60; border-color: #27ae60; color: #fff; }
+  .shop-add-row {
+    display: flex; gap: 6px; padding: 8px 10px;
+    background: #fef6ee;
+    border-top: 1px solid #f0c080;
+  }
+  .shop-add-row input {
+    flex: 1; border: 2px solid #f0c080;
+    border-radius: 16px; padding: 6px 12px;
+    font-family: inherit; font-size: 0.85rem;
+    background: #fff; color: var(--text); outline: none; text-align: right;
+  }
+  .shop-add-row input:focus { border-color: #e67e22; }
+  .btn-shop-add {
+    background: #e67e22; color: #fff;
+    border: none; border-radius: 16px;
+    padding: 6px 14px; font-family: inherit;
+    font-size: 0.8rem; font-weight: 700; cursor: pointer;
+  }
+  .btn-shop-add:hover { background: #d35400; }
+
+  @media (max-width: 400px) {
+    header h1 { font-size: 1.4rem; }
+    .btn { font-size: 0.72rem; padding: 6px 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <!-- ستامپی دروستکەر -->
+<div style="
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px 30px;
+">
+  <div style="
+    position: relative;
+    display: inline-block;
+    padding: 18px 40px;
+    border: 4px solid #4f8ef7;
+    border-radius: 12px;
+    font-family: 'Cairo', sans-serif;
+    text-align: center;
+    color: #4f8ef7;
+    opacity: 0.75;
+    transform: rotate(-4deg);
+    box-shadow:
+      0 0 0 2px #4f8ef7,
+      0 0 18px rgba(79,142,247,0.3),
+      inset 0 0 18px rgba(79,142,247,0.07);
+    background: transparent;
+    letter-spacing: 1px;
+    pointer-events: none;
+    user-select: none;
+  ">
+    <!-- ستێری سەرەوە -->
+    <div style="
+      position: absolute;
+      top: -1px; left: 50%;
+      transform: translateX(-50%) translateY(-50%);
+      background: inherit;
+      padding: 0 10px;
+      font-size: 13px;
+      color: #4f8ef7;
+      letter-spacing: 3px;
+      font-weight: 700;
+    ">✦ ✦ ✦</div>
+
+    <div style="font-size: 15px; font-weight: 700; margin-bottom: 4px; letter-spacing: 2px;">
+      دروست کراوە لە لایەن
+    </div>
+    <div style="font-size: 22px; font-weight: 900; letter-spacing: 1px;">
+      ئاراس لطیف
+    </div>
+
+    <!-- ستێری خوارەوە -->
+    <div style="
+      position: absolute;
+      bottom: -1px; left: 50%;
+      transform: translateX(-50%) translateY(50%);
+      background: inherit;
+      padding: 0 10px;
+      font-size: 13px;
+      color: #4f8ef7;
+      letter-spacing: 3px;
+      font-weight: 700;
+    ">✦ ✦ ✦</div>
+  </div>
+</div>
+<!-- کۆتایی ستامپ -->
+    <h1>🌿 لیستی سەفرە</h1>
+    <p>هیچ شتێک لەبیر مەکە!</p>
+    
+  </header>
+
+  <div class="stats">
+    <span>✅ <span id="checkedCount">0</span> / <span id="totalCount">0</span></span>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <span id="pctLabel">0%</span>
+  </div>
+
+  <div class="app" style="padding-top:10px">
+
+    <div id="totalBox">💰 کۆی نرخ: <span id="totalCost">0</span> IQD</div>
+
+    <div class="toolbar">
+      <button class="btn btn-green" onclick="showAddForm()">➕ زیادکردن</button>
+      <button class="btn btn-outline" onclick="resetChecked()">🔄 ڕێستکردنەوە</button>
+      <button class="btn btn-red" onclick="clearStorage()">🗑️ سڕینەوەی حەزنە</button>
+      <button class="btn" id="costToggle" onclick="toggleCost()">💰 نرخ</button>
+      <button class="btn btn-amber" onclick="showExport()">📤 ئەکسپۆرت</button>
+    </div>
+
+    <div class="add-form" id="addForm" style="display:none">
+      <button class="btn btn-green" onclick="addItem()">✓</button>
+      <input type="text" id="newItemName" placeholder="ناوی شتەکە بنووسە..." onkeydown="if(event.key==='Enter')addItem()">
+    </div>
+
+    <div id="itemsContainer"></div>
+
+    <!-- Shopping / Buy List -->
+    <div id="shopSection">
+      <div class="shop-header">
+        <span class="shop-header-title">🛒 لیستی کڕین (<span id="shopCount">0</span>)</span>
+        <div class="shop-header-actions">
+          <button class="btn btn-outline" style="font-size:0.72rem;padding:4px 10px;" onclick="clearBoughtShop()">🧹 سڕینەوەی کڕاوەکان</button>
+          <button class="btn btn-red" style="font-size:0.72rem;padding:4px 10px;" onclick="clearAllShop()">🗑️ هەموو</button>
+        </div>
+      </div>
+      <div id="shopList"></div>
+      <div class="shop-add-row">
+        <button class="btn-shop-add" onclick="addShopItem()">✓ زیادکردن</button>
+        <input type="text" id="shopNewName" placeholder="شتی تر زیاد بکە..." onkeydown="if(event.key==='Enter')addShopItem()">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Emoji overlay (fixed, always on top) -->
+<div id="emojiOverlay"></div>
+
+<!-- Export Modal -->
+<div class="modal-overlay" id="exportModal">
+  <div class="modal">
+    <h3>📤 ئەکسپۆرتی سۆرس کۆد</h3>
+    <textarea id="exportCode" readonly></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-green" onclick="copyExport()">📋 کۆپیکردن</button>
+      <button class="btn btn-amber" onclick="downloadExport()">⬇️ داونلۆد</button>
+      <button class="btn btn-outline" onclick="closeModal()">❌ داخستن</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Default items ──────────────────────────────────────────────
+const DEFAULT_ITEMS = [
+  { id: 1,  name: 'دەستەوانە',      emoji: '🧤', cat: 'کەرەستە',   checked: false, cost: '' },
+  { id: 2,  name: 'کتری',           emoji: '🫖', cat: 'وەرزش',      checked: false, cost: '' },
+  { id: 3,  name: 'قۆری',           emoji: '🫗', cat: 'وەرزش',      checked: false, cost: '' },
+  { id: 4,  name: 'نان',            emoji: '🍞', cat: 'خواردن',     checked: false, cost: '' },
+  { id: 5,  name: 'چا',             emoji: '🍵', cat: 'خواردنەوە', checked: false, cost: '' },
+  { id: 6,  name: 'مقلی',           emoji: '🍳', cat: 'خواردن',     checked: false, cost: '' },
+  { id: 7,  name: 'پاوەربانک',      emoji: '🔋', cat: 'کەرەستە',   checked: false, cost: '' },
+  { id: 8,  name: 'قەند',           emoji: '🍬', cat: 'خواردن',     checked: false, cost: '' },
+  { id: 9,  name: 'میوە',           emoji: '🍎', cat: 'خواردن',     checked: false, cost: '' },
+  { id: 10, name: 'چەرەزات',        emoji: '🥜', cat: 'خواردن',     checked: false, cost: '' },
+  { id: 11, name: 'گوڵەبەڕۆژە',    emoji: '🌻', cat: 'خواردن',     checked: false, cost: '' },
+  { id: 12, name: 'کوپ',            emoji: '☕', cat: 'وەرزش',      checked: false, cost: '' },
+  { id: 13, name: 'ئیستیکان',       emoji: '🥤', cat: 'وەرزش',      checked: false, cost: '' },
+  { id: 14, name: 'ئاو',            emoji: '💧', cat: 'خواردنەوە', checked: false, cost: '' },
+  { id: 15, name: 'شیشی گۆشت',      emoji: '🧴', cat: 'خواردن',     checked: false, cost: '' },
+  { id: 16, name: 'چپس',            emoji: '🥔', cat: 'خواردن',     checked: false, cost: '' },
+  { id: 17, name: 'گۆشت',           emoji: '🥩', cat: 'خواردن',     checked: false, cost: '' },
+  { id: 18, name: 'سفرەی سەفەری',  emoji: '🏕️', cat: 'کەرەستە',   checked: false, cost: '' },
+  { id: 19, name: 'دار',            emoji: '🪵', cat: 'کەرەستە',   checked: false, cost: '' },
+  { id: 20, name: 'سەرچەف',         emoji: '🧣', cat: 'کەرەستە',   checked: false, cost: '' },
+  { id: 21, name: 'فەرش یان کۆمبار', emoji: '🛋️', cat: 'کەرەستە', checked: false, cost: '' },
+  { id: 22, name: 'دۆشەک',          emoji: '🛏️', cat: 'کەرەستە',   checked: false, cost: '' },
+  { id: 23, name: 'بالیف',          emoji: '😴', cat: 'کەرەستە',   checked: false, cost: '' },
+  { id: 24, name: 'تەماتە',         emoji: '🍅', cat: 'خواردن',     checked: false, cost: '' },
+  { id: 25, name: 'پیاز',           emoji: '🧅', cat: 'خواردن',     checked: false, cost: '' },
+  { id: 26, name: 'خوێ',            emoji: '🧂', cat: 'خواردن',     checked: false, cost: '' },
+  { id: 27, name: 'چەقو',           emoji: '🔪', cat: 'کەرەستە',   checked: false, cost: '' },
+  { id: 28, name: 'چەرخ',           emoji: '🔄', cat: 'کەرەستە',   checked: false, cost: '' },
+  { id: 29, name: 'نەفت',           emoji: '🛢️', cat: 'کەرەستە',   checked: false, cost: '' },
+  { id: 30, name: 'نەعل',           emoji: '👡', cat: 'جل',         checked: false, cost: '' },
+  { id: 31, name: 'پانکەی بچوک',   emoji: '🌬️', cat: 'کەرەستە',   checked: false, cost: '' },
+  { id: 32, name: 'برنج',           emoji: '🍚', cat: 'خواردن',     checked: false, cost: '' },
+  { id: 33, name: 'قاپ سەفەری',    emoji: '🍽️', cat: 'وەرزش',      checked: false, cost: '' },
+  { id: 34, name: 'کەوچ',           emoji: '🥄', cat: 'وەرزش',      checked: false, cost: '' },
+  { id: 35, name: 'میوە',           emoji: '🍛', cat: 'خواردن',     checked: false, cost: '' },
+  { id: 36, name: 'سماق',           emoji: '🌿', cat: 'خواردن',     checked: false, cost: '' },
+  { id: 37, name: 'خێمە',           emoji: '⛺', cat: 'کەرەستە',   checked: false, cost: '' },
+  
+  
+  { id: 38, name: 'پانکەی سپی بچوک',           emoji: '🫙', cat: 'کەرەستە',   checked: false, cost: '' },
+ 
+  { id: 38, name: 'ڕۆن زەیت',           emoji: '🫙', cat: 'کەرەستە',   checked: false, cost: '' }, 
+  
+  
+  { id: 38, name: 'فلینە و بەفر',           emoji: '🫙', cat: 'کەرەستە',   checked: false, cost: '' },
+  
+  
+  { id: 38, name: '',           emoji: '🫙', cat: 'کەرەستە',   checked: false, cost: '' },
+  
+  
+  
+  
+  
+  { id: 38, name: 'دەبەی ئاو',           emoji: '🫙', cat: 'کەرەستە',   checked: false, cost: '' },
+  { id: 39, name: 'لایت شەحن',           emoji: '🔦', cat: 'کەرەستە',   checked: false, cost: '' },
+  { id: 40, name: 'کورسی',           emoji: '🪑', cat: 'کەرەستە',   checked: false, cost: '' },
+    { id: 40, name: 'ئەشیای ئاران (بەتانی و ...)',           emoji: ' ', cat: 'کەرەستە',   checked: false, cost: '' },
+
+];
+
+const EMOJI_OPTIONS = [
+  // Food & Drink
+  '🍞','🥐','🥖','🧀','🥚','🍳','🥞','🧇','🥓','🥩','🍗','🍖','🌭','🍔','🍟','🍕',
+  '🌮','🌯','🥙','🧆','🥗','🍜','🍝','🍛','🍲','🍱','🍣','🍤','🥘','🥫',
+  '🍎','🍊','🍋','🍇','🍓','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🧅','🥔','🌽',
+  '🥕','🧄','🥦','🥬','🍄','🥜','🌰','🍯','🧂',
+  '🍵','☕','🧋','🥤','🧃','🍺','🍷','🥛','💧','🫗','🧊',
+  '🍰','🎂','🍮','🍭','🍬','🍫','🍿','🧁','🥧','🍩','🍪',
+
+  // Kitchen & Tools
+  '🫖','🍽️','🥄','🔪','🧴','🧻','🪥','🧼','🧽','🍚','🫙',
+
+  // Outdoor & Camping
+  '⛺','🏕️','🪵','🔥','🌿','🌱','🌾','🌲','🌳','🌴','🪴','🌵','🌻','🌸','🌺','🌼','💐','🍀','🍃',
+  '🦋','🐝','🐞','🦔','🐇','🦊','🐿️','🦅','🦆','🦉',
+
+  // Animals (NEW)
+  '🐶','🐱','🐭','🐹','🐰','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵',
+  '🐔','🐧','🐦','🐤','🐺','🐗','🐴','🦄','🐝','🐛','🦗','🦂','🐢','🐍','🦎','🐙','🦑','🦐','🦀',
+
+  // Gear & Equipment
+  '🎒','🧳','🪣','🔦','🕯️','🪔','🔋','🧲','🪚','🔨','⛏️','🪝','🧰',
+  '🔑','🗝️','⚙️','🔧','🧯','🛢️','🪤',
+
+  // Clothing
+  '🧤','🧣','🧥','👒','🎩','👕','👖','👟','👡','🩴','🧦','🌬️',
+
+  // Activities & Sports
+  '⚽','🏀','🎾','🏓','🏸','🥊','🎯','🎱','🏹','🎣','🤿','🛶','⛵',
+  '🏊','🚴','🏋️','🤸','⛷️','🏂','🏌️','🤾','🤼','🧘',
+
+  // Nature & Weather
+  '☀️','🌤️','⛅','🌧️','❄️','🌈','🌊','🏔️','🏞️','🌅','🌄','🌪️','🌫️','🌙','⭐',
+
+  // Transport (NEW)
+  '🚗','🚕','🚙','🚌','🚎','🏎️','🚓','🚑','🚒','🚚','🚛','🚜',
+  '✈️','🚀','🛸','🚁','⛴️','🚢','🚂','🚆','🚇','🚉',
+
+  // Buildings & Places (NEW)
+  '🏠','🏡','🏢','🏣','🏤','🏥','🏦','🏨','🏫','🏬','🏭','🏰','🗼','🗽',
+
+  // Faces & Emotions (NEW)
+  '😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😍','😘',
+  '😗','😙','😚','😋','😜','🤪','🤨','🧐','🤓','😎','🥳','😏','😒','😞','😔',
+  '😢','😭','😡','😠','🤬','😱','😨','😰','😴','🤤',
+
+  // Misc
+  '🎵','🎶','📷','🎨','✏️','📚','📱','💻','🎮','🎪','🎠',
+  '💊','🩺','🩹','🚑','❤️','⭐','🌟','✨','🎉','🎁','📦','🔮','🧿',
+  '🛋️','🛏️','😴','🔄','🧺','🧲','🏄','🚵',
+
+  // Symbols (NEW)
+  '✔️','❌','⚠️','❗','❓','💯','🔴','🟢','🔵','🟡','⚫','⚪','⬆️','⬇️','➡️','⬅️',
+
+
+
+
+  // Furniture & Home (NEW)
+'🪑','🛋️','🛏️','🚪','🪟','🪞','🖼️','🪜','🧸','🛒','🧯',
+
+// Containers & Bottles (NEW)
+'🍼','🧴','🧃','🫙','🥤','🫗','🍶','🍾',
+
+// Office & School (NEW)
+'📎','📌','📍','📏','📐','✂️','🗂️','📂','🗃️','🗄️','📊','📈','📉',
+'🖊️','🖋️','🖌️','📝','📖','📕','📗','📘','📙',
+
+// Tech (MORE)
+'⌨️','🖥️','🖨️','🖱️','💽','💾','📀','📡','🔌','🔒','🔓',
+
+// Bathroom & Cleaning (NEW)
+'🚿','🛁','🚽','🪠','🧻','🧼','🪥','🧽','🧹','🧺',
+
+// Tools (MORE)
+'🪓','🪛','🪜','⚒️','🧱','🪵','🧲','🪝',
+
+// Medical (MORE)
+'🧬','🧫','🧪','🌡️','🩻',
+
+// Money & Shopping (NEW)
+'💰','💵','💴','💶','💷','🪙','💳','🏧','🛍️','🧾',
+
+// Flags (OPTIONAL BIG SET SAMPLE)
+'🏳️','🏴','🏁','🚩'
+
+
+];
+
+const STORAGE_KEY = 'picnic_list_v3';
+const SHOP_STORAGE_KEY = 'picnic_shop_v1';
+let items = [];
+let shopItems = [];
+let costMode = false;
+let nextId = 100;
+let nextShopId = 1000;
+
+// ── Storage ────────────────────────────────────────────────────
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); } catch(e){}
+}
+function saveShop() {
+  try { localStorage.setItem(SHOP_STORAGE_KEY, JSON.stringify(shopItems)); } catch(e){}
+}
+function load() {
+  try {
+    const d = localStorage.getItem(STORAGE_KEY);
+    if (d) { items = JSON.parse(d); nextId = Math.max(...items.map(i=>i.id), 99) + 1; }
+    else { items = JSON.parse(JSON.stringify(DEFAULT_ITEMS)); nextId = 100; }
+  } catch(e){ items = JSON.parse(JSON.stringify(DEFAULT_ITEMS)); nextId = 100; }
+  try {
+    const s = localStorage.getItem(SHOP_STORAGE_KEY);
+    if (s) { shopItems = JSON.parse(s); nextShopId = Math.max(...shopItems.map(i=>i.id), 999) + 1; }
+  } catch(e){ shopItems = []; }
+}
+
+// ── Render ─────────────────────────────────────────────────────
+function getCategories() {
+  const cats = {};
+  items.forEach(item => {
+    if (!cats[item.cat]) cats[item.cat] = [];
+    cats[item.cat].push(item);
+  });
+  return cats;
+}
+
+function render() {
+  const container = document.getElementById('itemsContainer');
+  const cats = getCategories();
+  container.innerHTML = '';
+
+  for (const [cat, catItems] of Object.entries(cats)) {
+    const section = document.createElement('div');
+    section.className = 'category';
+    section.innerHTML = `<div class="cat-header">📂 ${cat} (${catItems.filter(i=>i.checked).length}/${catItems.length})</div>`;
+    catItems.forEach(item => {
+      section.appendChild(makeItemEl(item));
+    });
+    container.appendChild(section);
+  }
+
+  updateStats();
+  if (costMode) recalcTotal();
+  renderShop();
+}
+
+function makeItemEl(item) {
+  const el = document.createElement('div');
+  el.className = 'item' + (item.checked ? ' checked' : '');
+  el.id = 'item-' + item.id;
+  el.onclick = (e) => {
+    if (e.target.closest('.item-actions') || e.target.closest('.item-cost-box') || e.target.closest('.item-emoji') || e.target.closest('.item-name-edit') || e.target.closest('.btn-buy')) return;
+    toggleCheck(item.id);
+  };
+  const inList = shopItems.some(s => s.mainId === item.id);
+  el.innerHTML = `
+    <span class="item-emoji" title="کلیک بکە بۆ گۆڕینی" onclick="openEmojiPicker(${item.id}, event)">${item.emoji}</span>
+    <span class="item-name" id="name-${item.id}">${item.name}</span>
+    <div class="item-cost-box ${costMode?'visible':''}" id="cost-${item.id}" onclick="event.stopPropagation()">
+      <input class="cost-input" type="number" min="0" placeholder="0"
+        value="${item.cost}"
+        oninput="updateCost(${item.id}, this.value)"
+        onfocus="this.select()">
+      <span class="cost-currency">IQD</span>
+    </div>
+    <div class="item-actions">
+      <button class="btn-buy${inList?' in-list':''}" title="${inList?'لە لیستی کڕیندایە':'زیادکردن بۆ لیستی کڕین'}" onclick="toggleBuyItem(${item.id}); event.stopPropagation()">${inList?'✓ کڕین':'🛒 کڕین'}</button>
+      <button class="icon-btn" title="دەستکاری" onclick="startEdit(${item.id}); event.stopPropagation()">✏️</button>
+      <button class="icon-btn" title="سڕینەوە" onclick="deleteItem(${item.id}); event.stopPropagation()">🗑️</button>
+    </div>
+  `;
+  return el;
+}
+
+function updateStats() {
+  const total = items.length;
+  const checked = items.filter(i=>i.checked).length;
+  const pct = total ? Math.round(checked/total*100) : 0;
+  document.getElementById('checkedCount').textContent = checked;
+  document.getElementById('totalCount').textContent = total;
+  document.getElementById('pctLabel').textContent = pct + '%';
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+// ── Actions ────────────────────────────────────────────────────
+function toggleCheck(id) {
+  const item = items.find(i=>i.id===id);
+  if (!item) return;
+  item.checked = !item.checked;
+  save();
+  const el = document.getElementById('item-'+id);
+  el.className = 'item' + (item.checked ? ' checked' : '');
+  updateStats();
+}
+
+function clearStorage() {
+  if (!confirm('دڵنیای؟ هەموو گۆڕانکارییەکان سڕاوەتەوە و لیستی سەرەتایی دێتەوە.')) return;
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
+  location.reload();
+}
+
+function resetChecked() {
+  items.forEach(i => i.checked = false);
+  save(); render();
+  showToast('✅ هەموو چێکەکان ڕێستکرانەوە');
+}
+
+function showAddForm() {
+  const f = document.getElementById('addForm');
+  f.style.display = f.style.display === 'none' ? 'flex' : 'none';
+  if (f.style.display === 'flex') document.getElementById('newItemName').focus();
+}
+
+function addItem() {
+  const input = document.getElementById('newItemName');
+  const name = input.value.trim();
+  if (!name) return;
+  items.push({ id: nextId++, name, emoji: '📦', cat: 'زیادکراو', checked: false, cost: '' });
+  input.value = '';
+  save(); render();
+  showToast('✅ ' + name + ' زیادکرا');
+}
+
+function deleteItem(id) {
+  const item = items.find(i=>i.id===id);
+  if (!item) return;
+  if (!confirm('دڵنیای لە سڕینەوەی "' + item.name + '"؟')) return;
+  items = items.filter(i=>i.id!==id);
+  save(); render();
+  showToast('🗑️ سڕایەوە');
+}
+
+function startEdit(id) {
+  const item = items.find(i=>i.id===id);
+  if (!item) return;
+  const nameEl = document.getElementById('name-'+id);
+  const input = document.createElement('input');
+  input.className = 'item-name-edit';
+  input.value = item.name;
+  nameEl.replaceWith(input);
+  input.focus(); input.select();
+  function finish() {
+    const v = input.value.trim();
+    if (v) item.name = v;
+    save(); render();
+  }
+  input.addEventListener('blur', finish);
+  input.addEventListener('keydown', e => { if (e.key==='Enter') { input.blur(); } if (e.key==='Escape') { render(); } });
+}
+
+// ── Emoji Picker (fixed overlay) ───────────────────────────────
+let _emojiTargetId = null;
+
+function openEmojiPicker(id, ev) {
+  ev.stopPropagation();
+  const overlay = document.getElementById('emojiOverlay');
+  if (_emojiTargetId === id && overlay.classList.contains('open')) {
+    overlay.classList.remove('open');
+    _emojiTargetId = null;
+    return;
+  }
+  _emojiTargetId = id;
+  overlay.innerHTML = EMOJI_OPTIONS.map(e =>
+    `<span class="emoji-opt" onclick="setEmoji(${id},'${e}'); event.stopPropagation()">${e}</span>`
+  ).join('');
+
+  // Position near the clicked emoji
+  const rect = ev.target.getBoundingClientRect();
+  const ovW = 260, ovH = 220;
+  let left = rect.left;
+  let top = rect.bottom + 6;
+  if (left + ovW > window.innerWidth - 8) left = window.innerWidth - ovW - 8;
+  if (top + ovH > window.innerHeight - 8) top = rect.top - ovH - 6;
+  overlay.style.left = Math.max(8, left) + 'px';
+  overlay.style.top = Math.max(8, top) + 'px';
+  overlay.classList.add('open');
+}
+
+document.addEventListener('click', (e) => {
+  const overlay = document.getElementById('emojiOverlay');
+  if (!e.target.closest('#emojiOverlay') && !e.target.closest('.item-emoji')) {
+    overlay.classList.remove('open');
+    _emojiTargetId = null;
+  }
+});
+
+function setEmoji(id, emoji) {
+  const item = items.find(i=>i.id===id);
+  if (!item) return;
+  item.emoji = emoji;
+  save(); render();
+}
+
+// ── Cost mode ──────────────────────────────────────────────────
+function toggleCost() {
+  costMode = !costMode;
+  const btn = document.getElementById('costToggle');
+  btn.classList.toggle('active', costMode);
+  btn.textContent = costMode ? '💰 بگیرەوە' : '💰 نرخ';
+  document.getElementById('totalBox').style.display = costMode ? 'block' : 'none';
+  document.querySelectorAll('.item-cost-box').forEach(el => {
+    el.classList.toggle('visible', costMode);
+  });
+  if (costMode) recalcTotal();
+}
+
+function updateCost(id, val) {
+  const item = items.find(i=>i.id===id);
+  if (!item) return;
+  item.cost = val;
+  save();
+  recalcTotal();
+}
+
+function recalcTotal() {
+  const total = items.reduce((s,i) => s + (parseFloat(i.cost)||0), 0);
+  document.getElementById('totalCost').textContent = total.toLocaleString();
+}
+
+// ── Shopping / Buy List ────────────────────────────────────────
+function toggleBuyItem(mainId) {
+  const item = items.find(i => i.id === mainId);
+  if (!item) return;
+  const existing = shopItems.findIndex(s => s.mainId === mainId);
+  if (existing !== -1) {
+    // Remove from shop list
+    shopItems.splice(existing, 1);
+    saveShop();
+    render();
+    showToast('🗑️ لە لیستی کڕین سڕایەوە');
+  } else {
+    // Add to shop list
+    shopItems.push({ id: nextShopId++, mainId, name: item.name, emoji: item.emoji, bought: false });
+    saveShop();
+    render();
+    showToast('🛒 زیادکرا بۆ لیستی کڕین');
+  }
+}
+
+function addShopItem() {
+  const input = document.getElementById('shopNewName');
+  const name = input.value.trim();
+  if (!name) return;
+  shopItems.push({ id: nextShopId++, mainId: null, name, emoji: '🛍️', bought: false });
+  input.value = '';
+  saveShop();
+  renderShop();
+  showToast('✅ ' + name + ' زیادکرا');
+}
+
+function toggleShopBought(shopId) {
+  const s = shopItems.find(i => i.id === shopId);
+  if (!s) return;
+  s.bought = !s.bought;
+  // Sync to main list
+  if (s.mainId !== null) {
+    const mainItem = items.find(i => i.id === s.mainId);
+    if (mainItem) {
+      mainItem.checked = s.bought;
+      save();
+    }
+  }
+  saveShop();
+  render();
+}
+
+function deleteShopItem(shopId) {
+  shopItems = shopItems.filter(i => i.id !== shopId);
+  saveShop();
+  renderShop();
+  // Re-render main list so buy buttons update
+  render();
+}
+
+function editShopItem(shopId) {
+  const s = shopItems.find(i => i.id === shopId);
+  if (!s) return;
+  const nameEl = document.getElementById('shopname-' + shopId);
+  const input = document.createElement('input');
+  input.className = 'shop-item-name-edit';
+  input.value = s.name;
+  nameEl.replaceWith(input);
+  input.focus(); input.select();
+  function finish() {
+    const v = input.value.trim();
+    if (v) s.name = v;
+    saveShop(); renderShop();
+  }
+  input.addEventListener('blur', finish);
+  input.addEventListener('keydown', e => { if (e.key==='Enter') input.blur(); if (e.key==='Escape') renderShop(); });
+}
+
+function clearBoughtShop() {
+  // un-check main items that were bought via shop list before removing
+  shopItems.filter(s => s.bought && s.mainId !== null).forEach(s => {
+    // keep main list checked, just remove from shop
+  });
+  shopItems = shopItems.filter(s => !s.bought);
+  saveShop(); render();
+  showToast('🧹 کڕاوەکان سڕانەوە');
+}
+
+function clearAllShop() {
+  if (!confirm('دڵنیای لە سڕینەوەی هەموو لیستی کڕین؟')) return;
+  shopItems = [];
+  saveShop(); render();
+  showToast('🗑️ لیستی کڕین سڕایەوە');
+}
+
+function renderShop() {
+  const section = document.getElementById('shopSection');
+  const list = document.getElementById('shopList');
+  const count = document.getElementById('shopCount');
+  count.textContent = shopItems.length;
+  section.classList.toggle('has-items', shopItems.length > 0);
+  list.innerHTML = '';
+  shopItems.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'shop-item' + (s.bought ? ' bought' : '');
+    el.innerHTML = `
+      <div class="shop-check${s.bought?' done':''}" onclick="toggleShopBought(${s.id})">${s.bought?'✓':''}</div>
+      <span class="shop-item-emoji">${s.emoji}</span>
+      <span class="shop-item-name" id="shopname-${s.id}">${s.name}</span>
+      <div class="item-actions">
+        <button class="icon-btn" title="دەستکاری" onclick="editShopItem(${s.id}); event.stopPropagation()">✏️</button>
+        <button class="icon-btn" title="سڕینەوە" onclick="deleteShopItem(${s.id}); event.stopPropagation()">🗑️</button>
+      </div>
+    `;
+    list.appendChild(el);
+  });
+}
+
+// ── Export ─────────────────────────────────────────────────────
+let _originalSource = '';
+
+function captureOriginalSource() {
+  // Fetch the file's own source via XHR so we get the real unmodified text
+  try {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', location.href, false); // synchronous
+    xhr.send();
+    if (xhr.status === 200 || xhr.status === 0) {
+      _originalSource = xhr.responseText;
+      return;
+    }
+  } catch(e) {}
+  // Fallback: read from the script tag content (works for file:// on some browsers)
+  _originalSource = '<!--FALLBACK-->';
+}
+
+function buildSourceCode() {
+  let src = _originalSource;
+  if (!src || src === '<!--FALLBACK-->') {
+    // Last resort fallback to outerHTML with cleanup
+    src = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+  }
+  const exportItems = items.map(i => ({...i, checked: false, cost: ''}));
+  const newBlock = 'const DEFAULT_ITEMS = ' + JSON.stringify(exportItems, null, 2) + ';';
+  // Replace DEFAULT_ITEMS array block
+  const marker = 'const DEFAULT_ITEMS = [';
+  const start = src.indexOf(marker);
+  if (start === -1) {
+    // Try alternate marker (already exported once with JSON.stringify format)
+    const alt = 'const DEFAULT_ITEMS = ';
+    const altStart = src.indexOf(alt);
+    if (altStart === -1) return src;
+    const altEnd = src.indexOf(';\n', altStart) + 2;
+    return src.slice(0, altStart) + newBlock + '\n' + src.slice(altEnd);
+  }
+  let depth = 0, end = start;
+  for (let i = start; i < src.length; i++) {
+    if (src[i] === '[') depth++;
+    else if (src[i] === ']') { depth--; if (depth === 0) { end = i + 1; break; } }
+  }
+  let afterEnd = end;
+  if (src[afterEnd] === ';') afterEnd++;
+  return src.slice(0, start) + newBlock + src.slice(afterEnd);
+}
+
+function showExport() {
+  document.getElementById('exportCode').value = buildSourceCode();
+  document.getElementById('exportModal').classList.add('open');
+}
+function closeModal() { document.getElementById('exportModal').classList.remove('open'); }
+
+function copyExport() {
+  const ta = document.getElementById('exportCode');
+  ta.select();
+  navigator.clipboard.writeText(ta.value).then(()=>showToast('📋 کۆپی کرا!')).catch(()=>{
+    document.execCommand('copy');
+    showToast('📋 کۆپی کرا!');
+  });
+}
+
+function downloadExport() {
+  const blob = new Blob([buildSourceCode()], {type:'text/html'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'picnic_checklist_new.html';
+  a.click();
+  showToast('⬇️ داونلۆد دەست پێکرد');
+}
+
+// ── Toast ──────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+// ── Init ───────────────────────────────────────────────────────
+captureOriginalSource();
+document.getElementById('exportModal').classList.remove('open');
+load();
+render();
+</script>
+    <script src="qalyx-bridge.js"></script>
+</body>
+</html>

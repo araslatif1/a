@@ -1,0 +1,9 @@
+{
+  "title": "My HTML Library",
+  "theme": "light",
+  "hidden": [],
+  "favorites": ["page1.html"],
+  "sort": "alphabetical",
+  "showLastModified": true,
+  "pollIntervalMs": 3000
+}

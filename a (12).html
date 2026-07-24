@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+    <title>ئێ‌حاسبەی پسوڵەی کارەبا</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom right, #4facfe, #00f2fe);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .calculator {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .creator {
+            text-align: center;
+            color: #95a5a6;
+            font-size: 14px;
+            margin-bottom: 25px;
+            font-style: italic;
+        }
+
+        .input-box {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            font-size: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+
+        button {
+            width: 100%;
+            padding: 18px;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(to right, #fa709a, #fee140);
+            border-radius: 10px;
+            color: white;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .total {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .total-amount {
+            text-align: center;
+            font-size: 48px;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .breakdown {
+            background: white;
+            color: #2c3e50;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .breakdown h3 {
+            margin-bottom: 15px;
+            color: #e74c3c;
+        }
+
+        .tier {
+            padding: 12px;
+            background: #f8f9fa;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-right: 4px solid #4facfe;
+        }
+
+        .tier-label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .tier-calc {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+
+        .tier-cost {
+            font-size: 18px;
+            font-weight: bold;
+            color: #e74c3c;
+            text-align: left;
+        }
+
+        .price-table {
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+
+        .price-table h3 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .price-row {
+            background: white;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .price-range {
+            font-weight: bold;
+            color: #4facfe;
+        }
+
+        .price-value {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        .creator{
+          color:RED;
+        }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1>🔌 ئێ‌حاسبەی پسوڵەی کارەبا</h1>
+        <div class="subtitle">حیسابکردنی پسوڵەی کارەبا بۆ ماڵان</div>
+        <div class="creator">دروستکراوە لەلایەن ئاراس لەتیف</div>
+
+        <div class="input-box">
+            <label>بڕی بەکارهێنانی کارەبا بنووسە (کیلۆوات/کاتژمێر)</label>
+            <label style="font-size: 14px; font-weight: normal; color: #7f8c8d;">نموونە: ئەگەر ٤٥٠ کیلۆوات بەکارهێناوە، ٤٥٠ بنووسە</label>
+            <input type="number" id="kwh" placeholder="نموونە: 450" min="0" step="1">
+            <button onclick="calculate()">حیسابکردن</button>
+        </div>
+
+        <div class="results" id="results">
+            <div class="total">کۆی بەکارهێنان</div>
+            <div class="total-amount" id="totalKwh">0 کیلۆوات/کاتژمێر</div>
+            
+            <div class="total">کۆی پارەی پێویست</div>
+            <div class="total-amount" id="totalCost">0 دینار</div>
+
+            <div class="breakdown">
+                <h3>📊 وردەکاریەکانی حیساب</h3>
+                <div id="breakdownList"></div>
+            </div>
+        </div>
+
+        <div class="price-table">
+            <h3>💰 خشتەی نرخەکانی کارەبا</h3>
+            <div class="price-row">
+                <span class="price-range">٠ - ٤٠٠ کیلۆوات</span>
+                <span class="price-value">٧٢ دینار</span>
+            </div>
+            <div class="price-row">
+                <span class="price-range">٤٠١ - ٨٠٠ کیلۆوات</span>
+                <span class="price-value">١٠٨ دینار</span>
+            </div>
+            <div class="price-row">
+                <span class="price-range">٨٠١ - ١٢٠٠ کیلۆوات</span>
+                <span class="price-value">١٧٥ دینار</span>
+            </div>
+            <div class="price-row">
+                <span class="price-range">١٢٠١ - ١٦٠٠ کیلۆوات</span>
+                <span class="price-value">٢٦٥ دینار</span>
+            </div>
+            <div class="price-row">
+                <span class="price-range">١٦٠٠+ کیلۆوات</span>
+                <span class="price-value">٣٥٠ دینار</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            const input = document.getElementById('kwh').value;
+            const kwh = parseFloat(input);
+            
+            if (!input || isNaN(kwh) || kwh < 0) {
+                alert('تکایە ژمارەیەکی دروست بنووسە!');
+                return;
+            }
+
+            // Price tiers
+            const tiers = [
+                { min: 0, max: 400, rate: 72 },
+                { min: 401, max: 800, rate: 108 },
+                { min: 801, max: 1200, rate: 175 },
+                { min: 1201, max: 1600, rate: 265 },
+                { min: 1601, max: Infinity, rate: 350 }
+            ];
+
+            let remaining = kwh;
+            let totalCost = 0;
+            let breakdown = [];
+
+            for (let tier of tiers) {
+                if (remaining <= 0) break;
+
+                const tierMin = tier.min;
+                const tierMax = tier.max;
+                const tierCapacity = tierMax - tierMin + 1;
+                
+                let kwhInTier;
+                if (kwh <= tierMax) {
+                    kwhInTier = kwh - tierMin + 1;
+                    if (kwhInTier > remaining) kwhInTier = remaining;
+                } else {
+                    kwhInTier = Math.min(tierCapacity, remaining);
+                }
+
+                if (kwhInTier > 0 && kwh >= tierMin) {
+                    const cost = kwhInTier * tier.rate;
+                    totalCost += cost;
+                    
+                    breakdown.push({
+                        range: `${tierMin} - ${tierMax === Infinity ? tierMin + '+' : tierMax} kWh`,
+                        kwh: kwhInTier,
+                        rate: tier.rate,
+                        cost: cost
+                    });
+                    
+                    remaining -= kwhInTier;
+                }
+            }
+
+            // Recalculate properly
+            totalCost = 0;
+            breakdown = [];
+            
+            if (kwh <= 400) {
+                totalCost = kwh * 72;
+                breakdown.push({ range: '٠-٤٠٠ کیلۆوات', kwh: kwh, rate: 72, cost: totalCost });
+            } else if (kwh <= 800) {
+                const tier1 = 400 * 72;
+                const tier2 = (kwh - 400) * 108;
+                totalCost = tier1 + tier2;
+                breakdown.push({ range: '٠-٤٠٠ کیلۆوات', kwh: 400, rate: 72, cost: tier1 });
+                breakdown.push({ range: '٤٠١-٨٠٠ کیلۆوات', kwh: kwh - 400, rate: 108, cost: tier2 });
+            } else if (kwh <= 1200) {
+                const tier1 = 400 * 72;
+                const tier2 = 400 * 108;
+                const tier3 = (kwh - 800) * 175;
+                totalCost = tier1 + tier2 + tier3;
+                breakdown.push({ range: '٠-٤٠٠ کیلۆوات', kwh: 400, rate: 72, cost: tier1 });
+                breakdown.push({ range: '٤٠١-٨٠٠ کیلۆوات', kwh: 400, rate: 108, cost: tier2 });
+                breakdown.push({ range: '٨٠١-١٢٠٠ کیلۆوات', kwh: kwh - 800, rate: 175, cost: tier3 });
+            } else if (kwh <= 1600) {
+                const tier1 = 400 * 72;
+                const tier2 = 400 * 108;
+                const tier3 = 400 * 175;
+                const tier4 = (kwh - 1200) * 265;
+                totalCost = tier1 + tier2 + tier3 + tier4;
+                breakdown.push({ range: '٠-٤٠٠ کیلۆوات', kwh: 400, rate: 72, cost: tier1 });
+                breakdown.push({ range: '٤٠١-٨٠٠ کیلۆوات', kwh: 400, rate: 108, cost: tier2 });
+                breakdown.push({ range: '٨٠١-١٢٠٠ کیلۆوات', kwh: 400, rate: 175, cost: tier3 });
+                breakdown.push({ range: '١٢٠١-١٦٠٠ کیلۆوات', kwh: kwh - 1200, rate: 265, cost: tier4 });
+            } else {
+                const tier1 = 400 * 72;
+                const tier2 = 400 * 108;
+                const tier3 = 400 * 175;
+                const tier4 = 400 * 265;
+                const tier5 = (kwh - 1600) * 350;
+                totalCost = tier1 + tier2 + tier3 + tier4 + tier5;
+                breakdown.push({ range: '٠-٤٠٠ کیلۆوات', kwh: 400, rate: 72, cost: tier1 });
+                breakdown.push({ range: '٤٠١-٨٠٠ کیلۆوات', kwh: 400, rate: 108, cost: tier2 });
+                breakdown.push({ range: '٨٠١-١٢٠٠ کیلۆوات', kwh: 400, rate: 175, cost: tier3 });
+                breakdown.push({ range: '١٢٠١-١٦٠٠ کیلۆوات', kwh: 400, rate: 265, cost: tier4 });
+                breakdown.push({ range: '١٦٠٠+ کیلۆوات', kwh: kwh - 1600, rate: 350, cost: tier5 });
+            }
+
+            // Display results
+            document.getElementById('totalKwh').textContent = kwh.toLocaleString('en-US', {maximumFractionDigits: 2}) + ' کیلۆوات';
+            document.getElementById('totalCost').textContent = totalCost.toLocaleString('en-US', {maximumFractionDigits: 0}) + ' دینار';
+
+            let html = '';
+            breakdown.forEach(item => {
+                html += `
+                    <div class="tier">
+                        <div class="tier-label">${item.range}</div>
+                        <div class="tier-calc">${item.kwh.toFixed(2)} کیلۆوات × ${item.rate} دینار</div>
+                        <div class="tier-cost">${item.cost.toLocaleString('en-US', {maximumFractionDigits: 0})} دینار</div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('breakdownList').innerHTML = html;
+            document.getElementById('results').classList.add('show');
+        }
+
+        // Enter key support
+        document.getElementById('kwh').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') calculate();
+        });
+    </script>
+    <script src="qalyx-bridge.js"></script>
+</body>
+</html>

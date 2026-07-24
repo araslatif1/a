@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="ckb" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<title>بانکی جیهان - حیسابکەری قیستی ئۆتۆمبێل</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg2: #161b22;
+    --bg3: #1c2128;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text2: #8b949e;
+    --accent: #d4a017;
+    --accent2: #b8860b;
+    --accent3: #ffd700;
+    --green: #3fb950;
+    --red: #f85149;
+    --blue: #58a6ff;
+    --card-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+  .light {
+    --bg: #f0f2f5;
+    --bg2: #ffffff;
+    --bg3: #e8ecf0;
+    --border: #d0d7de;
+    --text: #1c2128;
+    --text2: #57606a;
+    --accent: #b8860b;
+    --accent2: #9a7209;
+    --accent3: #d4a017;
+    --card-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'Cairo', 'Noto Naskh Arabic', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    transition: all 0.3s ease;
+    direction: rtl;
+  }
+
+  /* Background pattern */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse at 20% 20%, rgba(212,160,23,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(88,166,255,0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 36px;
+    padding: 20px 28px;
+    background: var(--bg2);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--card-shadow);
+  }
+
+  .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo-icon {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    box-shadow: 0 4px 16px rgba(212,160,23,0.35);
+  }
+
+  .logo-text h1 {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--accent3);
+    line-height: 1.2;
+    letter-spacing: 0.5px;
+  }
+
+  .logo-text p {
+    font-size: 13px;
+    color: var(--text2);
+    font-weight: 400;
+  }
+
+  .theme-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .theme-btn:hover { transform: scale(1.1); border-color: var(--accent); }
+
+  /* Cards */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 24px;
+    transition: all 0.3s;
+  }
+
+  .card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--accent3);
+    margin-bottom: 22px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Form */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  @media (max-width: 640px) {
+    .form-grid { grid-template-columns: 1fr; }
+    header { flex-direction: column; gap: 14px; text-align: center; }
+    .logo-area { flex-direction: column; }
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .form-group.full { grid-column: 1 / -1; }
+
+  label {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  input, select {
+    background: var(--bg3);
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-family: inherit;
+    direction: rtl;
+    transition: all 0.2s;
+    width: 100%;
+  }
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(212,160,23,0.15);
+  }
+
+  input::placeholder { color: var(--text2); font-size: 13px; }
+
+  .calc-btn {
+    grid-column: 1 / -1;
+    padding: 15px 32px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #000;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 16px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(212,160,23,0.3);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+
+  .calc-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(212,160,23,0.45);
+  }
+
+  .calc-btn:active { transform: translateY(0); }
+
+  .reset-btn {
+    grid-column: 1 / -1;
+    padding: 11px;
+    background: transparent;
+    color: var(--text2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .reset-btn:hover { border-color: var(--red); color: var(--red); }
+
+  /* Summary cards */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 18px;
+    text-align: center;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent-line, var(--accent));
+    border-radius: 3px 3px 0 0;
+  }
+
+  .stat-card:hover { transform: translateY(-3px); box-shadow: var(--card-shadow); }
+
+  .stat-icon { font-size: 26px; margin-bottom: 8px; }
+  .stat-label { font-size: 12px; color: var(--text2); margin-bottom: 5px; font-weight: 600; }
+  .stat-value { font-size: 18px; font-weight: 700; color: var(--text); }
+  .stat-value.accent { color: var(--accent3); }
+  .stat-value.green { color: var(--green); }
+  .stat-value.red { color: var(--red); }
+  .stat-value.blue { color: var(--blue); }
+
+  /* Table */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  thead tr {
+    background: linear-gradient(135deg, rgba(212,160,23,0.15), rgba(212,160,23,0.05));
+  }
+
+  th {
+    padding: 14px 16px;
+    text-align: center;
+    font-weight: 700;
+    color: var(--accent3);
+    font-size: 13px;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 13px 16px;
+    text-align: center;
+    border-bottom: 1px solid rgba(48,54,61,0.5);
+    color: var(--text);
+    transition: background 0.15s;
+  }
+
+  tbody tr:hover td { background: rgba(212,160,23,0.05); }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .year-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px; height: 30px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #000;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .tag.green { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag.red { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag.blue { background: rgba(88,166,255,0.15); color: var(--blue); }
+  .tag.gold { background: rgba(212,160,23,0.15); color: var(--accent3); }
+
+  /* Progress bar */
+  .progress-wrap {
+    margin-top: 6px;
+    height: 5px;
+    background: var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    border-radius: 10px;
+    transition: width 1s ease;
+  }
+
+  /* Salary section */
+  .salary-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg3);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    margin-bottom: 10px;
+    font-size: 13.5px;
+    align-items: center;
+  }
+
+  .salary-row:hover { border-color: var(--accent); }
+
+  .salary-label { color: var(--text2); font-weight: 600; }
+  .salary-amount { font-weight: 700; text-align: center; }
+  .salary-remain { font-weight: 700; text-align: center; }
+
+  /* Hidden until calculated */
+  #results { display: none; }
+
+  /* Tips */
+  .info-box {
+    background: rgba(88,166,255,0.08);
+    border: 1px solid rgba(88,166,255,0.25);
+    border-radius: var(--radius-sm);
+    padding: 14px 18px;
+    font-size: 13.5px;
+    color: var(--text2);
+    margin-top: 8px;
+    line-height: 1.8;
+  }
+
+  .info-box .info-title {
+    color: var(--blue);
+    font-weight: 700;
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+
+  /* Divider */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 20px 0;
+  }
+
+  .section-label {
+    font-size: 13px;
+    color: var(--text2);
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    margin-top: 32px;
+    color: var(--text2);
+    font-size: 13px;
+    padding: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Animate in */
+  .fade-in {
+    animation: fadeIn 0.5s ease forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Number formatting */
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* Tooltip */
+  .tip {
+    display: inline-block;
+    width: 16px; height: 16px;
+    background: var(--border);
+    border-radius: 50%;
+    text-align: center;
+    line-height: 16px;
+    font-size: 11px;
+    cursor: help;
+    color: var(--text2);
+  }
+</style>
+</head>
+<body class="dark" id="bodyEl">
+
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <div class="logo-area">
+      <div class="logo-icon">🏦</div>
+      <div class="logo-text">
+        <h1>بانکی جیهان</h1>
+        <p>حیسابکەری قیستی ئۆتۆمبێل — ٥ ساڵ</p>
+      </div>
+    </div>
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" title="گۆڕینی ڕووکار">🌙</button>
+  </header>
+
+  <!-- Input Card -->
+  <div class="card">
+    <div class="card-title">🚗 زانیاری کڕین داخڵ بکە</div>
+
+    <div class="form-grid">
+
+      <div class="form-group">
+        <label>💰 نرخی ڕەسەنی ئۆتۆمبێل (دینار)</label>
+        <input type="number" id="totalPrice" placeholder="بۆ نمونە: 30000000" min="0" oninput="saveToLocal()">
+      </div>
+
+      <div class="form-group">
+        <label>💵 مەبلەغی پیشەکی (کاش) (دینار)</label>
+        <input type="number" id="downPayment" placeholder="بۆ نمونە: 10000000" min="0" oninput="saveToLocal()">
+      </div>
+
+      <div class="form-group">
+        <label>📅 ژمارەی ساڵانی قیست <span class="tip" title="حەوتا ٥ ساڵ">?</span></label>
+        <select id="years" onchange="saveToLocal()">
+          <option value="1">١ ساڵ</option>
+          <option value="2">٢ ساڵ</option>
+          <option value="3">٣ ساڵ</option>
+          <option value="4">٤ ساڵ</option>
+          <option value="5" selected>٥ ساڵ</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>📊 ڕێژەی سوود بۆ هەر ساڵێک (%)</label>
+        <input type="number" id="annualRate" placeholder="بۆ نمونە: 9" value="9" min="0" max="100" step="0.1" oninput="saveToLocal()">
+      </div>
+
+      <div class="form-group full">
+        <label>👤 مووچەی مانگانەی کڕیار (دینار) — ئارەزوومەند</label>
+        <input type="number" id="monthlySalary" placeholder="بۆ نمونە: 1500000 — ئەگەر نەتت داخڵ نەکرد گرنگ نییە" min="0" oninput="saveToLocal()">
+      </div>
+
+      <button class="calc-btn" onclick="calculate()">⚡ حیساب بکە</button>
+      <button class="reset-btn" onclick="resetAll()">🗑️ سڕینەوەی هەموو زانیارییەکان</button>
+    </div>
+
+    <div class="info-box" style="margin-top:16px;">
+      <div class="info-title">ℹ️ چۆنیەتی کارکردن</div>
+      نرخی ڕەسەنی ئۆتۆمبێل داخڵ بکە، ئەوەی دەبێت لە دەستپێکەوە بدەیت وەک کاش بنووسە، ئەوەی دەمێنێتەوە دەکرێت بە قیست بپردرێت، بۆ هەر ساڵێک <strong>%٩</strong> سوود زیاد دەکرێت. دەتوانی یەک جار بدەیت یان لە ماوەی ساڵانەکەدا بەشەبەش بدەیت.
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="results">
+
+    <!-- Summary Stats -->
+    <div class="card fade-in">
+      <div class="card-title">📋 کورتەی مامەڵەکە</div>
+      <div class="summary-grid">
+        <div class="stat-card" style="--accent-line: var(--accent3);">
+          <div class="stat-icon">🏷️</div>
+          <div class="stat-label">نرخی ڕەسەن</div>
+          <div class="stat-value accent num" id="s_total">—</div>
+        </div>
+        <div class="stat-card" style="--accent-line: var(--red);">
+          <div class="stat-icon">💵</div>
+          <div class="stat-label">پیشەکی کاش</div>
+          <div class="stat-value red num" id="s_down">—</div>
+        </div>
+        <div class="stat-card" style="--accent-line: var(--blue);">
+          <div class="stat-icon">📦</div>
+          <div class="stat-label">مەبلەغی قیستی</div>
+          <div class="stat-value blue num" id="s_rem">—</div>
+        </div>
+        <div class="stat-card" style="--accent-line: #ff9800;">
+          <div class="stat-icon">📈</div>
+          <div class="stat-label">کۆی سوود</div>
+          <div class="stat-value num" style="color:#ff9800" id="s_interest">—</div>
+        </div>
+        <div class="stat-card" style="--accent-line: var(--green);">
+          <div class="stat-icon">💎</div>
+          <div class="stat-label">کۆی گشتی دەدرێت</div>
+          <div class="stat-value green num" id="s_grandtotal">—</div>
+        </div>
+        <div class="stat-card" style="--accent-line: #a78bfa;">
+          <div class="stat-icon">📅</div>
+          <div class="stat-label">قیستی هەر مانگێک</div>
+          <div class="stat-value num" style="color:#a78bfa" id="s_monthly">—</div>
+        </div>
+        <div class="stat-card" style="--accent-line: #34d399;">
+          <div class="stat-icon">🗓️</div>
+          <div class="stat-label">قیستی هەر ساڵێک</div>
+          <div class="stat-value num" style="color:#34d399" id="s_yearly">—</div>
+        </div>
+        <div class="stat-card" style="--accent-line: var(--text2);">
+          <div class="stat-icon">📊</div>
+          <div class="stat-label">ساڵانی قیست</div>
+          <div class="stat-value num" id="s_years">—</div>
+        </div>
+      </div>
+
+      <!-- Percentage bar -->
+      <div style="margin-top:8px;">
+        <div class="section-label">📐 پێکهاتەی دراوی کاش و قیست</div>
+        <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text2); margin-bottom:4px;">
+          <span>کاش: <span id="down_pct" style="color:var(--red); font-weight:700;"></span></span>
+          <span>قیست: <span id="rem_pct" style="color:var(--blue); font-weight:700;"></span></span>
+        </div>
+        <div class="progress-wrap" style="height:10px;">
+          <div class="progress-bar" id="downBar" style="width:0%; background: linear-gradient(90deg, var(--red), #ff6b6b);"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Year-by-Year Table -->
+    <div class="card fade-in">
+      <div class="card-title">🗓️ پلانی پرداختنی ساڵانە</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ساڵ</th>
+              <th>مەبلەغی سەرەوەی ساڵ</th>
+              <th>سوودی ساڵانە (%٩)</th>
+              <th>کۆی بەدواداچوون ئەو ساڵە</th>
+              <th>قیستی مانگانەی ئەو ساڵە</th>
+              <th>مەبلەغی دەمێنێتەوە</th>
+              <th>کۆی پرداخت کراو</th>
+              <th>پێگەیشتن</th>
+            </tr>
+          </thead>
+          <tbody id="yearTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Salary Analysis -->
+    <div id="salarySection" style="display:none;" class="card fade-in">
+      <div class="card-title">💼 شیکاری مووچەو خەرجی قیست</div>
+      <div class="summary-grid" style="margin-bottom:20px;">
+        <div class="stat-card" style="--accent-line: #34d399;">
+          <div class="stat-icon">💴</div>
+          <div class="stat-label">مووچەی مانگانە</div>
+          <div class="stat-value num" style="color:#34d399" id="sal_monthly">—</div>
+        </div>
+        <div class="stat-card" style="--accent-line: #a78bfa;">
+          <div class="stat-icon">📤</div>
+          <div class="stat-label">قیستی هەر مانگێک</div>
+          <div class="stat-value num" style="color:#a78bfa" id="sal_installment">—</div>
+        </div>
+        <div class="stat-card" style="--accent-line: var(--accent3);">
+          <div class="stat-icon">💰</div>
+          <div class="stat-label">ئەوەی دەمێنێتەوە</div>
+          <div class="stat-value num" style="color:var(--accent3)" id="sal_remain">—</div>
+        </div>
+        <div class="stat-card" style="--accent-line: var(--red);">
+          <div class="stat-icon">📉</div>
+          <div class="stat-label">ڕێژەی قیست لە مووچە</div>
+          <div class="stat-value red" id="sal_pct">—</div>
+        </div>
+      </div>
+
+      <div class="section-label">📆 مووچەی مانگانە بۆ هەر ساڵێک</div>
+      <div id="salaryYearRows"></div>
+
+      <div class="info-box" id="salaryAdvice" style="margin-top:14px;"></div>
+    </div>
+
+    <!-- Tips & Info -->
+    <div class="card fade-in">
+      <div class="card-title">💡 زانیاری گرنگ و ئامۆژگاری</div>
+      <div id="tipsContent" style="line-height:2; font-size:14px; color:var(--text2);"></div>
+    </div>
+
+  </div><!-- /results -->
+
+  <footer>
+    بانکی جیهان — حیسابکەری قیستی ئۆتۆمبێل &nbsp;|&nbsp; داتاکان بە شێوەی خۆکار پاشەکەوت دەکرێن
+  </footer>
+
+</div><!-- /container -->
+
+<script>
+// ─── Helpers ────────────────────────────────────────────────
+const fmt = n => Math.round(n).toLocaleString('en-US') + ' د.ع';
+const fmtN = n => Math.round(n).toLocaleString('en-US');
+const pct = (a,b) => b ? ((a/b)*100).toFixed(1) + '%' : '0%';
+
+// ─── Theme ──────────────────────────────────────────────────
+let isDark = true;
+function toggleTheme() {
+  isDark = !isDark;
+  document.getElementById('bodyEl').className = isDark ? 'dark' : 'light';
+  document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀️';
+  localStorage.setItem('cihan_theme', isDark ? 'dark' : 'light');
+}
+
+// ─── Local Storage ──────────────────────────────────────────
+function saveToLocal() {
+  const data = {
+    totalPrice: document.getElementById('totalPrice').value,
+    downPayment: document.getElementById('downPayment').value,
+    years: document.getElementById('years').value,
+    annualRate: document.getElementById('annualRate').value,
+    monthlySalary: document.getElementById('monthlySalary').value,
+  };
+  localStorage.setItem('cihan_form', JSON.stringify(data));
+}
+
+function loadFromLocal() {
+  const saved = localStorage.getItem('cihan_form');
+  if (saved) {
+    const d = JSON.parse(saved);
+    if (d.totalPrice) document.getElementById('totalPrice').value = d.totalPrice;
+    if (d.downPayment) document.getElementById('downPayment').value = d.downPayment;
+    if (d.years) document.getElementById('years').value = d.years;
+    if (d.annualRate) document.getElementById('annualRate').value = d.annualRate;
+    if (d.monthlySalary) document.getElementById('monthlySalary').value = d.monthlySalary;
+  }
+  const theme = localStorage.getItem('cihan_theme');
+  if (theme) {
+    isDark = theme === 'dark';
+    document.getElementById('bodyEl').className = theme;
+    document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀️';
+  }
+  // Auto-calculate if data exists
+  const saved2 = localStorage.getItem('cihan_results');
+  if (saved2) {
+    const r = JSON.parse(saved2);
+    if (r) renderResults(r);
+  }
+}
+
+function resetAll() {
+  if (!confirm('دڵنیای بەسڕینەوەی هەموو داتاکان؟')) return;
+  localStorage.removeItem('cihan_form');
+  localStorage.removeItem('cihan_results');
+  document.getElementById('totalPrice').value = '';
+  document.getElementById('downPayment').value = '';
+  document.getElementById('years').value = '5';
+  document.getElementById('annualRate').value = '9';
+  document.getElementById('monthlySalary').value = '';
+  document.getElementById('results').style.display = 'none';
+}
+
+// ─── Core Calculation ────────────────────────────────────────
+function calculate() {
+  const totalPrice = parseFloat(document.getElementById('totalPrice').value);
+  const downPayment = parseFloat(document.getElementById('downPayment').value);
+  const years = parseInt(document.getElementById('years').value);
+  const annualRate = parseFloat(document.getElementById('annualRate').value) / 100;
+  const salary = parseFloat(document.getElementById('monthlySalary').value) || 0;
+
+  if (!totalPrice || !downPayment || isNaN(totalPrice) || isNaN(downPayment)) {
+    alert('تکایە نرخی ئۆتۆمبێل و مەبلەغی کاش داخڵ بکە!');
+    return;
+  }
+  if (downPayment >= totalPrice) {
+    alert('مەبلەغی کاش نابێت لە نرخی کۆی زیاتر بێت!');
+    return;
+  }
+
+  const remaining = totalPrice - downPayment;
+
+  // Build year-by-year data
+  const yearData = [];
+  let balance = remaining;
+  let totalInterestPaid = 0;
+  let totalPrincipalPaid = 0;
+  const principalPerYear = remaining / years;
+
+  for (let y = 1; y <= years; y++) {
+    const interest = balance * annualRate;
+    const totalDueThisYear = principalPerYear + interest;
+    const monthlyPayment = totalDueThisYear / 12;
+    const balanceAfter = balance - principalPerYear;
+    totalInterestPaid += interest;
+    totalPrincipalPaid += principalPerYear;
+
+    let salaryRemainMonthly = salary > 0 ? salary - monthlyPayment : null;
+    let salaryRemainYearly = salary > 0 ? (salary * 12) - totalDueThisYear : null;
+
+    yearData.push({
+      year: y,
+      openingBalance: balance,
+      principal: principalPerYear,
+      interest: interest,
+      totalDue: totalDueThisYear,
+      monthly: monthlyPayment,
+      closingBalance: balanceAfter,
+      cumulativePaid: downPayment + totalPrincipalPaid + totalInterestPaid,
+      salaryRemainMonthly,
+      salaryRemainYearly,
+    });
+
+    balance = balanceAfter;
+  }
+
+  const grandTotal = downPayment + remaining + totalInterestPaid;
+
+  const result = {
+    totalPrice, downPayment, remaining, years, annualRate: annualRate * 100,
+    totalInterest: totalInterestPaid,
+    grandTotal,
+    avgMonthly: (remaining + totalInterestPaid) / (years * 12),
+    avgYearly: (remaining + totalInterestPaid) / years,
+    salary,
+    yearData,
+  };
+
+  localStorage.setItem('cihan_results', JSON.stringify(result));
+  saveToLocal();
+  renderResults(result);
+}
+
+function renderResults(r) {
+  document.getElementById('results').style.display = 'block';
+
+  // Summary
+  document.getElementById('s_total').textContent = fmt(r.totalPrice);
+  document.getElementById('s_down').textContent = fmt(r.downPayment);
+  document.getElementById('s_rem').textContent = fmt(r.remaining);
+  document.getElementById('s_interest').textContent = fmt(r.totalInterest);
+  document.getElementById('s_grandtotal').textContent = fmt(r.grandTotal);
+  document.getElementById('s_monthly').textContent = fmt(r.avgMonthly);
+  document.getElementById('s_yearly').textContent = fmt(r.avgYearly);
+  document.getElementById('s_years').textContent = r.years + ' ساڵ';
+
+  // Progress
+  const downPct = ((r.downPayment / r.totalPrice) * 100).toFixed(1);
+  const remPct = (100 - downPct).toFixed(1);
+  document.getElementById('down_pct').textContent = downPct + '%';
+  document.getElementById('rem_pct').textContent = remPct + '%';
+  document.getElementById('downBar').style.width = downPct + '%';
+
+  // Year table
+  const tbody = document.getElementById('yearTableBody');
+  tbody.innerHTML = '';
+  r.yearData.forEach((row, i) => {
+    const completedPct = ((row.cumulativePaid / r.grandTotal) * 100).toFixed(0);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="year-badge">${row.year}</span></td>
+      <td class="num">${fmt(row.openingBalance)}</td>
+      <td class="num" style="color:#ff9800;"><strong>${fmt(row.interest)}</strong><br><small style="color:var(--text2)">${r.annualRate}% × ${fmtN(row.openingBalance)}</small></td>
+      <td class="num" style="color:var(--accent3);"><strong>${fmt(row.totalDue)}</strong></td>
+      <td class="num" style="color:#a78bfa;"><strong>${fmt(row.monthly)}</strong><small style="display:block;color:var(--text2);">بۆ ١٢ مانگ</small></td>
+      <td class="num" style="color:var(--blue);">${fmt(row.closingBalance)}</td>
+      <td class="num" style="color:var(--green);">${fmt(row.cumulativePaid)}</td>
+      <td>
+        <div style="font-size:12px;color:var(--text2);">${completedPct}%</div>
+        <div class="progress-wrap"><div class="progress-bar" style="width:${completedPct}%"></div></div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Salary
+  if (r.salary > 0) {
+    document.getElementById('salarySection').style.display = 'block';
+    document.getElementById('sal_monthly').textContent = fmt(r.salary);
+    document.getElementById('sal_installment').textContent = fmt(r.avgMonthly);
+    const rem = r.salary - r.avgMonthly;
+    document.getElementById('sal_remain').textContent = fmt(rem);
+    const salPct = ((r.avgMonthly / r.salary) * 100).toFixed(1) + '%';
+    document.getElementById('sal_pct').textContent = salPct;
+
+    // per-year salary
+    const rowsEl = document.getElementById('salaryYearRows');
+    rowsEl.innerHTML = '';
+    r.yearData.forEach(row => {
+      const rem2 = r.salary - row.monthly;
+      const remY = (r.salary * 12) - row.totalDue;
+      const div = document.createElement('div');
+      div.className = 'salary-row';
+      div.innerHTML = `
+        <div><span class="salary-label">ساڵی ${row.year}</span><br>
+          <small style="color:var(--text2);">قیست: ${fmt(row.monthly)}/مانگ</small>
+        </div>
+        <div class="salary-amount">
+          <span class="tag blue">مانگانە دەمێنێت: ${fmt(rem2)}</span>
+        </div>
+        <div class="salary-remain">
+          <span class="tag ${remY >= 0 ? 'green' : 'red'}">ساڵانە: ${fmt(remY)}</span>
+        </div>
+      `;
+      rowsEl.appendChild(div);
+    });
+
+    // Advice
+    const advEl = document.getElementById('salaryAdvice');
+    const pctNum = parseFloat(salPct);
+    let advice = '';
+    if (pctNum < 25) advice = `✅ <strong>باشترین دۆخ:</strong> قیستەکە تەنها ${salPct} لە مووچەتە. ئەمە گونجاوترین بڕە لە ئابوریدا.`;
+    else if (pctNum < 35) advice = `✔️ <strong>دۆخی باش:</strong> قیستەکە ${salPct} لە مووچەتە. ئەمە پێواستە بەڵام بەرپرسیارانەیە.`;
+    else if (pctNum < 50) advice = `⚠️ <strong>ئاگادارکردنەوە:</strong> قیستەکە ${salPct} لە مووچەتە. تکایە لەبارەی خەرجییە تریتدا باش بیربکەرەوە.`;
+    else advice = `🔴 <strong>مەترسیدارە:</strong> قیستەکە ${salPct} لە مووچەتە. ئەمە زۆر زۆرە. پێشنیاری کردن: مەبلەغی کاش بەرزتر بکەیت یان ساڵ زیاد بکەیت.`;
+    advEl.innerHTML = advice;
+  } else {
+    document.getElementById('salarySection').style.display = 'none';
+  }
+
+  // Tips
+  const tipContent = document.getElementById('tipsContent');
+  const savedAmount = (r.years > 1) ? (r.yearData[0].interest - r.yearData[r.years-1].interest) : 0;
+  tipContent.innerHTML = `
+    <ul style="list-style:none; padding:0;">
+      <li style="margin-bottom:12px; padding:10px 14px; background:var(--bg3); border-radius:8px; border-right:3px solid var(--accent3);">
+        💡 <strong>پردیاختنی بەتەواوی:</strong> ئەگەر توانیت کۆی مەبلەغی قیست (${fmt(r.remaining)}) یەک جار بدەیت، کۆی سوود ${fmt(r.totalInterest)} دەسرفت دەبێت.
+      </li>
+      <li style="margin-bottom:12px; padding:10px 14px; background:var(--bg3); border-radius:8px; border-right:3px solid var(--blue);">
+        📌 <strong>سوودی گشتی:</strong> بەهۆی ${r.annualRate}% سوودی ساڵانە، کۆی ${fmt(r.totalInterest)} زیادتر لە نرخی ڕەسەنی قیستەکە دەدەیت.
+      </li>
+      <li style="margin-bottom:12px; padding:10px 14px; background:var(--bg3); border-radius:8px; border-right:3px solid var(--green);">
+        💰 <strong>کۆی گشتی ئۆتۆمبێل:</strong> ${fmt(r.grandTotal)} — ئەوە نرخی ڕەستی ئۆتۆمبێل لەگەڵ هەموو سوودەکانی قیستە.
+      </li>
+      <li style="margin-bottom:12px; padding:10px 14px; background:var(--bg3); border-radius:8px; border-right:3px solid #a78bfa;">
+        📅 <strong>هەر مانگێک ${fmt(r.avgMonthly)}</strong> بە ناوەندی دەدەیت — بۆ کۆی ${r.years * 12} مانگ.
+      </li>
+      <li style="margin-bottom:12px; padding:10px 14px; background:var(--bg3); border-radius:8px; border-right:3px solid #ff9800;">
+        ⚡ <strong>ئامۆژگاری:</strong> سوود بەسەر مەبلەغی بەدواداچوونی مانگ بە مانگ کەمتر دەبێت چون پرنسیپاڵ کەم دەبێتەوە.
+      </li>
+      ${r.salary > 0 ? `
+      <li style="margin-bottom:12px; padding:10px 14px; background:var(--bg3); border-radius:8px; border-right:3px solid var(--green);">
+        👤 <strong>تۆ و مووچەکەت:</strong> بە ماوەی ${r.years} ساڵ کۆی ${fmt(r.salary * 12 * r.years)} مووچە وەردەگریت، لەوانەش ${fmt((r.remaining + r.totalInterest))} بەسەر قیستەکان دەدەیت.
+      </li>
+      ` : ''}
+    </ul>
+  `;
+
+  // Scroll to results
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ─── Init ─────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', loadFromLocal);
+</script>
+    <script src="qalyx-bridge.js"></script>
+</body>
+</html>

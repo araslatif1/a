@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+    <title>Case Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            background: white;
+            color: #667eea;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .left-panel {
+            border-right: 2px solid #e5e7eb;
+            padding-right: 20px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .case-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .case-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f9fafb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .case-item:hover {
+            background: #f3f4f6;
+            border-left-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .case-item.active {
+            background: #e0e7ff;
+            border-left-color: #667eea;
+        }
+
+        .case-number {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 16px;
+        }
+
+        .right-panel {
+            padding-left: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            min-height: 250px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .status-bar {
+            background: #f9fafb;
+            padding: 10px 30px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .auto-save-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .save-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .left-panel {
+                border-right: none;
+                border-bottom: 2px solid #e5e7eb;
+                padding-right: 0;
+                padding-bottom: 20px;
+            }
+
+            .right-panel {
+                padding-left: 0;
+            }
+        }
+
+        .suggestions-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #667eea;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .suggestion-item {
+            padding: 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #e5e7eb;
+            transition: background 0.2s;
+        }
+
+        .suggestion-item:hover {
+            background: #f3f4f6;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-case-num {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 4px;
+        }
+
+        .suggestion-desc {
+            font-size: 12px;
+            color: #6b7280;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Case Management System</h1>
+            <div class="controls">
+                <button class="btn btn-success" onclick="addCase()">+ Add New Case</button>
+                <button class="btn" onclick="exportData()">📤 Export JSON</button>
+                <button class="btn" onclick="exportExcel()">📊 Export Excel</button>
+                <button class="btn" onclick="exportPDF()">📄 Export PDF</button>
+                <button class="btn" onclick="document.getElementById('importFile').click()">📥 Import</button>
+                <button class="btn btn-danger" onclick="clearAll()">🗑️ Clear All</button>
+            </div>
+            <input type="file" id="importFile" accept=".json" onchange="importData(event)">
+        </div>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <input type="text" class="search-box" placeholder="🔍 Search cases..." oninput="searchCases(this.value)">
+                <div class="case-list" id="caseList">
+                    <div class="empty-state">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <p>No cases yet. Click "Add New Case" to get started.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div id="caseForm">
+                    <div class="form-group">
+                        <label for="caseNumber">Case Number *</label>
+                        <div style="position: relative;">
+                            <input type="text" id="caseNumber" placeholder="Enter case number" oninput="handleCaseNumberInput(this.value)" onblur="hideSuggestions()" autocomplete="off">
+                            <div id="suggestions" class="suggestions-dropdown"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="caseDescription">Case Description *</label>
+                        <textarea id="caseDescription" placeholder="Enter detailed case description..." oninput="autoSave()"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-success" onclick="saveCase()">💾 Save Case</button>
+                        <button class="btn" onclick="clearForm()">🔄 Clear Form</button>
+                        <button class="btn btn-danger" onclick="deleteCase()" id="deleteBtn" style="display:none;">🗑️ Delete Case</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <div class="auto-save-indicator">
+                <div class="save-dot"></div>
+                <span>Auto-save enabled</span>
+            </div>
+            <span id="caseCount">Total Cases: 0</span>
+        </div>
+    </div>
+
+    <script>
+        let cases = {};
+        let currentCaseId = null;
+        let autoSaveTimer = null;
+
+        // Load data on page load
+        window.onload = function() {
+            loadData();
+            renderCaseList();
+        };
+
+        function loadData() {
+            const saved = localStorage.getItem('casesData');
+            if (saved) {
+                cases = JSON.parse(saved);
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('casesData', JSON.stringify(cases));
+            updateCaseCount();
+        }
+
+        function autoSave() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                if (currentCaseId) {
+                    saveCase();
+                }
+            }, 1000);
+        }
+
+        function addCase() {
+            currentCaseId = null;
+            clearForm();
+            document.getElementById('caseNumber').focus();
+            document.getElementById('deleteBtn').style.display = 'none';
+            
+            // Remove active state from all cases
+            document.querySelectorAll('.case-item').forEach(item => {
+                item.classList.remove('active');
+            });
+        }
+
+        function saveCase() {
+            const caseNumber = document.getElementById('caseNumber').value.trim();
+            const caseDescription = document.getElementById('caseDescription').value.trim();
+
+            if (!caseNumber) {
+                alert('Please enter a case number');
+                return;
+            }
+
+            if (!caseDescription) {
+                alert('Please enter a case description');
+                return;
+            }
+
+            const caseId = currentCaseId || caseNumber;
+            
+            cases[caseId] = {
+                caseNumber: caseNumber,
+                description: caseDescription,
+                timestamp: new Date().toISOString()
+            };
+
+            saveData();
+            renderCaseList();
+            
+            // Show success feedback
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✓ Saved!';
+            
+            // Clear form immediately and prepare for new case
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                addCase();
+            }, 800);
+        }
+
+        function deleteCase() {
+            if (!currentCaseId) return;
+
+            if (confirm('Are you sure you want to delete this case?')) {
+                delete cases[currentCaseId];
+                saveData();
+                renderCaseList();
+                clearForm();
+                currentCaseId = null;
+                document.getElementById('deleteBtn').style.display = 'none';
+            }
+        }
+
+        function loadCase(caseId) {
+            const caseData = cases[caseId];
+            if (caseData) {
+                currentCaseId = caseId;
+                document.getElementById('caseNumber').value = caseData.caseNumber;
+                document.getElementById('caseDescription').value = caseData.description;
+                document.getElementById('deleteBtn').style.display = 'inline-block';
+                
+                // Update active state
+                document.querySelectorAll('.case-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                event.target.closest('.case-item').classList.add('active');
+            }
+        }
+
+        function clearForm() {
+            document.getElementById('caseNumber').value = '';
+            document.getElementById('caseDescription').value = '';
+            currentCaseId = null;
+            hideSuggestions();
+        }
+
+        function handleCaseNumberInput(value) {
+            const suggestionsBox = document.getElementById('suggestions');
+            
+            if (!value.trim()) {
+                hideSuggestions();
+                return;
+            }
+
+            // Check if exact match exists
+            const exactMatch = Object.values(cases).find(c => c.caseNumber === value);
+            if (exactMatch) {
+                // Load the case automatically if exact match
+                document.getElementById('caseDescription').value = exactMatch.description;
+                currentCaseId = value;
+                document.getElementById('deleteBtn').style.display = 'inline-block';
+                hideSuggestions();
+                return;
+            }
+
+            // Find matching cases
+            const matches = Object.values(cases).filter(c => 
+                c.caseNumber.toLowerCase().startsWith(value.toLowerCase())
+            );
+
+            if (matches.length > 0) {
+                showSuggestions(matches);
+            } else {
+                hideSuggestions();
+                // Reset if no matches
+                if (currentCaseId) {
+                    document.getElementById('caseDescription').value = '';
+                    currentCaseId = null;
+                    document.getElementById('deleteBtn').style.display = 'none';
+                }
+            }
+
+            // Auto-save for edits
+            autoSave();
+        }
+
+        function showSuggestions(matches) {
+            const suggestionsBox = document.getElementById('suggestions');
+            
+            suggestionsBox.innerHTML = matches.map(caseData => {
+                const briefDesc = caseData.description.length > 50 
+                    ? caseData.description.substring(0, 50) + '...' 
+                    : caseData.description;
+                return `
+                    <div class="suggestion-item" onmousedown="selectSuggestion('${caseData.caseNumber.replace(/'/g, "\\'")}')">
+                        <div class="suggestion-case-num">${caseData.caseNumber}</div>
+                        <div class="suggestion-desc">${briefDesc}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            suggestionsBox.style.display = 'block';
+        }
+
+        function hideSuggestions() {
+            setTimeout(() => {
+                document.getElementById('suggestions').style.display = 'none';
+            }, 200);
+        }
+
+        function selectSuggestion(caseNumber) {
+            const caseData = Object.values(cases).find(c => c.caseNumber === caseNumber);
+            if (caseData) {
+                document.getElementById('caseNumber').value = caseData.caseNumber;
+                document.getElementById('caseDescription').value = caseData.description;
+                currentCaseId = caseNumber;
+                document.getElementById('deleteBtn').style.display = 'inline-block';
+                hideSuggestions();
+            }
+        }
+
+        function renderCaseList(filteredCases = null) {
+            const caseList = document.getElementById('caseList');
+            const casesToRender = filteredCases || cases;
+            
+            if (Object.keys(casesToRender).length === 0) {
+                caseList.innerHTML = `
+                    <div class="empty-state">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <p>${filteredCases ? 'No cases found' : 'No cases yet. Click "Add New Case" to get started.'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const sortedCases = Object.entries(casesToRender).sort((a, b) => {
+                return new Date(b[1].timestamp) - new Date(a[1].timestamp);
+            });
+
+            caseList.innerHTML = sortedCases.map(([id, data]) => {
+                const briefDesc = data.description.length > 80 
+                    ? data.description.substring(0, 80) + '...' 
+                    : data.description;
+                return `
+                <div class="case-item ${currentCaseId === id ? 'active' : ''}" onclick="loadCase('${id}')">
+                    <div class="case-number">${data.caseNumber}</div>
+                    <div style="font-size: 13px; color: #dc2626; margin: 8px 0; line-height: 1.4;">
+                        ${briefDesc}
+                    </div>
+                    <div style="font-size: 12px; color: #9ca3af;">
+                        ${new Date(data.timestamp).toLocaleDateString()}
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+            updateCaseCount();
+        }
+
+        function searchCases(query) {
+            if (!query.trim()) {
+                renderCaseList();
+                return;
+            }
+
+            const filtered = {};
+            const lowerQuery = query.toLowerCase();
+
+            Object.entries(cases).forEach(([id, data]) => {
+                if (data.caseNumber.toLowerCase().includes(lowerQuery) ||
+                    data.description.toLowerCase().includes(lowerQuery)) {
+                    filtered[id] = data;
+                }
+            });
+
+            renderCaseList(filtered);
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(cases, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `cases-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (confirm('This will merge imported cases with existing ones. Continue?')) {
+                        cases = { ...cases, ...imported };
+                        saveData();
+                        renderCaseList();
+                        alert('Cases imported successfully!');
+                    }
+                } catch (err) {
+                    alert('Error importing file. Please ensure it\'s a valid JSON file.');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function clearAll() {
+            if (confirm('Are you sure you want to delete ALL cases? This cannot be undone!')) {
+                if (confirm('Really sure? This will permanently delete everything!')) {
+                    cases = {};
+                    saveData();
+                    renderCaseList();
+                    clearForm();
+                    currentCaseId = null;
+                    document.getElementById('deleteBtn').style.display = 'none';
+                }
+            }
+        }
+
+        function updateCaseCount() {
+            document.getElementById('caseCount').textContent = `Total Cases: ${Object.keys(cases).length}`;
+        }
+
+        function exportExcel() {
+            if (Object.keys(cases).length === 0) {
+                alert('No cases to export!');
+                return;
+            }
+
+            // Create CSV content (Excel can open CSV files)
+            let csv = 'Case Number,Description,Date\n';
+            
+            Object.values(cases).forEach(caseData => {
+                const caseNum = caseData.caseNumber.replace(/"/g, '""');
+                const desc = caseData.description.replace(/"/g, '""').replace(/\n/g, ' ');
+                const date = new Date(caseData.timestamp).toLocaleDateString();
+                csv += `"${caseNum}","${desc}","${date}"\n`;
+            });
+
+            // Create download
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `cases-export-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportPDF() {
+            if (Object.keys(cases).length === 0) {
+                alert('No cases to export!');
+                return;
+            }
+
+            // Create a printable HTML document
+            const printWindow = window.open('', '', 'width=800,height=600');
+            
+            const sortedCases = Object.entries(cases).sort((a, b) => {
+                return new Date(b[1].timestamp) - new Date(a[1].timestamp);
+            });
+
+            let html = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Case Management Report</title>
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body {
+                            font-family: Arial, sans-serif;
+                            padding: 40px;
+                            background: white;
+                        }
+                        .header {
+                            text-align: center;
+                            margin-bottom: 40px;
+                            padding-bottom: 20px;
+                            border-bottom: 3px solid #667eea;
+                        }
+                        .header h1 {
+                            color: #667eea;
+                            font-size: 32px;
+                            margin-bottom: 10px;
+                        }
+                        .header .meta {
+                            color: #6b7280;
+                            font-size: 14px;
+                        }
+                        .case {
+                            margin-bottom: 30px;
+                            padding: 20px;
+                            border: 2px solid #e5e7eb;
+                            border-radius: 8px;
+                            page-break-inside: avoid;
+                        }
+                        .case-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 15px;
+                            padding-bottom: 10px;
+                            border-bottom: 1px solid #e5e7eb;
+                        }
+                        .case-number {
+                            font-size: 18px;
+                            font-weight: bold;
+                            color: #667eea;
+                        }
+                        .case-date {
+                            font-size: 12px;
+                            color: #9ca3af;
+                        }
+                        .case-description {
+                            line-height: 1.6;
+                            color: #374151;
+                            white-space: pre-wrap;
+                        }
+                        .footer {
+                            margin-top: 40px;
+                            padding-top: 20px;
+                            border-top: 2px solid #e5e7eb;
+                            text-align: center;
+                            color: #9ca3af;
+                            font-size: 12px;
+                        }
+                        @media print {
+                            body { padding: 20px; }
+                            .no-print { display: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>📋 Case Management Report</h1>
+                        <div class="meta">
+                            Generated on ${new Date().toLocaleDateString()} | Total Cases: ${Object.keys(cases).length}
+                        </div>
+                    </div>
+            `;
+
+            sortedCases.forEach(([id, data]) => {
+                html += `
+                    <div class="case">
+                        <div class="case-header">
+                            <div class="case-number">${data.caseNumber}</div>
+                            <div class="case-date">${new Date(data.timestamp).toLocaleDateString()}</div>
+                        </div>
+                        <div class="case-description">${data.description}</div>
+                    </div>
+                `;
+            });
+
+            html += `
+                    <div class="footer">
+                        Case Management System - Confidential Document
+                    </div>
+                    <div class="no-print" style="text-align: center; margin-top: 20px;">
+                        <button onclick="window.print()" style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">Print / Save as PDF</button>
+                        <button onclick="window.close()" style="padding: 10px 20px; background: #6b7280; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-left: 10px;">Close</button>
+                    </div>
+                    <script src="qalyx-bridge.js"></script>
+</body>
+                </html>
+            `;
+
+            printWindow.document.write(html);
+            printWindow.document.close();
+        }
+    </script>
+</body>
+</html>

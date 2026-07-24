@@ -1,0 +1,1732 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="dark" data-lang="en">
+<head>
+   <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<title>DVR TIME SYNC MASTER PRO v3</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+/* ══════════════════════════════════════════════
+   THEME VARIABLES — DARK (default)
+══════════════════════════════════════════════ */
+:root,[data-theme="dark"] {
+  --bg: #080c10;
+  --panel: #0d1318;
+  --panel2: #111820;
+  --panel3: #060e14;
+  --border: #1e2d3d;
+  --border2: #2a3f54;
+  --accent-r: #ff3c3c;
+  --accent-g: #00ffc8;
+  --accent-b: #00aaff;
+  --accent-y: #ffd700;
+  --accent-o: #ff8c00;
+  --accent-p: #c084fc;
+  --text: #c8dae8;
+  --text-strong: #ffffff;
+  --dim: #4a6278;
+  --dim2: #3a5068;
+  --input-bg: #0a1018;
+  --shadow: rgba(0,0,0,0.5);
+  --grid-line: rgba(0,170,255,0.03);
+  --real-time-bg1: #0a1a10;
+  --real-time-bg2: #0a1520;
+  --h1-shadow: rgba(0,170,255,0.4);
+  --row-alt: rgba(255,255,255,0.02);
+}
+[data-theme="light"] {
+  --bg: #f0f4f8;
+  --panel: #ffffff;
+  --panel2: #eef2f7;
+  --panel3: #f8fafc;
+  --border: #cdd8e6;
+  --border2: #b0c4d8;
+  --accent-r: #d42020;
+  --accent-g: #009977;
+  --accent-b: #0077cc;
+  --accent-y: #c49000;
+  --accent-o: #cc6600;
+  --accent-p: #8040cc;
+  --text: #2a3a4a;
+  --text-strong: #0a1520;
+  --dim: #7a92a8;
+  --dim2: #96aabb;
+  --input-bg: #f4f8fc;
+  --shadow: rgba(0,0,0,0.12);
+  --grid-line: rgba(0,100,200,0.04);
+  --real-time-bg1: #e8f8f0;
+  --real-time-bg2: #e8f2fa;
+  --h1-shadow: rgba(0,100,200,0.2);
+  --row-alt: rgba(0,0,0,0.02);
+}
+
+/* ══════════════════════════════════════════════
+   KURDISH / RTL FONT OVERRIDE
+══════════════════════════════════════════════ */
+[data-lang="ku"] { font-family: 'Noto Sans Arabic', 'Segoe UI', sans-serif !important; }
+[data-lang="ku"] .mono-text,
+[data-lang="ku"] .field-label,
+[data-lang="ku"] .offset-key,
+[data-lang="ku"] .hist-ts { font-family: 'Noto Sans Arabic', sans-serif !important; letter-spacing: 0 !important; }
+[data-lang="ku"] [class*="-body"] p,
+[data-lang="ku"] .crossbar-desc { font-family: 'Noto Sans Arabic', sans-serif !important; letter-spacing: 0 !important; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body, 'Rajdhani', sans-serif);
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background 0.3s, color 0.3s;
+}
+[data-lang="ku"] body { font-family: 'Noto Sans Arabic', sans-serif; }
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: linear-gradient(var(--grid-line) 1px, transparent 1px),
+                    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none; z-index: 0;
+}
+.container { max-width: 1200px; margin: 0 auto; padding: 20px 16px 80px; position: relative; z-index: 1; }
+
+/* ── TOOLBAR (theme + lang) ── */
+.toolbar {
+  position: fixed; top: 12px; right: 14px; z-index: 9000;
+  display: flex; gap: 8px; align-items: center;
+}
+[dir="rtl"] .toolbar { right: auto; left: 14px; }
+.tb-btn {
+  background: var(--panel2); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 7px 12px; cursor: pointer;
+  font-family: 'Share Tech Mono', monospace; font-size: 11px;
+  color: var(--text); transition: all 0.2s; display:flex; align-items:center; gap:5px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+.tb-btn:hover { border-color: var(--accent-b); color: var(--accent-b); }
+.tb-btn.active-lang { border-color: var(--accent-y); color: var(--accent-y); }
+.theme-icon { font-size: 14px; }
+
+/* ── HEADER ── */
+.header { text-align: center; padding: 36px 0 20px; }
+.header .kicker { font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 4px; color: var(--accent-b); margin-bottom: 6px; }
+[data-lang="ku"] .header .kicker { font-family: 'Noto Sans Arabic', sans-serif; letter-spacing: 0; font-size: 12px; }
+.header h1 { font-family: 'Orbitron', sans-serif; font-size: clamp(20px, 5vw, 34px); font-weight: 900; letter-spacing: 2px; color: var(--text-strong); text-shadow: 0 0 30px var(--h1-shadow); }
+[data-lang="ku"] .header h1 { font-family: 'Noto Sans Arabic', sans-serif; letter-spacing: 0; }
+.header h1 span { color: var(--accent-r); }
+.pro-badge { font-size: 11px; background: var(--accent-y); color: #000; padding: 2px 7px; border-radius: 4px; vertical-align: middle; margin-left: 8px; letter-spacing: 1px; font-weight: 900; font-family: 'Orbitron', sans-serif; }
+.v2-badge { font-size: 11px; background: var(--accent-p); color: #fff; padding: 2px 7px; border-radius: 4px; vertical-align: middle; margin-left: 4px; letter-spacing: 1px; font-weight: 900; font-family: 'Orbitron', sans-serif; }
+.header .sub { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--dim); margin-top: 6px; letter-spacing: 1px; }
+[data-lang="ku"] .header .sub { font-family: 'Noto Sans Arabic', sans-serif; letter-spacing: 0; font-size: 12px; }
+
+.save-bar { display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:14px; }
+.save-dot { width:6px; height:6px; border-radius:50%; background:var(--accent-g); box-shadow:0 0 6px var(--accent-g); }
+.save-label { font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--accent-g); letter-spacing:2px; }
+[data-lang="ku"] .save-label { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:11px; }
+
+/* ── REAL TIME BAR ── */
+.real-time-bar {
+  background: linear-gradient(90deg, var(--real-time-bg1), var(--real-time-bg2), var(--real-time-bg1));
+  border: 1px solid var(--accent-g); border-radius: 8px;
+  padding: 14px 20px; display: flex; align-items: center;
+  justify-content: space-between; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.real-time-bar .rtlabel { font-family: 'Share Tech Mono',monospace; font-size: 10px; color: var(--accent-g); letter-spacing: 3px; }
+[data-lang="ku"] .real-time-bar .rtlabel { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:12px; }
+.real-time-bar .clock { font-family: 'Share Tech Mono',monospace; font-size: clamp(18px,4vw,28px); color: var(--accent-g); text-shadow: 0 0 16px rgba(0,255,200,0.4); letter-spacing: 2px; }
+.real-time-bar .date-display { font-family: 'Share Tech Mono',monospace; font-size: 13px; color: var(--accent-g); opacity:0.8; }
+[data-lang="ku"] .real-time-bar .date-display { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; }
+.pulse-dot { width:8px; height:8px; border-radius:50%; background:var(--accent-g); box-shadow:0 0 8px var(--accent-g); animation:pulse 1s ease-in-out infinite; flex-shrink:0; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.sec-title { font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:3px; color:var(--dim); margin-bottom:12px; }
+.sec-title span { color:var(--accent-b); }
+[data-lang="ku"] .sec-title { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:12px; }
+
+/* ── STATS ── */
+.stats-strip { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:12px; margin-bottom:20px; }
+.stat-box { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:12px 14px; text-align:center; transition:background 0.3s, border-color 0.3s; }
+.stat-box .val { font-family:'Orbitron',sans-serif; font-size:20px; font-weight:900; margin-bottom:3px; }
+.stat-box .key { font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:2px; color:var(--dim); }
+[data-lang="ku"] .stat-box .key { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:11px; }
+
+/* ── DVR GRID ── */
+.dvr-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:16px; margin-bottom:16px; }
+.dvr-card { background:var(--panel); border-radius:12px; border:1px solid var(--border); overflow:hidden; position:relative; transition:border-color 0.2s,background 0.3s; }
+.dvr-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--dvr-color, var(--accent-b)); }
+.dvr-header { background:var(--panel2); padding:10px 14px; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--border); transition:background 0.3s; }
+.dvr-indicator { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.dvr-name-input { background:transparent; border:none; color:var(--text-strong); font-family:'Orbitron',sans-serif; font-size:12px; font-weight:700; letter-spacing:1px; flex:1; outline:none; cursor:text; }
+[data-lang="ku"] .dvr-name-input { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:14px; text-align:right; }
+.dvr-name-input::placeholder { color:var(--dim); }
+.dvr-id { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--dim); }
+.btn-remove { background:none; border:none; color:var(--dim); cursor:pointer; font-size:13px; padding:2px 5px; border-radius:4px; transition:color 0.2s,background 0.2s; }
+.btn-remove:hover { color:var(--accent-r); background:rgba(255,60,60,0.1); }
+.dvr-body { padding:12px 14px; }
+.field-row { margin-bottom:10px; }
+.field-label { font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:2px; color:var(--dim); margin-bottom:4px; display:flex; align-items:center; gap:6px; }
+.field-label span { color:var(--dvr-color, var(--accent-b)); }
+[data-lang="ku"] .field-label { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:11px; flex-direction:row-reverse; justify-content:flex-end; }
+.dt-inputs { display:flex; gap:7px; }
+.dt-inputs input,
+.meta-input { flex:1; background:var(--input-bg); border:1px solid var(--border); border-radius:6px; color:var(--text-strong); font-family:'Share Tech Mono',monospace; font-size:12px; padding:7px 9px; outline:none; transition:border-color 0.2s,background 0.3s; width:100%; }
+.dt-inputs input:focus, .meta-input:focus { border-color:var(--dvr-color, var(--accent-b)); }
+.dt-inputs input[type="time"] { flex:0.8; }
+.btn-set-now { background:rgba(0,255,200,0.08); border:1px solid rgba(0,255,200,0.2); border-radius:4px; color:var(--accent-g); font-family:'Share Tech Mono',monospace; font-size:8px; letter-spacing:1px; padding:3px 7px; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+[data-lang="ku"] .btn-set-now { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:10px; }
+.btn-set-now:hover { background:rgba(0,255,200,0.18); }
+.meta-row { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px; }
+.meta-label { font-family:'Share Tech Mono',monospace; font-size:8px; color:var(--dim); letter-spacing:1px; margin-bottom:3px; }
+[data-lang="ku"] .meta-label { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:10px; }
+.dvr-offset-display { background:var(--panel3); border:1px solid var(--border); border-radius:8px; padding:10px 12px; margin-top:8px; transition:background 0.3s; }
+.offset-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; }
+.offset-row:last-child { margin-bottom:0; }
+.offset-key { font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--dim); letter-spacing:1px; }
+[data-lang="ku"] .offset-key { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:11px; }
+.offset-val { font-family:'Share Tech Mono',monospace; font-size:12px; font-weight:700; }
+.offset-val.ahead { color:var(--accent-o); }
+.offset-val.behind { color:var(--accent-b); }
+.offset-val.synced { color:var(--accent-g); }
+.alert-row { display:flex; align-items:center; gap:8px; margin-top:6px; }
+.alert-label { font-family:'Share Tech Mono',monospace; font-size:8px; color:var(--dim); white-space:nowrap; }
+[data-lang="ku"] .alert-label { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:10px; }
+.alert-input { background:var(--panel3); border:1px solid var(--border); border-radius:4px; color:var(--text-strong); font-family:'Share Tech Mono',monospace; font-size:11px; padding:4px 7px; outline:none; width:80px; transition:border-color 0.2s; }
+.alert-input:focus { border-color:var(--accent-r); }
+.alert-badge { font-family:'Share Tech Mono',monospace; font-size:8px; padding:2px 6px; border-radius:3px; letter-spacing:1px; }
+[data-lang="ku"] .alert-badge { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:10px; }
+.alert-badge.triggered { background:rgba(255,60,60,0.15); color:var(--accent-r); border:1px solid var(--accent-r); animation:alertPulse 1s infinite; }
+.alert-badge.ok { background:rgba(0,255,200,0.1); color:var(--accent-g); border:1px solid rgba(0,255,200,0.3); }
+@keyframes alertPulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+.dvr-notes-input { width:100%; background:var(--panel3); border:1px solid var(--border); border-radius:6px; color:var(--text); font-family:'Share Tech Mono',monospace; font-size:10px; padding:6px 10px; outline:none; margin-top:8px; resize:none; height:40px; transition:border-color 0.2s; }
+[data-lang="ku"] .dvr-notes-input { font-family:'Noto Sans Arabic',sans-serif; font-size:12px; }
+.dvr-notes-input:focus { border-color:var(--dvr-color, var(--accent-b)); }
+.dvr-color-strip { display:flex; gap:5px; margin-top:8px; }
+.color-dot { width:14px; height:14px; border-radius:50%; cursor:pointer; border:2px solid transparent; transition:transform 0.15s,border-color 0.15s; }
+.color-dot:hover { transform:scale(1.2); }
+.color-dot.selected { border-color:var(--text-strong); }
+
+/* ── ADD DVR ── */
+.btn-add-dvr { width:100%; background:transparent; border:1px dashed var(--border2); border-radius:12px; color:var(--dim); font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:2px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:20px; }
+[data-lang="ku"] .btn-add-dvr { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:13px; }
+.btn-add-dvr:hover { border-color:var(--accent-b); color:var(--accent-b); background:rgba(0,170,255,0.04); }
+
+/* ── PANEL SHARED STYLES ── */
+.panel-base { background:var(--panel); border-radius:12px; overflow:hidden; margin-bottom:20px; transition:background 0.3s; }
+.panel-header { background:var(--panel2); border-bottom:1px solid var(--border); padding:14px 20px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; transition:background 0.3s; }
+.panel-header .title { font-family:'Orbitron',sans-serif; font-size:13px; font-weight:700; letter-spacing:1px; flex:1; }
+[data-lang="ku"] .panel-header .title { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:15px; }
+.panel-body { padding:16px 20px; }
+.panel-desc { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--dim); letter-spacing:1px; margin-bottom:14px; }
+[data-lang="ku"] .panel-desc { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:12px; }
+.panel-controls { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:16px; }
+.panel-controls input[type="date"],
+.panel-controls input[type="time"] { background:var(--input-bg); border:1px solid var(--border); border-radius:6px; color:var(--text-strong); font-family:'Share Tech Mono',monospace; font-size:12px; padding:8px 10px; outline:none; transition:border-color 0.2s; }
+.range-btn { background:rgba(255,215,0,0.08); border:1px solid rgba(255,215,0,0.25); border-radius:4px; color:var(--accent-y); font-family:'Share Tech Mono',monospace; font-size:9px; padding:4px 10px; cursor:pointer; letter-spacing:1px; transition:all 0.2s; }
+.range-btn:hover { background:rgba(255,215,0,0.18); }
+.range-btn.active { background:rgba(255,215,0,0.2); border-color:var(--accent-y); }
+
+/* ── CROSSBAR ── */
+.crossbar-panel { background:var(--panel); border:1px solid var(--accent-y); border-radius:12px; overflow:hidden; margin-bottom:20px; }
+.crossbar-ruler { height:24px; position:relative; margin-bottom:4px; }
+.ruler-tick { position:absolute; top:0; font-family:'Share Tech Mono',monospace; font-size:8px; color:var(--dim); transform:translateX(-50%); }
+.ruler-tick::after { content:''; display:block; width:1px; height:8px; background:var(--dim); margin:0 auto; margin-top:2px; }
+.crossbar-rows { display:flex; flex-direction:column; gap:6px; }
+.cb-row { display:flex; align-items:center; gap:10px; }
+.cb-label { font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--dim); width:85px; flex-shrink:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cb-bar-wrap { flex:1; height:22px; background:var(--panel3); border-radius:4px; position:relative; cursor:crosshair; border:1px solid var(--border); overflow:hidden; }
+.cb-bar-fill { position:absolute; top:0; left:0; height:100%; opacity:0.18; border-radius:3px; }
+.cb-marker { position:absolute; top:-2px; width:2px; height:calc(100% + 4px); background:var(--accent-y); box-shadow:0 0 6px var(--accent-y); pointer-events:none; transition:left 0.05s; }
+.cb-time-bubble { position:absolute; top:-22px; background:var(--panel2); border:1px solid; border-radius:4px; padding:2px 6px; font-family:'Share Tech Mono',monospace; font-size:9px; white-space:nowrap; transform:translateX(-50%); pointer-events:none; }
+.cb-val { font-family:'Share Tech Mono',monospace; font-size:10px; width:68px; flex-shrink:0; text-align:right; }
+.crossbar-scrubber { width:100%; -webkit-appearance:none; appearance:none; height:4px; background:linear-gradient(90deg, var(--panel3), var(--border)); border-radius:2px; outline:none; cursor:pointer; }
+.crossbar-scrubber::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; border-radius:50%; background:var(--accent-y); box-shadow:0 0 8px var(--accent-y); cursor:pointer; border:2px solid #000; }
+.crossbar-range-labels { display:flex; justify-content:space-between; font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--dim); margin-top:4px; }
+.cb-current-readout { background:var(--panel3); border:1px solid var(--border); border-radius:8px; padding:10px 14px; margin-top:12px; display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:8px; }
+.cb-readout-item { display:flex; flex-direction:column; gap:2px; }
+.cb-readout-name { font-family:'Share Tech Mono',monospace; font-size:8px; color:var(--dim); letter-spacing:1px; }
+[data-lang="ku"] .cb-readout-name { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:10px; }
+.cb-readout-time { font-family:'Share Tech Mono',monospace; font-size:13px; font-weight:700; }
+.cb-readout-date { font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--dim); }
+[data-lang="ku"] .cb-readout-date { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:10px; }
+
+/* ── XREF ── */
+.xref-panel { background:var(--panel); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:20px; }
+.xref-row { display:grid; grid-template-columns:1fr auto 1fr; gap:12px; align-items:center; margin-bottom:12px; }
+.xref-arrow { font-family:'Share Tech Mono',monospace; font-size:16px; color:var(--dim); text-align:center; }
+.xref-input-wrap select, .xref-input-wrap input { width:100%; background:var(--input-bg); border:1px solid var(--border); border-radius:6px; color:var(--text-strong); font-family:'Share Tech Mono',monospace; font-size:12px; padding:8px 10px; outline:none; appearance:none; transition:border-color 0.2s; }
+.xref-input-wrap select:focus, .xref-input-wrap input:focus { border-color:var(--accent-y); }
+.xref-result { background:var(--panel3); border:1px solid var(--border); border-radius:8px; padding:14px; margin-top:14px; display:none; }
+.xref-result.visible { display:block; }
+.xref-result-title { font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:2px; color:var(--dim); margin-bottom:10px; }
+[data-lang="ku"] .xref-result-title { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:11px; }
+.xref-result-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:10px; }
+.xref-result-item { background:var(--panel2); border-radius:6px; padding:10px 12px; border-left:3px solid var(--accent-b); }
+[dir="rtl"] .xref-result-item { border-left:none; border-right:3px solid var(--accent-b); }
+.xref-result-item .dvr-lbl { font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--dim); margin-bottom:3px; }
+[data-lang="ku"] .xref-result-item .dvr-lbl { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:11px; }
+.xref-result-item .dvr-time { font-family:'Share Tech Mono',monospace; font-size:15px; color:var(--text-strong); font-weight:700; }
+.xref-result-item .dvr-date { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--dim); margin-top:2px; }
+[data-lang="ku"] .xref-result-item .dvr-date { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:11px; }
+.btn-xref { width:100%; background:var(--panel3); border:1px solid var(--accent-y); border-radius:8px; color:var(--accent-y); font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:2px; padding:12px; cursor:pointer; margin-top:14px; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
+[data-lang="ku"] .btn-xref { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:13px; }
+.btn-xref:hover { background:rgba(255,215,0,0.08); box-shadow:0 0 20px rgba(255,215,0,0.15); }
+
+/* ── GAP ── */
+.gap-panel { background:var(--panel); border:1px solid rgba(255,60,60,0.3); border-radius:12px; overflow:hidden; margin-bottom:20px; }
+.gap-dvr-row { display:grid; grid-template-columns:80px 1fr 1fr auto; gap:8px; align-items:center; margin-bottom:8px; }
+.gap-dvr-label { font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+[data-lang="ku"] .gap-dvr-label { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:11px; }
+.gap-input { background:var(--panel3); border:1px solid var(--border); border-radius:5px; color:var(--text-strong); font-family:'Share Tech Mono',monospace; font-size:11px; padding:6px 8px; outline:none; width:100%; transition:border-color 0.2s; }
+.gap-input:focus { border-color:var(--accent-r); }
+.gap-channel-label { font-family:'Share Tech Mono',monospace; font-size:8px; color:var(--dim); text-align:center; margin-bottom:6px; }
+[data-lang="ku"] .gap-channel-label { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:10px; }
+.btn-gap { background:var(--panel3); border:1px solid var(--accent-r); border-radius:8px; color:var(--accent-r); font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:2px; padding:11px; cursor:pointer; width:100%; margin-top:12px; transition:all 0.2s; }
+[data-lang="ku"] .btn-gap { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:13px; }
+.btn-gap:hover { background:rgba(255,60,60,0.08); box-shadow:0 0 20px rgba(255,60,60,0.15); }
+.gap-result { margin-top:12px; }
+.gap-item { background:var(--panel3); border-radius:6px; padding:8px 12px; margin-bottom:6px; border-left:3px solid var(--accent-r); font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--text); }
+[dir="rtl"] .gap-item { border-left:none; border-right:3px solid var(--accent-r); }
+.gap-item.overlap { border-left-color:var(--accent-o); } [dir="rtl"] .gap-item.overlap { border-right-color:var(--accent-o); }
+.gap-item.ok { border-left-color:var(--accent-g); } [dir="rtl"] .gap-item.ok { border-right-color:var(--accent-g); }
+[data-lang="ku"] .gap-item { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:12px; }
+
+/* ── TIMELINE ── */
+.timeline-panel { background:var(--panel); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:20px; }
+.tl-row { display:flex; align-items:center; gap:10px; }
+.tl-label { font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--dim); width:80px; flex-shrink:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tl-bar-wrap { flex:1; height:20px; background:var(--panel3); border-radius:4px; position:relative; overflow:visible; }
+.tl-bar { height:100%; border-radius:4px; position:absolute; top:0; display:flex; align-items:center; padding-left:6px; font-family:'Share Tech Mono',monospace; font-size:9px; color:rgba(255,255,255,0.7); white-space:nowrap; overflow:hidden; min-width:4px; }
+.tl-real { background:rgba(0,255,200,0.1); border:1px solid var(--accent-g); left:0; width:100%; }
+[data-theme="light"] .tl-real { background:rgba(0,150,100,0.1); }
+.tl-offset-marker { position:absolute; top:-4px; width:2px; height:28px; background:var(--accent-y); box-shadow:0 0 6px var(--accent-y); }
+
+/* ── DRIFT ── */
+.drift-panel { background:var(--panel); border:1px solid rgba(255,140,0,0.4); border-radius:12px; overflow:hidden; margin-bottom:20px; }
+.drift-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:10px; margin-top:10px; }
+.drift-item { background:var(--panel3); border:1px solid var(--border); border-radius:8px; padding:12px 14px; }
+.drift-dvr { font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:1px; margin-bottom:6px; }
+[data-lang="ku"] .drift-dvr { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:11px; }
+.drift-stat { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+.drift-key { font-family:'Share Tech Mono',monospace; font-size:8px; color:var(--dim); }
+[data-lang="ku"] .drift-key { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:10px; }
+.drift-val { font-family:'Share Tech Mono',monospace; font-size:11px; font-weight:700; }
+
+/* ── BATCH ── */
+.batch-panel { background:var(--panel); border:1px solid rgba(192,132,252,0.4); border-radius:12px; overflow:hidden; margin-bottom:20px; }
+.batch-textarea { width:100%; background:var(--panel3); border:1px solid var(--border); border-radius:6px; color:var(--text-strong); font-family:'Share Tech Mono',monospace; font-size:11px; padding:10px 12px; outline:none; resize:vertical; min-height:90px; transition:border-color 0.2s; }
+.batch-textarea:focus { border-color:var(--accent-p); }
+.batch-controls { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:10px 0; }
+.batch-select { background:var(--panel3); border:1px solid var(--border); border-radius:6px; color:var(--text-strong); font-family:'Share Tech Mono',monospace; font-size:11px; padding:7px 10px; outline:none; appearance:none; cursor:pointer; }
+[data-lang="ku"] .batch-select { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:12px; }
+.btn-batch { background:var(--panel3); border:1px solid var(--accent-p); border-radius:7px; color:var(--accent-p); font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:1px; padding:8px 16px; cursor:pointer; transition:all 0.2s; }
+[data-lang="ku"] .btn-batch { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:12px; }
+.btn-batch:hover { background:rgba(192,132,252,0.1); }
+.batch-result { background:var(--panel3); border:1px solid var(--border); border-radius:6px; padding:10px 12px; font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--accent-g); min-height:60px; white-space:pre-wrap; margin-top:8px; max-height:200px; overflow-y:auto; }
+
+/* ── HISTORY ── */
+.history-panel { background:var(--panel); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:20px; }
+.history-header { background:var(--panel2); border-bottom:1px solid var(--border); padding:14px 20px; display:flex; justify-content:space-between; align-items:center; }
+.btn-clear-hist { background:none; border:1px solid var(--border); border-radius:4px; color:var(--dim); font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:1px; padding:4px 10px; cursor:pointer; transition:all 0.2s; }
+[data-lang="ku"] .btn-clear-hist { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:11px; }
+.btn-clear-hist:hover { border-color:var(--accent-r); color:var(--accent-r); }
+.history-body { padding:14px 20px; max-height:180px; overflow-y:auto; }
+.history-body::-webkit-scrollbar { width:4px; }
+.history-body::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+.hist-item { display:flex; gap:12px; align-items:flex-start; padding:7px 0; border-bottom:1px solid var(--border); font-family:'Share Tech Mono',monospace; font-size:11px; }
+[dir="rtl"] .hist-item { flex-direction:row-reverse; }
+.hist-item:last-child { border-bottom:none; }
+.hist-ts { color:var(--dim); flex-shrink:0; }
+.hist-msg { color:var(--text); }
+[data-lang="ku"] .hist-msg { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:12px; }
+.hist-empty { text-align:center; color:var(--dim); font-family:'Share Tech Mono',monospace; font-size:11px; padding:18px 0; letter-spacing:2px; }
+[data-lang="ku"] .hist-empty { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:12px; }
+
+/* ── EXPORT ── */
+.export-panel { background:var(--panel); border:1px solid var(--accent-g); border-radius:12px; overflow:hidden; margin-bottom:20px; }
+.export-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:10px; margin-bottom:14px; }
+.export-btn { background:var(--panel3); border:1px solid var(--border); border-radius:8px; padding:14px 10px; cursor:pointer; text-align:center; transition:all 0.2s; display:flex; flex-direction:column; align-items:center; gap:6px; }
+.export-btn:hover { border-color:var(--accent-g); background:rgba(0,255,200,0.05); transform:translateY(-1px); }
+.export-btn .icon { font-size:22px; }
+.export-btn .lbl { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--accent-g); letter-spacing:1px; }
+[data-lang="ku"] .export-btn .lbl { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:12px; }
+.export-btn .sub-lbl { font-family:'Share Tech Mono',monospace; font-size:8px; color:var(--dim); }
+[data-lang="ku"] .export-btn .sub-lbl { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:10px; }
+.report-meta { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.report-meta input { background:var(--input-bg); border:1px solid var(--border); border-radius:6px; color:var(--text-strong); font-family:'Share Tech Mono',monospace; font-size:11px; padding:7px 10px; outline:none; transition:border-color 0.2s; }
+.report-meta input:focus { border-color:var(--accent-g); }
+[data-lang="ku"] .report-meta input { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:12px; text-align:right; }
+.report-meta label { font-family:'Share Tech Mono',monospace; font-size:8px; color:var(--dim); display:block; margin-bottom:3px; }
+[data-lang="ku"] .report-meta label { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:10px; }
+
+/* ── BOTTOM ── */
+.bottom-bar { display:flex; gap:10px; flex-wrap:wrap; }
+.btn-primary { flex:1; min-width:120px; background:var(--panel3); border:1px solid var(--accent-b); border-radius:8px; color:var(--accent-b); font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:2px; padding:12px 16px; cursor:pointer; transition:all 0.2s; text-align:center; }
+[data-lang="ku"] .btn-primary { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:13px; }
+.btn-primary:hover { background:rgba(0,170,255,0.1); box-shadow:0 0 20px rgba(0,170,255,0.2); }
+.btn-danger { border-color:var(--accent-r); color:var(--accent-r); }
+.btn-danger:hover { background:rgba(255,60,60,0.1); box-shadow:0 0 20px rgba(255,60,60,0.2); }
+
+/* ── TOAST ── */
+.toast { position:fixed; bottom:24px; right:20px; background:var(--panel2); border:1px solid var(--accent-g); border-radius:8px; color:var(--accent-g); font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:1px; padding:12px 20px; z-index:999; transform:translateY(60px); opacity:0; transition:all 0.3s; max-width:300px; }
+[dir="rtl"] .toast { right:auto; left:20px; }
+[data-lang="ku"] .toast { font-family:'Noto Sans Arabic',sans-serif; letter-spacing:0; font-size:12px; }
+.toast.show { transform:translateY(0); opacity:1; }
+
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:var(--bg); }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+@media (max-width:600px) {
+  .xref-row { grid-template-columns:1fr; }
+  .xref-arrow { display:none; }
+  .gap-dvr-row { grid-template-columns:70px 1fr 1fr; }
+  .gap-dvr-row .gap-ch-col { display:none; }
+  .meta-row { grid-template-columns:1fr; }
+  .toolbar { top:8px; right:8px; gap:5px; }
+  [dir="rtl"] .toolbar { right:auto; left:8px; }
+  .tb-btn { padding:5px 8px; font-size:10px; }
+}
+</style>
+
+
+
+
+
+
+
+
+</head>
+<body>
+<!-- ستامپی دروستکەر -->
+<div style="
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px 30px;
+">
+  <div style="
+    position: relative;
+    display: inline-block;
+    padding: 18px 40px;
+    border: 4px solid #4f8ef7;
+    border-radius: 12px;
+    font-family: 'Cairo', sans-serif;
+    text-align: center;
+    color: #4f8ef7;
+    opacity: 0.75;
+    transform: rotate(-4deg);
+    box-shadow:
+      0 0 0 2px #4f8ef7,
+      0 0 18px rgba(79,142,247,0.3),
+      inset 0 0 18px rgba(79,142,247,0.07);
+    background: transparent;
+    letter-spacing: 1px;
+    pointer-events: none;
+    user-select: none;
+  ">
+    <!-- ستێری سەرەوە -->
+    <div style="
+      position: absolute;
+      top: -1px; left: 50%;
+      transform: translateX(-50%) translateY(-50%);
+      background: inherit;
+      padding: 0 10px;
+      font-size: 13px;
+      color: #4f8ef7;
+      letter-spacing: 3px;
+      font-weight: 700;
+    ">✦ ✦ ✦</div>
+
+    <div style="font-size: 15px; font-weight: 700; margin-bottom: 4px; letter-spacing: 2px;">
+      دروست کراوە لە لایەن
+    </div>
+    <div style="font-size: 22px; font-weight: 900; letter-spacing: 1px;">
+      ئاراس لطیف
+    </div>
+
+    <!-- ستێری خوارەوە -->
+    <div style="
+      position: absolute;
+      bottom: -1px; left: 50%;
+      transform: translateX(-50%) translateY(50%);
+      background: inherit;
+      padding: 0 10px;
+      font-size: 13px;
+      color: #4f8ef7;
+      letter-spacing: 3px;
+      font-weight: 700;
+    ">✦ ✦ ✦</div>
+  </div>
+</div>
+<!-- کۆتایی ستامپ -->
+<!-- ══ TOOLBAR: THEME + LANGUAGE ══ -->
+<div class="toolbar">
+  <button class="tb-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+    <span class="theme-icon" id="themeIcon">☀️</span>
+    <span id="themeLabel">LIGHT</span>
+  </button>
+  <button class="tb-btn" id="langBtn" onclick="toggleLang()">
+    <span id="langIcon">🌐</span>
+    <span id="langLabel">کوردی</span>
+  </button>
+</div>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="kicker" data-i18n="kicker">// SURVEILLANCE SYSTEM UTILITY — ENHANCED EDITION</div>
+    <h1>DVR TIME <span>SYNC</span> MASTER <span class="pro-badge">PRO</span><span class="v2-badge">V3</span></h1>
+    <div class="sub" data-i18n="subtitle">MULTI-DVR · CROSSBAR · GAP DETECTOR · DRIFT RATE · BATCH CONVERTER · PDF/CSV/HTML EXPORT</div>
+  </div>
+
+  <div class="save-bar">
+    <div class="save-dot"></div>
+    <div class="save-label" id="saveLabel" data-i18n="saved">DATA SAVED TO LOCAL STORAGE — PERSISTS ON REFRESH</div>
+  </div>
+
+  <!-- REAL TIME -->
+  <div class="real-time-bar">
+    <div>
+      <div class="rtlabel" data-i18n="realRef">// REAL WORLD TIME (REFERENCE)</div>
+      <div class="date-display" id="realDate">—</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="pulse-dot"></div>
+      <div class="clock" id="realClock">--:--:--</div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-strip">
+    <div class="stat-box"><div class="val" id="statDvrCount" style="color:var(--accent-b)">0</div><div class="key" data-i18n="statUnits">DVR UNITS</div></div>
+    <div class="stat-box"><div class="val" id="statMaxOffset" style="color:var(--accent-r)">—</div><div class="key" data-i18n="statMax">MAX OFFSET</div></div>
+    <div class="stat-box"><div class="val" id="statAvgOffset" style="color:var(--accent-y)">—</div><div class="key" data-i18n="statAvg">AVG OFFSET</div></div>
+    <div class="stat-box"><div class="val" id="statSynced" style="color:var(--accent-g)">—</div><div class="key" data-i18n="statSynced">SYNCED (±1m)</div></div>
+    <div class="stat-box"><div class="val" id="statAlerts" style="color:var(--accent-r)">0</div><div class="key" data-i18n="statAlerts">ALERTS</div></div>
+  </div>
+
+  <!-- DVR CARDS -->
+  <div class="sec-title"><span>//</span> <span data-i18n="dvrSection">DVR UNITS — WRONG TIME CONFIGURATION</span></div>
+  <div class="dvr-grid" id="dvrGrid"></div>
+  <button class="btn-add-dvr" onclick="addDvr()">
+    <span style="font-size:18px;line-height:1">+</span> <span data-i18n="addDvr">ADD DVR UNIT</span>
+  </button>
+
+  <!-- CROSSBAR TRACKER -->
+  <div class="crossbar-panel">
+    <div class="panel-header" style="background:var(--panel2)">
+      <div class="title" style="color:var(--accent-y)">⊕ <span data-i18n="crossbarTitle">CROSSBAR TRACKER — LIVE TIMESTAMP SCRUBBER</span></div>
+      <div class="sec-title" style="margin:0"><span>//</span> <span data-i18n="crossbarSub">DRAG TO SEE ALL DVR TIMES AT ONCE</span></div>
+    </div>
+    <div class="panel-body">
+      <p class="panel-desc" data-i18n="crossbarDesc">DRAG THE SCRUBBER TO SEE WHAT TIME EACH DVR SHOWS AT ANY REAL-WORLD MOMENT</p>
+      <div class="panel-controls">
+        <div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);margin-bottom:4px;letter-spacing:1px" data-i18n="anchorDate">ANCHOR DATE</div>
+          <input type="date" id="cbAnchorDate">
+        </div>
+        <div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);margin-bottom:4px;letter-spacing:1px" data-i18n="anchorTime">ANCHOR TIME</div>
+          <input type="time" id="cbAnchorTime" step="1">
+        </div>
+        <div style="display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap">
+          <button class="range-btn active" onclick="setCbRange(1,'1H',event)">1H</button>
+          <button class="range-btn" onclick="setCbRange(6,'6H',event)">6H</button>
+          <button class="range-btn" onclick="setCbRange(24,'24H',event)">24H</button>
+          <button class="range-btn" onclick="setCbRange(168,'1W',event)">1W</button>
+          <button class="range-btn" onclick="setCbRange(720,'1M',event)">1M</button>
+        </div>
+        <button class="btn-set-now" style="align-self:flex-end;padding:7px 12px;font-size:10px" onclick="setCbToNow()">⊙ <span data-i18n="setNow">SET TO NOW</span></button>
+      </div>
+      <div style="position:relative;margin-bottom:12px;user-select:none">
+        <div class="crossbar-ruler" id="cbRuler"></div>
+        <div class="crossbar-rows" id="cbRows">
+          <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);text-align:center;padding:14px" data-i18n="addDvrCb">ADD DVR UNITS TO USE CROSSBAR TRACKER</div>
+        </div>
+      </div>
+      <div style="margin-top:10px">
+        <input type="range" class="crossbar-scrubber" id="cbScrubber" min="0" max="1000" value="0">
+        <div class="crossbar-range-labels">
+          <span id="cbRangeStart">—</span>
+          <span style="color:var(--accent-y)" id="cbRangeCurrent">—</span>
+          <span id="cbRangeEnd">—</span>
+        </div>
+      </div>
+      <div class="cb-current-readout" id="cbReadout">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);grid-column:1/-1;text-align:center" data-i18n="scrubHint">DRAG SCRUBBER TO SEE TIMESTAMPS</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CROSS REFERENCE -->
+  <div class="xref-panel">
+    <div class="panel-header">
+      <div class="title">⟷ <span data-i18n="xrefTitle">CROSS-REFERENCE — TIMESTAMP TRANSLATOR</span></div>
+      <div class="sec-title" style="margin:0"><span>//</span> <span data-i18n="xrefSub">FIND TIME ON ALL DVRs</span></div>
+    </div>
+    <div class="panel-body">
+      <p class="panel-desc" data-i18n="xrefDesc">ENTER A TIMESTAMP FROM ANY DVR (OR REAL TIME) → SEE WHAT TIME IT IS ON ALL OTHER DVRs</p>
+      <div class="xref-row">
+        <div class="xref-input-wrap">
+          <select id="xrefSourceDvr"><option value="real">🌐 <span data-i18n-opt="realWorld">REAL WORLD TIME</span></option></select>
+        </div>
+        <div class="xref-arrow">→</div>
+        <div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+        <div class="xref-input-wrap"><input type="date" id="xrefDate"/></div>
+        <div class="xref-input-wrap"><input type="time" id="xrefTime" step="1"/></div>
+      </div>
+      <button class="btn-xref" onclick="calcXref()">⟷ <span data-i18n="xrefBtn">CALCULATE ALL DVR TIMESTAMPS</span></button>
+      <div class="xref-result" id="xrefResult">
+        <div class="xref-result-title" data-i18n="xrefResults">// CROSS-REFERENCE RESULTS</div>
+        <div class="xref-result-grid" id="xrefResultGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAP / OVERLAP DETECTOR -->
+  <div class="gap-panel">
+    <div class="panel-header">
+      <div class="title" style="color:var(--accent-r)">⚠ <span data-i18n="gapTitle">FOOTAGE GAP & OVERLAP DETECTOR</span></div>
+      <div class="sec-title" style="margin:0;color:var(--dim)"><span>//</span> <span data-i18n="gapSub">FIND MISSING / DOUBLE COVERAGE</span></div>
+    </div>
+    <div class="panel-body">
+      <p class="panel-desc" data-i18n="gapDesc">ENTER RECORDING START/END FOR EACH DVR (IN REAL TIME) → DETECT GAPS OR OVERLAPS</p>
+      <div style="display:grid;grid-template-columns:80px 1fr 1fr 80px;gap:8px;margin-bottom:6px">
+        <div class="gap-channel-label" data-i18n="gapDvr">DVR</div>
+        <div class="gap-channel-label" data-i18n="gapStart">RECORDING START (REAL)</div>
+        <div class="gap-channel-label" data-i18n="gapEnd">RECORDING END (REAL)</div>
+        <div class="gap-channel-label gap-ch-col" data-i18n="gapCh">CHANNEL</div>
+      </div>
+      <div id="gapRows"></div>
+      <button class="btn-gap" onclick="detectGaps()">⚠ <span data-i18n="gapBtn">DETECT GAPS & OVERLAPS</span></button>
+      <div class="gap-result" id="gapResult"></div>
+    </div>
+  </div>
+
+  <!-- VISUAL TIMELINE -->
+  <div class="timeline-panel">
+    <div class="panel-header"><div class="title">◈ <span data-i18n="timelineTitle">VISUAL OFFSET TIMELINE</span></div></div>
+    <div class="panel-body">
+      <p class="panel-desc" data-i18n="timelineDesc">RELATIVE OFFSET OF EACH DVR FROM REAL TIME (MARKER = DVR POSITION)</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px" id="timelineBars">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);text-align:center;padding:20px" data-i18n="addDvrTl">ADD DVR UNITS TO SEE TIMELINE</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DRIFT RATE -->
+  <div class="drift-panel">
+    <div class="panel-header">
+      <div class="title" style="color:var(--accent-o)">⟁ <span data-i18n="driftTitle">DRIFT RATE CALCULATOR</span></div>
+      <div class="sec-title" style="margin:0"><span>//</span> <span data-i18n="driftSub">SECONDS PER DAY · SYNC INTERVAL</span></div>
+    </div>
+    <div class="panel-body">
+      <p class="panel-desc" data-i18n="driftDesc">CALCULATES HOW FAST EACH DVR CLOCK DRIFTS AND PREDICTS FUTURE OFFSET</p>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+        <div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--dim);margin-bottom:3px" data-i18n="installDate">DVR INSTALLATION DATE</div>
+          <input type="date" id="driftInstallDate" class="gap-input" style="width:160px">
+        </div>
+        <button class="btn-batch" onclick="calcDrift()" style="margin-top:18px;border-color:var(--accent-o);color:var(--accent-o)">⟁ <span data-i18n="driftBtn">CALCULATE DRIFT</span></button>
+      </div>
+      <div class="drift-grid" id="driftGrid">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);grid-column:1/-1;text-align:center;padding:14px" data-i18n="driftEmpty">ADD DVR UNITS AND SET INSTALLATION DATE</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BATCH CONVERTER -->
+  <div class="batch-panel">
+    <div class="panel-header">
+      <div class="title" style="color:var(--accent-p)">⊞ <span data-i18n="batchTitle">BATCH TIMESTAMP CONVERTER</span></div>
+      <div class="sec-title" style="margin:0"><span>//</span> <span data-i18n="batchSub">CONVERT MULTIPLE DVR TIMESTAMPS AT ONCE</span></div>
+    </div>
+    <div class="panel-body">
+      <p class="panel-desc" data-i18n="batchDesc">PASTE DVR TIMESTAMPS (ONE PER LINE, FORMAT: YYYY-MM-DD HH:MM:SS) → CONVERTS TO REAL TIME</p>
+      <textarea class="batch-textarea" id="batchInput" placeholder="2024-03-15 14:23:00&#10;2024-03-15 14:45:30&#10;2024-03-15 15:10:00"></textarea>
+      <div class="batch-controls">
+        <div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--dim);margin-bottom:3px" data-i18n="srcDvr">SOURCE DVR</div>
+          <select class="batch-select" id="batchDvrSelect"><option value="" data-i18n-opt="selectDvr">SELECT DVR</option></select>
+        </div>
+        <div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--dim);margin-bottom:3px" data-i18n="direction">DIRECTION</div>
+          <select class="batch-select" id="batchDirection">
+            <option value="dvrToReal" data-i18n-opt="dvrToReal">DVR → REAL TIME</option>
+            <option value="realToDvr" data-i18n-opt="realToDvr">REAL → DVR TIME</option>
+          </select>
+        </div>
+        <button class="btn-batch" onclick="runBatchConvert()">⊞ <span data-i18n="batchBtn">CONVERT ALL</span></button>
+        <button class="btn-batch" onclick="copyBatchResult()" style="border-color:var(--accent-g);color:var(--accent-g)">⎘ <span data-i18n="copyResult">COPY RESULT</span></button>
+      </div>
+      <div class="batch-result" id="batchResult" data-i18n-ph="batchPlaceholder">// RESULTS WILL APPEAR HERE</div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="history-panel">
+    <div class="history-header">
+      <div class="title" style="font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;color:var(--text-strong)">◎ <span data-i18n="historyTitle">CALCULATION HISTORY</span></div>
+      <button class="btn-clear-hist" onclick="clearHistory()" data-i18n="clearBtn">CLEAR</button>
+    </div>
+    <div class="history-body" id="historyBody">
+      <div class="hist-empty" data-i18n="noHistory">// NO CALCULATIONS YET</div>
+    </div>
+  </div>
+
+  <!-- EXPORT PANEL -->
+  <div class="export-panel">
+    <div class="panel-header">
+      <div class="title" style="color:var(--accent-g)">↓ <span data-i18n="exportTitle">EXPORT & REPORTS</span></div>
+      <div class="sec-title" style="margin:0"><span>//</span> PDF · CSV · JSON · HTML · TXT</div>
+    </div>
+    <div class="panel-body">
+      <div style="margin-bottom:14px">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);margin-bottom:8px;letter-spacing:1px" data-i18n="reportMeta">REPORT METADATA (OPTIONAL)</div>
+        <div class="report-meta">
+          <div><label data-i18n="caseNum">CASE / INCIDENT NUMBER</label><input type="text" id="metaCaseNum" placeholder="CASE-2024-001"></div>
+          <div><label data-i18n="investigator">INVESTIGATOR NAME</label><input type="text" id="metaInvestigator" placeholder="John Smith"></div>
+          <div><label data-i18n="siteName">LOCATION / SITE NAME</label><input type="text" id="metaSiteName" placeholder="Main Branch, 2nd Floor"></div>
+          <div><label data-i18n="reportNotes">ADDITIONAL NOTES</label><input type="text" id="metaReportNotes" placeholder="Notes for report header"></div>
+        </div>
+      </div>
+      <div class="export-grid">
+        <div class="export-btn" onclick="exportPDF()"><div class="icon">📄</div><div class="lbl" data-i18n="pdfLbl">PDF REPORT</div><div class="sub-lbl" data-i18n="pdfSub">Full forensic report</div></div>
+        <div class="export-btn" onclick="exportCSV()"><div class="icon">📊</div><div class="lbl" data-i18n="csvLbl">CSV EXPORT</div><div class="sub-lbl" data-i18n="csvSub">Spreadsheet format</div></div>
+        <div class="export-btn" onclick="exportJSON()"><div class="icon">{ }</div><div class="lbl" data-i18n="jsonLbl">JSON CONFIG</div><div class="sub-lbl" data-i18n="jsonSub">Full config backup</div></div>
+        <div class="export-btn" onclick="exportHTML()"><div class="icon">🌐</div><div class="lbl" data-i18n="htmlLbl">HTML REPORT</div><div class="sub-lbl" data-i18n="htmlSub">Styled web report</div></div>
+        <div class="export-btn" onclick="exportTXT()"><div class="icon">📝</div><div class="lbl" data-i18n="txtLbl">TEXT REPORT</div><div class="sub-lbl" data-i18n="txtSub">Plain text summary</div></div>
+        <div class="export-btn" onclick="importData()"><div class="icon">↑</div><div class="lbl" data-i18n="importLbl">IMPORT JSON</div><div class="sub-lbl" data-i18n="importSub">Restore config</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM -->
+  <div class="bottom-bar">
+    <button class="btn-primary" onclick="recalcAll()">⟳ <span data-i18n="recalcBtn">RECALCULATE ALL</span></button>
+    <button class="btn-primary btn-danger" onclick="resetAll()">✕ <span data-i18n="resetBtn">RESET ALL</span></button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
+
+<script>
+// ══════════════════════════════════════════════
+//  TRANSLATIONS — ENGLISH + KURDISH SORANI
+// ══════════════════════════════════════════════
+const I18N = {
+  en: {
+    kicker:'// SURVEILLANCE SYSTEM UTILITY — ENHANCED EDITION',
+    subtitle:'MULTI-DVR · CROSSBAR · GAP DETECTOR · DRIFT RATE · BATCH CONVERTER · PDF/CSV/HTML EXPORT',
+    saved:'DATA SAVED TO LOCAL STORAGE — PERSISTS ON REFRESH',
+    realRef:'// REAL WORLD TIME (REFERENCE)',
+    statUnits:'DVR UNITS', statMax:'MAX OFFSET', statAvg:'AVG OFFSET',
+    statSynced:'SYNCED (±1m)', statAlerts:'ALERTS',
+    dvrSection:'DVR UNITS — WRONG TIME CONFIGURATION',
+    addDvr:'ADD DVR UNIT',
+    crossbarTitle:'CROSSBAR TRACKER — LIVE TIMESTAMP SCRUBBER',
+    crossbarSub:'DRAG TO SEE ALL DVR TIMES AT ONCE',
+    crossbarDesc:'DRAG THE SCRUBBER TO SEE WHAT TIME EACH DVR SHOWS AT ANY REAL-WORLD MOMENT',
+    anchorDate:'ANCHOR DATE', anchorTime:'ANCHOR TIME',
+    setNow:'SET TO NOW', addDvrCb:'ADD DVR UNITS TO USE CROSSBAR TRACKER',
+    scrubHint:'DRAG SCRUBBER TO SEE TIMESTAMPS',
+    xrefTitle:'CROSS-REFERENCE — TIMESTAMP TRANSLATOR',
+    xrefSub:'FIND TIME ON ALL DVRs',
+    xrefDesc:'ENTER A TIMESTAMP FROM ANY DVR (OR REAL TIME) → SEE WHAT TIME IT IS ON ALL OTHER DVRs',
+    xrefBtn:'CALCULATE ALL DVR TIMESTAMPS',
+    xrefResults:'// CROSS-REFERENCE RESULTS',
+    gapTitle:'FOOTAGE GAP & OVERLAP DETECTOR',
+    gapSub:'FIND MISSING / DOUBLE COVERAGE',
+    gapDesc:'ENTER RECORDING START/END FOR EACH DVR (IN REAL TIME) → DETECT GAPS OR OVERLAPS',
+    gapDvr:'DVR', gapStart:'RECORDING START (REAL)', gapEnd:'RECORDING END (REAL)', gapCh:'CHANNEL',
+    gapBtn:'DETECT GAPS & OVERLAPS',
+    timelineTitle:'VISUAL OFFSET TIMELINE',
+    timelineDesc:'RELATIVE OFFSET OF EACH DVR FROM REAL TIME (MARKER = DVR POSITION)',
+    addDvrTl:'ADD DVR UNITS TO SEE TIMELINE',
+    driftTitle:'DRIFT RATE CALCULATOR',
+    driftSub:'SECONDS PER DAY · SYNC INTERVAL',
+    driftDesc:'CALCULATES HOW FAST EACH DVR CLOCK DRIFTS AND PREDICTS FUTURE OFFSET',
+    installDate:'DVR INSTALLATION DATE', driftBtn:'CALCULATE DRIFT',
+    driftEmpty:'ADD DVR UNITS AND SET INSTALLATION DATE',
+    batchTitle:'BATCH TIMESTAMP CONVERTER',
+    batchSub:'CONVERT MULTIPLE DVR TIMESTAMPS AT ONCE',
+    batchDesc:'PASTE DVR TIMESTAMPS (ONE PER LINE, FORMAT: YYYY-MM-DD HH:MM:SS) → CONVERTS TO REAL TIME',
+    srcDvr:'SOURCE DVR', direction:'DIRECTION',
+    batchBtn:'CONVERT ALL', copyResult:'COPY RESULT',
+    batchPlaceholder:'// RESULTS WILL APPEAR HERE',
+    historyTitle:'CALCULATION HISTORY', clearBtn:'CLEAR',
+    noHistory:'// NO CALCULATIONS YET',
+    exportTitle:'EXPORT & REPORTS',
+    reportMeta:'REPORT METADATA (OPTIONAL)',
+    caseNum:'CASE / INCIDENT NUMBER', investigator:'INVESTIGATOR NAME',
+    siteName:'LOCATION / SITE NAME', reportNotes:'ADDITIONAL NOTES',
+    pdfLbl:'PDF REPORT', pdfSub:'Full forensic report',
+    csvLbl:'CSV EXPORT', csvSub:'Spreadsheet format',
+    jsonLbl:'JSON CONFIG', jsonSub:'Full config backup',
+    htmlLbl:'HTML REPORT', htmlSub:'Styled web report',
+    txtLbl:'TEXT REPORT', txtSub:'Plain text summary',
+    importLbl:'IMPORT JSON', importSub:'Restore config',
+    recalcBtn:'RECALCULATE ALL', resetBtn:'RESET ALL',
+    // DVR card
+    locationLabel:'LOCATION / CAMERA AREA', ipLabel:'IP ADDRESS', modelLabel:'DVR MODEL / BRAND',
+    wrongTimeLabel:'DVR SHOWS THIS WRONG DATE/TIME',
+    realTimeLabel:'REAL DATE/TIME AT THAT MOMENT',
+    statusKey:'STATUS', totalOffsetKey:'TOTAL OFFSET', dvrTimeNowKey:'DVR TIME NOW', daysDriftedKey:'DAYS DRIFTED',
+    alertIfKey:'ALERT IF OFFSET ≥', secLabel:'SEC',
+    notesPlaceholder:'// NOTES (location, channel, issue…)',
+    // offset status
+    synced:'SYNCED', dvrAhead:'DVR AHEAD', dvrBehind:'DVR BEHIND', noData:'NO DATA',
+    // batch
+    dvrToReal:'DVR → REAL TIME', realToDvr:'REAL → DVR TIME', selectDvr:'SELECT DVR',
+    realWorld:'REAL WORLD TIME',
+    // toasts
+    toastSaved:'CONFIG SAVED', toastLoaded:'LOADED DVR(S) FROM STORAGE',
+    toastJsonExport:'JSON CONFIG EXPORTED', toastCsvExport:'CSV EXPORTED',
+    toastTxtExport:'TEXT REPORT EXPORTED', toastHtmlExport:'HTML REPORT EXPORTED',
+    toastPdfGen:'GENERATING PDF...', toastPdfDone:'PDF REPORT GENERATED',
+    toastPdfErr:'PDF ERROR — SEE CONSOLE',
+    toastImported:'CONFIG IMPORTED', toastInvalidJson:'INVALID JSON FILE',
+    toastReset:'ALL DATA CLEARED', toastEnterDt:'ENTER DATE AND TIME FIRST',
+    toastInvalidDt:'INVALID DATE/TIME', toastSrcNotFound:'SOURCE DVR NOT FOUND',
+    toastConfigSrc:'CONFIGURE SOURCE DVR OFFSET FIRST',
+    toastMin2:'ENTER TIMES FOR AT LEAST 2 DVRs',
+    toastGapDone:'GAP ANALYSIS COMPLETE', toastXrefDone:'CROSS-REFERENCE CALCULATED',
+    toastNowSet:'REAL TIME SET TO NOW', toastAddDvr:'ADD DVR UNITS FIRST',
+    toastSetOffset:'SET OFFSET FOR DVR UNITS FIRST', toastDriftDone:'DRIFT RATES CALCULATED',
+    toastSelectDvr:'SELECT A DVR FIRST', toastEnterTs:'ENTER TIMESTAMPS TO CONVERT',
+    toastDvrNotFound:'DVR NOT FOUND', toastConfigDvr:'CONFIGURE DVR OFFSET FIRST',
+    toastConverted:'CONVERTED TIMESTAMPS', toastCopied:'COPIED TO CLIPBOARD', toastCopyFail:'COPY FAILED',
+    toastRunFirst:'RUN CONVERSION FIRST',
+    // misc
+    addDvrTl2:'ADD DVR UNITS AND SET INSTALLATION DATE',
+    batchResultPh:'// RESULTS WILL APPEAR HERE',
+    gapGap:'GAP', gapOverlap:'OVERLAP', gapOk:'OK',
+    invalidFmt:'[INVALID FORMAT]', convErr:'[CONVERSION ERROR]',
+    histXref:'XREF', histGap:'GAP DETECT', histDrift:'DRIFT CALC', histBatch:'BATCH CONVERT',
+    histCbNow:'CROSSBAR SET TO NOW',
+    histExportJson:'EXPORTED JSON CONFIG', histExportCsv:'EXPORTED CSV REPORT',
+    histExportTxt:'EXPORTED TXT REPORT', histExportHtml:'EXPORTED HTML REPORT',
+    histExportPdf:'EXPORTED DESIGNED PDF REPORT',
+    histImport:'CONFIG IMPORTED FROM JSON', histReset:'ALL DATA CLEARED',
+    // drift
+    currentOffset:'CURRENT OFFSET', driftRate:'DRIFT RATE', daysToAlert:'DAYS UNTIL ALERT',
+    recSyncEvery:'RECOMMENDED SYNC', every:'Every', exceeded:'EXCEEDED', nAvail:'N/A',
+    // gap result
+    gapBetween:'GAP between', endsAt:'ends', startAt:'starts', missing:'missing',
+    overlapBetween:'OVERLAP between', doubleCoverage:'of double coverage',
+    contCoverage:'continuous coverage, no gap',
+  },
+
+  ku: {
+    kicker:'// ئامرازی سیستەمی چاودێری — وەشانی پێشکەوتوو',
+    subtitle:'چەندین DVR · ردگری هاوکات · دۆزینەوەی کەمی · ئامارەکی لارێکردن · گواستنەوەی کۆمەڵی · دەرهێنانی PDF/CSV/HTML',
+    saved:'زانیاریەکان پاشەکەوت کران — دەمێنێتەوە دوای نوێکردنەوە',
+    realRef:'// کاتی ڕاستەقینەی جیهان (سەرچاوە)',
+    statUnits:'یەکەی DVR', statMax:'زۆرترین جیاوازی', statAvg:'تێکڕای جیاوازی',
+    statSynced:'هاوکات (±1خ)', statAlerts:'ئاگادارکردنەوەکان',
+    dvrSection:'یەکەکانی DVR — رێکخستنی کاتی هەڵەکار',
+    addDvr:'زیادکردنی یەکەی DVR',
+    crossbarTitle:'ردگری هاوکات — گۆڕاوی کاتی زیندوو',
+    crossbarSub:'ڕاکێشان بۆ بینینی کاتی هەموو DVRەکان بە یەک جار',
+    crossbarDesc:'گۆڕاوەکە ڕاکێش بکە بۆ دیتنی کاتی هەر یەکەی DVR لە هەر کێبڕکێیەکی جیهانی ڕاستەقینەدا',
+    anchorDate:'بەرواری لەنگەر', anchorTime:'کاتی لەنگەر',
+    setNow:'کاتی ئێستا دابنێ', addDvrCb:'یەکەکانی DVR زیاد بکە بۆ بەکارهێنانی ردگر',
+    scrubHint:'گۆڕاوەکە ڕاکێش بکە بۆ بینینی کاتەکان',
+    xrefTitle:'ئاراستەی هاوبەش — وەرگێڕانی کاتی تایبەت',
+    xrefSub:'دۆزینەوەی کات لەسەر هەموو DVRەکان',
+    xrefDesc:'کاتی تایبەت لە هەر DVR (یان کاتی ڕاستەقینە) بنووسە → کاتی هەموو DVRەکانی دیکە دەبینیت',
+    xrefBtn:'هیساب کردنی کاتی هەموو DVRەکان',
+    xrefResults:'// ئەنجامەکانی ئاراستەی هاوبەش',
+    gapTitle:'دۆزینەوەی کەمی و چەلەندی تەسویری',
+    gapSub:'دۆزینەوەی کەمی / دووبارەکردنەوەی پۆشش',
+    gapDesc:'دەستپێک/کۆتایی تۆمارکردن بۆ هەر DVR بنووسە → دۆزینەوەی کەمی یان چەلەند',
+    gapDvr:'DVR', gapStart:'دەستپێکی تۆمارکردن (ڕاستەقینە)', gapEnd:'کۆتایی تۆمارکردن (ڕاستەقینە)', gapCh:'چەناڵ',
+    gapBtn:'دۆزینەوەی کەمی و چەلەند',
+    timelineTitle:'هێڵی کاتی جیاوازی دیداری',
+    timelineDesc:'جیاوازی کاتی هەر DVR لە کاتی ڕاستەقینەوە (نیشانەکە = شوێنی DVR)',
+    addDvrTl:'یەکەکانی DVR زیاد بکە بۆ بینینی هێڵی کات',
+    driftTitle:'ژمێرکاری ئامارەی لارێکردن',
+    driftSub:'چرکە لە ڕۆژدا · ماوەی هاوکاتکردن',
+    driftDesc:'ژمێر دەکات چەندە خێرا کاتژمێری DVR لار دەرووات و داهاتوو پێشبینی دەکات',
+    installDate:'بەرواری دامەزراندنی DVR', driftBtn:'هیساب کردنی لارێکردن',
+    driftEmpty:'یەکەکانی DVR زیاد بکە و بەرواری دامەزراندن دابنێ',
+    batchTitle:'گواستنەوەی کۆمەڵی کاتی تایبەت',
+    batchSub:'گواستنەوەی چەندین کاتی تایبەت بە یەک جار',
+    batchDesc:'کاتەکانی DVR بکەوێنە ناو (یەک لە هەر ستوردا، شێوە: YYYY-MM-DD HH:MM:SS) → دەگوێزرێتەوە بۆ کاتی ڕاستەقینە',
+    srcDvr:'DVRی سەرچاوە', direction:'ئاراسته',
+    batchBtn:'گواستنەوەی هەموو', copyResult:'کۆپی کردنی ئەنجام',
+    batchPlaceholder:'// ئەنجامەکان لێرە دەردەکەون',
+    historyTitle:'مێژووی هیساب', clearBtn:'سڕینەوە',
+    noHistory:'// هیچ هیسابێک نییە هێشتا',
+    exportTitle:'دەرهێنان و ڕاپۆرتەکان',
+    reportMeta:'زانیاری ڕاپۆرت (ئارەزوومەندانە)',
+    caseNum:'ژمارەی کیس / بûوەبوونی', investigator:'ناوی لێکۆڵینەوەکار',
+    siteName:'شوێن / ناوی ماڵبەند', reportNotes:'تێبینی زیادە',
+    pdfLbl:'ڕاپۆرتی PDF', pdfSub:'ڕاپۆرتی تامی تاوانگەری',
+    csvLbl:'دەرهێنانی CSV', csvSub:'شێوازی خشتەکانی',
+    jsonLbl:'دەستور JSON', jsonSub:'پاشەکەوتی تامی دەستور',
+    htmlLbl:'ڕاپۆرتی HTML', htmlSub:'پەڕەی وێبی شێوەکراو',
+    txtLbl:'ڕاپۆرتی تێکست', txtSub:'کورتەکۆک بە تێکستی سادە',
+    importLbl:'هاوردەکردنی JSON', importSub:'گەڕاندنەوەی دەستور',
+    recalcBtn:'هیساب کردنەوەی هەموو', resetBtn:'ڕیسێت کردنی هەموو',
+    locationLabel:'شوێن / ناوچەی کامێرا', ipLabel:'ناونیشانی IP', modelLabel:'مۆدێل / مارکی DVR',
+    wrongTimeLabel:'DVR ئەم کاتی هەڵەکارە نیشان دەدات',
+    realTimeLabel:'کاتی ڕاستەقینەی ئەو کاتە',
+    statusKey:'دۆخ', totalOffsetKey:'کۆی جیاوازی', dvrTimeNowKey:'کاتی DVR ئێستا', daysDriftedKey:'ڕۆژی لارکراو',
+    alertIfKey:'ئاگادارکردنەوە ئەگەر جیاوازی ≥', secLabel:'چرکە',
+    notesPlaceholder:'// تێبینی (شوێن، چەناڵ، کێشە...)',
+    synced:'هاوکات', dvrAhead:'DVR پێشکەوتووە', dvrBehind:'DVR دواکەوتووە', noData:'داتا نییە',
+    dvrToReal:'DVR ← کاتی ڕاستەقینە', realToDvr:'DVR → کاتی ڕاستەقینە', selectDvr:'DVR هەڵبژێرە',
+    realWorld:'کاتی ڕاستەقینەی جیهان',
+    toastSaved:'دەستور پاشەکەوت کرا', toastLoaded:'یەکەکانی DVR بارکرا',
+    toastJsonExport:'دەستور JSON دەرهێنرا', toastCsvExport:'CSV دەرهێنرا',
+    toastTxtExport:'ڕاپۆرتی تێکست دەرهێنرا', toastHtmlExport:'ڕاپۆرتی HTML دەرهێنرا',
+    toastPdfGen:'PDF دروستدەکرێت...', toastPdfDone:'ڕاپۆرتی PDF دروستکرا',
+    toastPdfErr:'کێشەی PDF — بینی کۆنسۆڵ',
+    toastImported:'دەستور هاوردەکرا', toastInvalidJson:'فایلی JSON هەڵەکارە',
+    toastReset:'هەموو داتا سڕایەوە', toastEnterDt:'بەروار و کات بنووسە پێش',
+    toastInvalidDt:'بەروار/کات هەڵەکارە', toastSrcNotFound:'DVRی سەرچاوە نەدۆزرایەوە',
+    toastConfigSrc:'جیاوازی DVRی سەرچاوە رێکبخەرەوە پێش',
+    toastMin2:'کات بۆ ٢ DVR یان زیاتر بنووسە',
+    toastGapDone:'شیکاری کەمی تەواو بوو', toastXrefDone:'ئاراستەی هاوبەش هیساب کرا',
+    toastNowSet:'کاتی ڕاستەقینە ئێستا دانرا', toastAddDvr:'یەکەکانی DVR پێشتر زیاد بکە',
+    toastSetOffset:'جیاوازی بۆ یەکەکانی DVR رێکبخەرەوە پێش', toastDriftDone:'ئامارەی لارێکردن هیساب کرا',
+    toastSelectDvr:'DVR هەڵبژێرە پێشتر', toastEnterTs:'کاتی تایبەتەکان بنووسە',
+    toastDvrNotFound:'DVR نەدۆزرایەوە', toastConfigDvr:'جیاوازی DVR رێکبخەرەوە پێش',
+    toastConverted:'کاتی تایبەتەکان گواستراوەتەوە', toastCopied:'کۆپی کرا بۆ کلیپبۆرد', toastCopyFail:'کۆپی نەبوو',
+    toastRunFirst:'پێشتر گواستنەوە بکە',
+    addDvrTl2:'یەکەکانی DVR زیاد بکە و بەرواری دامەزراندن دابنێ',
+    batchResultPh:'// ئەنجامەکان لێرە دەردەکەون',
+    gapGap:'کەمی', gapOverlap:'چەلەند', gapOk:'باشە',
+    invalidFmt:'[شێوازی هەڵەکار]', convErr:'[هەڵەی گواستنەوە]',
+    histXref:'ئاراسته', histGap:'دۆزینەوەی کەمی', histDrift:'ئامارەی لارێ', histBatch:'گواستنەوەی کۆمەڵی',
+    histCbNow:'ردگر دانرا بۆ ئێستا',
+    histExportJson:'دەستور JSON دەرهێنرا', histExportCsv:'ڕاپۆرتی CSV دەرهێنرا',
+    histExportTxt:'ڕاپۆرتی تێکست دەرهێنرا', histExportHtml:'ڕاپۆرتی HTML دەرهێنرا',
+    histExportPdf:'ڕاپۆرتی PDF دروستکراوی تاوانگەری دەرهێنرا',
+    histImport:'دەستور لە JSON هاوردەکرا', histReset:'هەموو داتا سڕایەوە',
+    currentOffset:'جیاوازی ئێستا', driftRate:'ئامارەی لارێکردن', daysToAlert:'ڕۆژ تا ئاگادارکردنەوە',
+    recSyncEvery:'هاوکاتکردنی پێشنیارکراو', every:'هەر', exceeded:'تێپەڕاوە', nAvail:'بەردەست نییە',
+    gapBetween:'کەمی لەنێوان', endsAt:'کۆتایی دێت', startAt:'دەستدەپێکات', missing:'کەم',
+    overlapBetween:'چەلەند لەنێوان', doubleCoverage:'پۆشش دووبارەیە',
+    contCoverage:'پۆشش بەردەوامە، هیچ کەمییەک نییە',
+  }
+};
+
+// ══════════════════════════════════════════════
+//  THEME & LANGUAGE STATE
+// ══════════════════════════════════════════════
+let currentTheme = localStorage.getItem('dvr_theme') || 'dark';
+let currentLang  = localStorage.getItem('dvr_lang')  || 'en';
+
+function applyTheme(theme) {
+  currentTheme = theme;
+  document.documentElement.setAttribute('data-theme', theme);
+  const icon  = document.getElementById('themeIcon');
+  const label = document.getElementById('themeLabel');
+  if (theme === 'dark') {
+    icon.textContent  = '☀️';
+    label.textContent = currentLang === 'ku' ? 'ڕووناک' : 'LIGHT';
+  } else {
+    icon.textContent  = '🌙';
+    label.textContent = currentLang === 'ku' ? 'تاریک' : 'DARK';
+  }
+  localStorage.setItem('dvr_theme', theme);
+}
+
+function toggleTheme() {
+  applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+}
+
+function applyLang(lang) {
+  currentLang = lang;
+  const html = document.documentElement;
+  html.setAttribute('data-lang', lang);
+  html.setAttribute('lang', lang === 'ku' ? 'ckb' : 'en');
+  html.setAttribute('dir', lang === 'ku' ? 'rtl' : 'ltr');
+  // Update toolbar labels
+  document.getElementById('langLabel').textContent = lang === 'ku' ? 'English' : 'کوردی';
+  document.getElementById('langBtn').classList.toggle('active-lang', lang === 'ku');
+  // Update theme toggle label
+  const themeLabel = document.getElementById('themeLabel');
+  if (currentTheme === 'dark') themeLabel.textContent = lang === 'ku' ? 'ڕووناک' : 'LIGHT';
+  else themeLabel.textContent = lang === 'ku' ? 'تاریک' : 'DARK';
+  // Apply all translations
+  translatePage();
+  localStorage.setItem('dvr_lang', lang);
+}
+
+function toggleLang() {
+  applyLang(currentLang === 'en' ? 'ku' : 'en');
+  // Re-render DVR cards to apply new labels
+  renderDvrs();
+  renderBatchSelect();
+  renderXrefSelects();
+  renderGapRows();
+  renderCrossbar();
+  recalcAll();
+}
+
+function t(key) {
+  return (I18N[currentLang] && I18N[currentLang][key]) || I18N.en[key] || key;
+}
+
+function translatePage() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    el.textContent = t(key);
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const key = el.getAttribute('data-i18n-ph');
+    el.textContent = t(key);
+  });
+  // update batch direction options
+  const bd = document.getElementById('batchDirection');
+  if(bd){ bd.options[0].text = t('dvrToReal'); bd.options[1].text = t('realToDvr'); }
+  const bs = document.getElementById('batchDvrSelect');
+  if(bs && bs.options[0]) bs.options[0].text = t('selectDvr');
+  // update xref source
+  const xs = document.getElementById('xrefSourceDvr');
+  if(xs && xs.options[0]) xs.options[0].text = '🌐 ' + t('realWorld');
+  // update save label if generic
+  const sl = document.getElementById('saveLabel');
+  if(sl && !sl.dataset.custom) sl.textContent = t('saved');
+  // hist empty
+  const hb = document.getElementById('historyBody');
+  if(hb && hb.children.length===1 && hb.children[0].classList.contains('hist-empty'))
+    hb.children[0].textContent = t('noHistory');
+}
+
+// ══════════════════════════════════════════════
+//  CORE DATA & LOGIC
+// ══════════════════════════════════════════════
+const COLORS = ['#00aaff','#ff3c3c','#00ffc8','#ffd700','#ff8c00','#c084fc','#f472b6','#4ade80','#fb923c','#38bdf8'];
+const COLOR_NAMES = ['blue','red','cyan','gold','orange','purple','pink','green','peach','sky'];
+
+let dvrs = [];
+let historyLog = [];
+let dvrIdCounter = 0;
+let cbRangeHours = 1;
+let cbRangeLabel = '1H';
+const LS_KEY = 'dvr_sync_pro_v3';
+
+function saveToLS() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({dvrs,dvrIdCounter,historyLog,cbRangeHours}));
+    const lbl = document.getElementById('saveLabel');
+    const now = new Date();
+    lbl.textContent = `${t('saved').split('—')[0].trim()} ${now.toTimeString().slice(0,8)}`;
+    lbl.dataset.custom = '1';
+    setTimeout(()=>{ delete lbl.dataset.custom; },4000);
+  } catch(e){}
+}
+function loadFromLS() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return false;
+    const data = JSON.parse(raw);
+    dvrs = data.dvrs||[]; dvrIdCounter = data.dvrIdCounter||dvrs.length;
+    historyLog = data.historyLog||[]; cbRangeHours = data.cbRangeHours||1;
+    return true;
+  } catch(e){ return false; }
+}
+
+// Clock
+function tickClock() {
+  const now = new Date();
+  document.getElementById('realClock').textContent = now.toTimeString().slice(0,8);
+  document.getElementById('realDate').textContent = now.toLocaleDateString(currentLang==='ku'?'ar-IQ':'en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+}
+setInterval(tickClock,1000); tickClock();
+
+function padZ(n){ return String(n).padStart(2,'0'); }
+function formatDuration(totalSeconds) {
+  const neg=totalSeconds<0; const abs=Math.abs(totalSeconds);
+  const d=Math.floor(abs/86400),h=Math.floor((abs%86400)/3600),m=Math.floor((abs%3600)/60),s=abs%60;
+  let p=[];
+  if(d) p.push(d+'d'); if(h) p.push(h+'h'); if(m) p.push(m+'m'); p.push(s+'s');
+  return (neg?'-':'+')+p.join(' ');
+}
+function parseLocalDT(dateStr,timeStr){ if(!dateStr||!timeStr) return null; return new Date(dateStr+'T'+timeStr); }
+function getOffsetSeconds(dvr){
+  if(!dvr.wrongDate||!dvr.wrongTime||!dvr.realDate||!dvr.realTime) return null;
+  const w=parseLocalDT(dvr.wrongDate,dvr.wrongTime),r=parseLocalDT(dvr.realDate,dvr.realTime);
+  if(!w||!r) return null;
+  return Math.round((w-r)/1000);
+}
+function dvrToReal(dvr,dvrDt){ const off=getOffsetSeconds(dvr); if(off===null||!dvrDt||isNaN(dvrDt)) return null; return new Date(dvrDt.getTime()-off*1000); }
+function realToDvr(dvr,realDt){ const off=getOffsetSeconds(dvr); if(off===null||!realDt||isNaN(realDt)) return null; return new Date(realDt.getTime()+off*1000); }
+
+function showToast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2800);
+}
+function addHistory(msg){
+  const now=new Date();
+  historyLog.unshift({ts:now.toTimeString().slice(0,8),msg});
+  if(historyLog.length>60) historyLog.pop();
+  renderHistory(); saveToLS();
+}
+function renderHistory(){
+  const el=document.getElementById('historyBody');
+  if(!historyLog.length){el.innerHTML=`<div class="hist-empty">${t('noHistory')}</div>`;return;}
+  el.innerHTML=historyLog.map(h=>`<div class="hist-item"><span class="hist-ts">${h.ts}</span><span class="hist-msg">${h.msg}</span></div>`).join('');
+}
+
+// DVR Management
+function addDvr(){
+  const id=++dvrIdCounter;
+  const color=COLORS[dvrs.length%COLORS.length];
+  const now=new Date();
+  dvrs.push({id,name:`DVR-${String(id).padStart(2,'0')}`,color,wrongDate:'',wrongTime:'',
+    realDate:now.toISOString().slice(0,10),realTime:now.toTimeString().slice(0,8),
+    notes:'',location:'',ipAddress:'',model:'',alertThreshold:300});
+  renderDvrs(); renderXrefSelects(); renderGapRows(); renderCrossbar(); renderBatchSelect(); recalcAll(); saveToLS();
+}
+function removeDvr(id){
+  if(!confirm(`${t('resetBtn').split(' ')[0]} DVR #${id}?`)) return;
+  dvrs=dvrs.filter(d=>d.id!==id);
+  renderDvrs(); renderXrefSelects(); renderGapRows(); renderCrossbar(); renderBatchSelect(); recalcAll(); saveToLS();
+}
+function renderDvrs(){
+  const grid=document.getElementById('dvrGrid');
+  grid.innerHTML=dvrs.map(dvr=>dvrCardHTML(dvr)).join('');
+  dvrs.forEach(dvr=>{
+    const card=document.getElementById(`card-${dvr.id}`);
+    card.style.setProperty('--dvr-color',dvr.color);
+    card.querySelector('.dvr-indicator').style.cssText=`background:${dvr.color};box-shadow:0 0 8px ${dvr.color};`;
+    card.querySelector('.dvr-name-input').addEventListener('input',e=>{
+      dvr.name=e.target.value||`DVR-${dvr.id}`;
+      renderXrefSelects(); renderGapRows(); renderCrossbar(); renderBatchSelect(); saveToLS();
+    });
+    card.querySelector('.dvr-notes-input').addEventListener('input',e=>{dvr.notes=e.target.value;saveToLS();});
+    ['location','ipAddress','model'].forEach(f=>{
+      const el=card.querySelector(`[data-field="${f}"]`);
+      if(el) el.addEventListener('input',e=>{dvr[f]=e.target.value;saveToLS();});
+    });
+    const atEl=card.querySelector('[data-field="alertThreshold"]');
+    if(atEl) atEl.addEventListener('change',e=>{dvr.alertThreshold=parseInt(e.target.value)||300;updateDvrCard(dvr);saveToLS();});
+    ['wrongDate','wrongTime','realDate','realTime'].forEach(field=>{
+      card.querySelector(`[data-field="${field}"]`).addEventListener('change',e=>{
+        dvr[field]=e.target.value; updateDvrCard(dvr); recalcAll(); renderCrossbar(); saveToLS();
+      });
+    });
+    card.querySelectorAll('.color-dot').forEach(dot=>{
+      dot.addEventListener('click',()=>{dvr.color=dot.dataset.color;renderDvrs();renderXrefSelects();renderCrossbar();saveToLS();});
+    });
+    card.querySelector('[data-field="wrongDate"]').value=dvr.wrongDate;
+    card.querySelector('[data-field="wrongTime"]').value=dvr.wrongTime;
+    card.querySelector('[data-field="realDate"]').value=dvr.realDate;
+    card.querySelector('[data-field="realTime"]').value=dvr.realTime;
+    ['location','ipAddress','model'].forEach(f=>{
+      const el=card.querySelector(`[data-field="${f}"]`);
+      if(el) el.value=dvr[f]||'';
+    });
+    if(atEl) atEl.value=dvr.alertThreshold||300;
+    card.querySelector('.dvr-notes-input').value=dvr.notes||'';
+    updateDvrCard(dvr);
+  });
+}
+function dvrCardHTML(dvr){
+  const colorDots=COLORS.map((c,i)=>`<div class="color-dot ${c===dvr.color?'selected':''}" data-color="${c}" style="background:${c}" title="${COLOR_NAMES[i]}"></div>`).join('');
+  return `
+  <div class="dvr-card" id="card-${dvr.id}" style="--dvr-color:${dvr.color}">
+    <div class="dvr-header">
+      <div class="dvr-indicator"></div>
+      <input class="dvr-name-input" value="${dvr.name||''}" placeholder="${t('addDvr')}" maxlength="24">
+      <span class="dvr-id">#${String(dvr.id).padStart(2,'0')}</span>
+      <button class="btn-remove" onclick="removeDvr(${dvr.id})" title="Remove">✕</button>
+    </div>
+    <div class="dvr-body">
+      <div class="meta-row">
+        <div><div class="meta-label">${t('locationLabel')}</div><input class="meta-input" data-field="location" placeholder="${currentLang==='ku'?'بۆ نموونە: هۆڵ، دەرگای ٢':'e.g. Lobby, Gate 2'}" value="${dvr.location||''}"></div>
+        <div><div class="meta-label">${t('ipLabel')}</div><input class="meta-input" data-field="ipAddress" placeholder="192.168.1.100" value="${dvr.ipAddress||''}"></div>
+      </div>
+      <div style="margin-bottom:10px">
+        <div class="meta-label">${t('modelLabel')}</div>
+        <input class="meta-input" data-field="model" placeholder="${currentLang==='ku'?'بۆ نموونە: Hikvision DS-7216':'e.g. Hikvision DS-7216, Dahua NVR'}" value="${dvr.model||''}">
+      </div>
+      <div class="field-row">
+        <div class="field-label"><span>●</span> ${t('wrongTimeLabel')}</div>
+        <div class="dt-inputs">
+          <input type="date" data-field="wrongDate"/>
+          <input type="time" data-field="wrongTime" step="1"/>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-label" style="justify-content:space-between">
+          <span style="display:flex;align-items:center;gap:6px"><span>●</span> ${t('realTimeLabel')}</span>
+          <button class="btn-set-now" onclick="setRealToNow(${dvr.id})">⊙ ${t('setNow')}</button>
+        </div>
+        <div class="dt-inputs">
+          <input type="date" data-field="realDate"/>
+          <input type="time" data-field="realTime" step="1"/>
+        </div>
+      </div>
+      <div class="dvr-offset-display" id="offset-${dvr.id}">
+        <div class="offset-row"><span class="offset-key">${t('statusKey')}</span><span class="offset-val" id="off-status-${dvr.id}" style="color:var(--dim)">—</span></div>
+        <div class="offset-row"><span class="offset-key">${t('totalOffsetKey')}</span><span class="offset-val" id="off-total-${dvr.id}" style="color:var(--dim)">—</span></div>
+        <div class="offset-row"><span class="offset-key">${t('dvrTimeNowKey')}</span><span class="offset-val" id="off-now-${dvr.id}" style="color:var(--dim)">—</span></div>
+        <div class="offset-row"><span class="offset-key">${t('daysDriftedKey')}</span><span class="offset-val" id="off-days-${dvr.id}" style="color:var(--dim)">—</span></div>
+      </div>
+      <div class="alert-row">
+        <div class="alert-label">${t('alertIfKey')}</div>
+        <input class="alert-input" data-field="alertThreshold" type="number" min="0" value="${dvr.alertThreshold||300}">
+        <div class="alert-label">${t('secLabel')}</div>
+        <span class="alert-badge" id="alert-badge-${dvr.id}">—</span>
+      </div>
+      <textarea class="dvr-notes-input" placeholder="${t('notesPlaceholder')}">${dvr.notes||''}</textarea>
+      <div class="dvr-color-strip">${colorDots}</div>
+    </div>
+  </div>`;
+}
+
+function setRealToNow(id){
+  const dvr=dvrs.find(d=>d.id===id); if(!dvr) return;
+  const now=new Date(); dvr.realDate=now.toISOString().slice(0,10); dvr.realTime=now.toTimeString().slice(0,8);
+  renderDvrs(); recalcAll(); renderCrossbar(); saveToLS(); showToast(t('toastNowSet'));
+}
+function updateDvrCard(dvr){
+  const off=getOffsetSeconds(dvr);
+  const sE=document.getElementById(`off-status-${dvr.id}`);
+  const tE=document.getElementById(`off-total-${dvr.id}`);
+  const nE=document.getElementById(`off-now-${dvr.id}`);
+  const dE=document.getElementById(`off-days-${dvr.id}`);
+  const aB=document.getElementById(`alert-badge-${dvr.id}`);
+  if(off===null){
+    [sE,tE,nE,dE].forEach(e=>{if(e){e.textContent='—';e.className='offset-val';}});
+    if(aB){aB.textContent='—';aB.className='alert-badge';} return;
+  }
+  const abs=Math.abs(off);
+  const status=abs<60?t('synced'):off>0?t('dvrAhead'):t('dvrBehind');
+  const cls=abs<60?'synced':off>0?'ahead':'behind';
+  if(sE){sE.textContent=status;sE.className='offset-val '+cls;}
+  if(tE){tE.textContent=formatDuration(off);tE.className='offset-val '+cls;}
+  if(dE){dE.textContent=(off/86400).toFixed(2)+' '+(currentLang==='ku'?'ڕۆژ':'days');dE.className='offset-val '+cls;}
+  const dvrNow=realToDvr(dvr,new Date());
+  if(nE&&dvrNow){nE.textContent=dvrNow.toTimeString().slice(0,8)+' '+dvrNow.toLocaleDateString();nE.className='offset-val';nE.style.color=dvr.color;}
+  if(aB){
+    const thr=dvr.alertThreshold||300;
+    if(abs>=thr){aB.textContent='⚠ '+t('statAlerts');aB.className='alert-badge triggered';}
+    else{aB.textContent='✓ OK';aB.className='alert-badge ok';}
+  }
+}
+function recalcAll(){ dvrs.forEach(updateDvrCard); updateStats(); renderTimeline(); }
+setInterval(()=>{dvrs.forEach(updateDvrCard);},10000);
+
+function updateStats(){
+  const offsets=dvrs.map(d=>getOffsetSeconds(d)).filter(o=>o!==null);
+  document.getElementById('statDvrCount').textContent=dvrs.length;
+  if(offsets.length){
+    const max=Math.max(...offsets.map(Math.abs));
+    const avg=offsets.reduce((a,b)=>a+Math.abs(b),0)/offsets.length;
+    const synced=offsets.filter(o=>Math.abs(o)<60).length;
+    const alerts=dvrs.filter(d=>{const o=getOffsetSeconds(d);return o!==null&&Math.abs(o)>=(d.alertThreshold||300);}).length;
+    document.getElementById('statMaxOffset').textContent=formatDuration(max).replace(/^[+-]/,'')||'0s';
+    document.getElementById('statAvgOffset').textContent=Math.round(avg)+'s';
+    document.getElementById('statSynced').textContent=synced;
+    document.getElementById('statAlerts').textContent=alerts;
+  } else {
+    ['statMaxOffset','statAvgOffset','statSynced'].forEach(id=>document.getElementById(id).textContent='—');
+    document.getElementById('statAlerts').textContent='0';
+  }
+}
+
+function renderTimeline(){
+  const c=document.getElementById('timelineBars');
+  if(!dvrs.length){c.innerHTML=`<div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);text-align:center;padding:20px">${t('addDvrTl')}</div>`;return;}
+  const offsets=dvrs.map(d=>getOffsetSeconds(d)||0);
+  const maxAbs=Math.max(...offsets.map(Math.abs),3600);
+  c.innerHTML=dvrs.map((dvr,i)=>{
+    const offset=offsets[i]; const pct=(offset/maxAbs)*50+50;
+    return `<div class="tl-row">
+      <div class="tl-label" title="${dvr.name}">${dvr.name}</div>
+      <div class="tl-bar-wrap"><div class="tl-bar tl-real"></div>
+        <div class="tl-offset-marker" style="left:${pct}%;background:${dvr.color};box-shadow:0 0 6px ${dvr.color}" title="${formatDuration(offset)}"></div>
+      </div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:${dvr.color};width:60px;text-align:right;flex-shrink:0">${formatDuration(offset)}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderXrefSelects(){
+  const sel=document.getElementById('xrefSourceDvr'); const cur=sel.value;
+  sel.innerHTML=`<option value="real">🌐 ${t('realWorld')}</option>`+dvrs.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
+  sel.value=cur;
+}
+function calcXref(){
+  const srcId=document.getElementById('xrefSourceDvr').value;
+  const dv=document.getElementById('xrefDate').value; const tv=document.getElementById('xrefTime').value;
+  if(!dv||!tv){showToast(t('toastEnterDt'));return;}
+  const inputDt=parseLocalDT(dv,tv); if(!inputDt){showToast(t('toastInvalidDt'));return;}
+  let realDt;
+  if(srcId==='real'){realDt=inputDt;}
+  else{const src=dvrs.find(d=>d.id==srcId);if(!src){showToast(t('toastSrcNotFound'));return;}realDt=dvrToReal(src,inputDt);if(!realDt){showToast(t('toastConfigSrc'));return;}}
+  const results=[];
+  results.push({name:'🌐 '+t('realWorld'),color:'#00ffc8',time:realDt.toTimeString().slice(0,8),date:realDt.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'}),isSource:srcId==='real'});
+  dvrs.forEach(dvr=>{
+    const dvrDt=realToDvr(dvr,realDt);
+    results.push({name:dvr.name,color:dvr.color,time:dvrDt?dvrDt.toTimeString().slice(0,8):'??:??:??',date:dvrDt?dvrDt.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'}):t('noData'),isSource:dvr.id==srcId});
+  });
+  document.getElementById('xrefResultGrid').innerHTML=results.map(r=>`
+    <div class="xref-result-item" style="border-left-color:${r.color};border-right-color:${r.color};${r.isSource?'outline:1px solid '+r.color:''}">
+      <div class="dvr-lbl">${r.isSource?'▶ '+t('srcDvr')+': ':''} ${r.name}</div>
+      <div class="dvr-time" style="color:${r.color}">${r.time}</div>
+      <div class="dvr-date">${r.date}</div>
+    </div>`).join('');
+  document.getElementById('xrefResult').classList.add('visible');
+  const srcName=srcId==='real'?t('realWorld'):(dvrs.find(d=>d.id==srcId)||{}).name;
+  addHistory(`${t('histXref')}: ${srcName} @ ${tv} → ${dvrs.length} DVRs`);
+  showToast(t('toastXrefDone'));
+}
+
+function renderGapRows(){
+  const c=document.getElementById('gapRows');
+  if(!dvrs.length){c.innerHTML=`<div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);padding:10px 0">${t('toastAddDvr')}</div>`;return;}
+  c.innerHTML=dvrs.map(dvr=>`
+    <div class="gap-dvr-row">
+      <div class="gap-dvr-label" style="color:${dvr.color}">${dvr.name}</div>
+      <input class="gap-input" id="gap-start-${dvr.id}" type="datetime-local" step="1">
+      <input class="gap-input" id="gap-end-${dvr.id}" type="datetime-local" step="1">
+      <div class="gap-ch-col"><input class="gap-input" id="gap-ch-${dvr.id}" type="text" placeholder="CH1" maxlength="8"></div>
+    </div>`).join('');
+}
+function detectGaps(){
+  const segs=[];
+  dvrs.forEach(dvr=>{
+    const sE=document.getElementById(`gap-start-${dvr.id}`),eE=document.getElementById(`gap-end-${dvr.id}`),chE=document.getElementById(`gap-ch-${dvr.id}`);
+    if(!sE||!eE||!sE.value||!eE.value) return;
+    segs.push({dvr,start:new Date(sE.value),end:new Date(eE.value),ch:chE?chE.value:''});
+  });
+  if(segs.length<2){showToast(t('toastMin2'));return;}
+  segs.sort((a,b)=>a.start-b.start);
+  const results=[];
+  for(let i=0;i<segs.length-1;i++){
+    const a=segs[i],b=segs[i+1];
+    if(a.end<b.start){
+      const gs=Math.round((b.start-a.end)/1000);
+      results.push({type:'gap',msg:`${t('gapGap')}: ${a.dvr.name} (${t('endsAt')} ${fmtDT(a.end)}) → ${b.dvr.name} (${t('startAt')} ${fmtDT(b.start)}) — ${formatDuration(gs)} ${t('missing')}`});
+    } else if(a.start<b.end&&b.start<a.end){
+      const ov=Math.round((Math.min(a.end,b.end)-Math.max(a.start,b.start))/1000);
+      results.push({type:'overlap',msg:`${t('gapOverlap')}: ${a.dvr.name} & ${b.dvr.name} — ${formatDuration(ov)} ${t('doubleCoverage')}`});
+    } else {
+      results.push({type:'ok',msg:`${a.dvr.name} → ${b.dvr.name}: ${t('contCoverage')}`});
+    }
+  }
+  document.getElementById('gapResult').innerHTML=results.map(r=>`<div class="gap-item ${r.type}"><span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:${r.type==='gap'?'var(--accent-r)':r.type==='overlap'?'var(--accent-o)':'var(--accent-g)'};letter-spacing:1px;margin-right:8px">${r.type.toUpperCase()}</span>${r.msg}</div>`).join('');
+  addHistory(`${t('histGap')}: ${results.length} ${currentLang==='ku'?'ئەنجام':'result(s)'} ${currentLang==='ku'?'بۆ':'for'} ${segs.length} DVRs`);
+  showToast(t('toastGapDone'));
+}
+function fmtDT(dt){ return dt.toLocaleDateString()+' '+dt.toTimeString().slice(0,8); }
+
+// Crossbar
+let cbAnchorMs=Date.now();
+function setCbToNow(){
+  const now=new Date();
+  document.getElementById('cbAnchorDate').value=now.toISOString().slice(0,10);
+  document.getElementById('cbAnchorTime').value=now.toTimeString().slice(0,8);
+  cbAnchorMs=now.getTime(); document.getElementById('cbScrubber').value=0; updateCbScrubber();
+  addHistory(t('histCbNow'));
+}
+function setCbRange(hours,label,evt){
+  cbRangeHours=hours; cbRangeLabel=label;
+  document.querySelectorAll('.range-btn').forEach(b=>b.classList.remove('active'));
+  if(evt&&evt.target) evt.target.classList.add('active');
+  updateCbScrubber(); saveToLS();
+}
+function updateCbScrubber(){
+  const dv=document.getElementById('cbAnchorDate').value,tv=document.getElementById('cbAnchorTime').value;
+  if(dv&&tv) cbAnchorMs=new Date(dv+'T'+tv).getTime();
+  const rangeMs=cbRangeHours*3600000,startMs=cbAnchorMs,endMs=startMs+rangeMs;
+  const scrub=parseInt(document.getElementById('cbScrubber').value)||0;
+  const curMs=startMs+(scrub/1000)*rangeMs;
+  const fmt=ms=>new Date(ms).toTimeString().slice(0,8);
+  const fmtD=ms=>{const d=new Date(ms);return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});};
+  document.getElementById('cbRangeStart').textContent=fmt(startMs)+' '+fmtD(startMs);
+  document.getElementById('cbRangeEnd').textContent=fmt(endMs)+' '+fmtD(endMs);
+  document.getElementById('cbRangeCurrent').textContent='◆ '+fmt(curMs)+' '+fmtD(curMs);
+  const ruler=document.getElementById('cbRuler');
+  ruler.innerHTML=Array.from({length:7},(_,i)=>{const pct=(i/6)*100,ms=startMs+(i/6)*rangeMs;return`<div class="ruler-tick" style="left:${pct}%">${fmt(ms)}</div>`;}).join('');
+  const rows=document.getElementById('cbRows');
+  if(!dvrs.length){rows.innerHTML=`<div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);text-align:center;padding:14px">${t('addDvrCb')}</div>`;return;}
+  const realNow=new Date(curMs);
+  rows.innerHTML=dvrs.map(dvr=>{
+    const dvrTime=realToDvr(dvr,realNow);
+    const pct=((curMs-startMs)/rangeMs)*100;
+    const ts=dvrTime?dvrTime.toTimeString().slice(0,8):(currentLang==='ku'?'جیاوازی نییە':'NO OFFSET');
+    return `<div class="cb-row">
+      <div class="cb-label" style="color:${dvr.color}" title="${dvr.name}">${dvr.name}</div>
+      <div class="cb-bar-wrap">
+        <div class="cb-bar-fill" style="background:${dvr.color};width:100%"></div>
+        <div class="cb-marker" style="left:${Math.min(Math.max(pct,0),100)}%">
+          <div class="cb-time-bubble" style="border-color:${dvr.color};color:${dvr.color}">${ts}</div>
+        </div>
+      </div>
+      <div class="cb-val" style="color:${dvr.color}">${ts}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('cbReadout').innerHTML=`
+    <div class="cb-readout-item">
+      <div class="cb-readout-name">🌐 ${t('realWorld')}</div>
+      <div class="cb-readout-time" style="color:var(--accent-g)">${fmt(curMs)}</div>
+      <div class="cb-readout-date">${new Date(curMs).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'})}</div>
+    </div>`+dvrs.map(dvr=>{
+      const dt=realToDvr(dvr,new Date(curMs));
+      return`<div class="cb-readout-item">
+        <div class="cb-readout-name" style="color:${dvr.color}">${dvr.name}</div>
+        <div class="cb-readout-time" style="color:${dvr.color}">${dt?dt.toTimeString().slice(0,8):(currentLang==='ku'?'جیاوازی نییە':'NO OFFSET')}</div>
+        <div class="cb-readout-date">${dt?dt.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'}):''}</div>
+      </div>`;
+    }).join('');
+}
+function renderCrossbar(){ updateCbScrubber(); }
+document.getElementById('cbScrubber').addEventListener('input',updateCbScrubber);
+document.getElementById('cbAnchorDate').addEventListener('change',()=>{const d=document.getElementById('cbAnchorDate').value,tt=document.getElementById('cbAnchorTime').value;if(d&&tt)cbAnchorMs=new Date(d+'T'+tt).getTime();updateCbScrubber();});
+document.getElementById('cbAnchorTime').addEventListener('change',()=>{const d=document.getElementById('cbAnchorDate').value,tt=document.getElementById('cbAnchorTime').value;if(d&&tt)cbAnchorMs=new Date(d+'T'+tt).getTime();updateCbScrubber();});
+
+// Drift
+function calcDrift(){
+  const installDateVal=document.getElementById('driftInstallDate').value;
+  const container=document.getElementById('driftGrid');
+  if(!dvrs.length){showToast(t('toastAddDvr'));return;}
+  const list=dvrs.filter(d=>getOffsetSeconds(d)!==null);
+  if(!list.length){showToast(t('toastSetOffset'));return;}
+  const nowMs=Date.now();
+  container.innerHTML=list.map(dvr=>{
+    const offSec=getOffsetSeconds(dvr),absOff=Math.abs(offSec);
+    let dpd='N/A',daysToWarn='N/A',syncInt='N/A';
+    if(installDateVal){
+      const elDays=(nowMs-new Date(installDateVal).getTime())/86400000;
+      if(elDays>0){
+        const d=offSec/elDays; dpd=d.toFixed(1)+'s/day';
+        const warn=dvr.alertThreshold||300;
+        if(Math.abs(d)>0){
+          const dl=(warn-absOff)/Math.abs(d);
+          daysToWarn=dl>0?dl.toFixed(0)+(currentLang==='ku'?' ڕۆژ':' days'):t('exceeded');
+          syncInt=t('every')+' '+(warn/Math.abs(d)).toFixed(0)+(currentLang==='ku'?' ڕۆژ':' days');
+        }
+      }
+    }
+    const cls=absOff<60?'synced':offSec>0?'ahead':'behind';
+    return `<div class="drift-item">
+      <div class="drift-dvr" style="color:${dvr.color}">${dvr.name}${dvr.location?' — '+dvr.location:''}</div>
+      <div class="drift-stat"><span class="drift-key">${t('currentOffset')}</span><span class="drift-val offset-val ${cls}">${formatDuration(offSec)}</span></div>
+      <div class="drift-stat"><span class="drift-key">${t('driftRate')}</span><span class="drift-val" style="color:var(--accent-o)">${dpd}</span></div>
+      <div class="drift-stat"><span class="drift-key">${t('daysToAlert')}</span><span class="drift-val" style="color:${daysToWarn===t('exceeded')?'var(--accent-r)':'var(--accent-y)'}">${daysToWarn}</span></div>
+      <div class="drift-stat"><span class="drift-key">${t('recSyncEvery')}</span><span class="drift-val" style="color:var(--accent-g)">${syncInt}</span></div>
+    </div>`;
+  }).join('');
+  addHistory(`${t('histDrift')}: ${list.length} DVRs`);
+  showToast(t('toastDriftDone'));
+}
+
+// Batch
+function renderBatchSelect(){
+  const sel=document.getElementById('batchDvrSelect'); const cur=sel.value;
+  sel.innerHTML=`<option value="">${t('selectDvr')}</option>`+dvrs.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
+  if(cur) sel.value=cur;
+  sel.options[0].text=t('selectDvr');
+}
+function runBatchConvert(){
+  const dvrId=document.getElementById('batchDvrSelect').value;
+  const dir=document.getElementById('batchDirection').value;
+  const raw=document.getElementById('batchInput').value.trim();
+  const resultEl=document.getElementById('batchResult');
+  if(!dvrId){showToast(t('toastSelectDvr'));return;}
+  if(!raw){showToast(t('toastEnterTs'));return;}
+  const dvr=dvrs.find(d=>d.id==dvrId);
+  if(!dvr){showToast(t('toastDvrNotFound'));return;}
+  if(getOffsetSeconds(dvr)===null){showToast(t('toastConfigDvr'));return;}
+  const lines=raw.split('\n').map(l=>l.trim()).filter(l=>l);
+  const results=lines.map(line=>{
+    const dt=new Date(line);
+    if(isNaN(dt)) return `${line}  →  ${t('invalidFmt')}`;
+    const conv=dir==='dvrToReal'?dvrToReal(dvr,dt):realToDvr(dvr,dt);
+    if(!conv) return `${line}  →  ${t('convErr')}`;
+    const fmt=d=>`${d.toISOString().slice(0,10)} ${d.toTimeString().slice(0,8)}`;
+    return `${line}  →  ${fmt(conv)}`;
+  });
+  resultEl.textContent=results.join('\n');
+  addHistory(`${t('histBatch')}: ${lines.length} ${currentLang==='ku'?'کات':'timestamps'} (${dvr.name})`);
+  showToast(`${t('toastConverted')} (${lines.length})`);
+}
+function copyBatchResult(){
+  const text=document.getElementById('batchResult').textContent;
+  if(text===t('batchPlaceholder')||text.startsWith('//')){showToast(t('toastRunFirst'));return;}
+  navigator.clipboard.writeText(text).then(()=>showToast(t('toastCopied'))).catch(()=>showToast(t('toastCopyFail')));
+}
+
+// Exports
+function getReportMeta(){
+  return {
+    caseNum:document.getElementById('metaCaseNum').value||'N/A',
+    investigator:document.getElementById('metaInvestigator').value||'N/A',
+    siteName:document.getElementById('metaSiteName').value||'N/A',
+    notes:document.getElementById('metaReportNotes').value||'',
+    generated:new Date().toLocaleString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'})
+  };
+}
+function downloadBlob(content,type,filename){
+  const blob=new Blob([content],{type}); const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=filename; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+function exportJSON(){
+  const data=JSON.stringify({dvrs,dvrIdCounter,historyLog,cbRangeHours,meta:getReportMeta()},null,2);
+  downloadBlob(data,'application/json','dvr-sync-config.json');
+  showToast(t('toastJsonExport')); addHistory(t('histExportJson'));
+}
+function exportCSV(){
+  const meta=getReportMeta();
+  let csv='DVR TIME SYNC PRO — CSV EXPORT\n';
+  csv+=`Case,${meta.caseNum}\nInvestigator,${meta.investigator}\nSite,${meta.siteName}\nGenerated,${meta.generated}\n\n`;
+  csv+='DVR ID,Name,Location,IP Address,Model,Wrong Date,Wrong Time,Real Date,Real Time,Offset (s),Offset,Status,DVR Time Now,Days Drifted,Alert Threshold,Alert,Notes\n';
+  dvrs.forEach(dvr=>{
+    const off=getOffsetSeconds(dvr),abs=off!==null?Math.abs(off):null;
+    const status=off===null?t('noData'):abs<60?t('synced'):off>0?t('dvrAhead'):t('dvrBehind');
+    const dvrNow=off!==null?realToDvr(dvr,new Date()):null;
+    const alert=off!==null&&abs>=(dvr.alertThreshold||300)?'YES':'NO';
+    csv+=`#${dvr.id},"${dvr.name}","${dvr.location||''}","${dvr.ipAddress||''}","${dvr.model||''}","${dvr.wrongDate}","${dvr.wrongTime}","${dvr.realDate}","${dvr.realTime}",${off!==null?off:''},${off!==null?formatDuration(off):''},"${status}","${dvrNow?dvrNow.toTimeString().slice(0,8)+' '+dvrNow.toLocaleDateString():''}","${off!==null?(off/86400).toFixed(2)+'d':''}",${dvr.alertThreshold||300},"${alert}","${(dvr.notes||'').replace(/"/g,"'")}"\n`;
+  });
+  csv+='\n\nHistory\nTime,Event\n';
+  historyLog.forEach(h=>{csv+=`"${h.ts}","${h.msg}"\n`;});
+  downloadBlob(csv,'text/csv','dvr-sync-report.csv');
+  showToast(t('toastCsvExport')); addHistory(t('histExportCsv'));
+}
+function exportTXT(){
+  const meta=getReportMeta(); const sep='═'.repeat(60); const sep2='─'.repeat(60);
+  let txt=`${sep}\nDVR TIME SYNC MASTER PRO — FORENSIC REPORT\n${sep}\n`;
+  txt+=`Case: ${meta.caseNum}\nInvestigator: ${meta.investigator}\nSite: ${meta.siteName}\nGenerated: ${meta.generated}\n`;
+  if(meta.notes) txt+=`Notes: ${meta.notes}\n`;
+  txt+=`\n${sep}\nDVR UNITS (${dvrs.length})\n${sep}\n`;
+  dvrs.forEach(dvr=>{
+    const off=getOffsetSeconds(dvr),abs=off!==null?Math.abs(off):null;
+    txt+=`${sep2}\n${dvr.name} #${dvr.id}\n${sep2}\n`;
+    if(dvr.location) txt+=`  Location: ${dvr.location}\n`;
+    if(dvr.ipAddress) txt+=`  IP: ${dvr.ipAddress}\n`;
+    if(dvr.model) txt+=`  Model: ${dvr.model}\n`;
+    txt+=`  Wrong Time: ${dvr.wrongDate} ${dvr.wrongTime}\n`;
+    txt+=`  Real Time:  ${dvr.realDate} ${dvr.realTime}\n`;
+    if(off!==null){
+      txt+=`  Offset: ${formatDuration(off)} (${off}s)\n`;
+      txt+=`  Days Drifted: ${(off/86400).toFixed(2)}\n`;
+      txt+=`  Alert: ${abs>=(dvr.alertThreshold||300)?'⚠ TRIGGERED':'✓ OK'}\n`;
+    }
+    if(dvr.notes) txt+=`  Notes: ${dvr.notes}\n`; txt+='\n';
+  });
+  if(historyLog.length){ txt+=`${sep}\nHISTORY\n${sep}\n`; historyLog.forEach(h=>{txt+=`  [${h.ts}] ${h.msg}\n`;}); }
+  downloadBlob(txt,'text/plain','dvr-sync-report.txt');
+  showToast(t('toastTxtExport')); addHistory(t('histExportTxt'));
+}
+function exportHTML(){
+  const meta=getReportMeta(); const now=new Date();
+  const rows=dvrs.map(dvr=>{
+    const off=getOffsetSeconds(dvr),abs=off!==null?Math.abs(off):null;
+    const status=off===null?t('noData'):abs<60?t('synced'):off>0?t('dvrAhead'):t('dvrBehind');
+    const sc=off===null?'#666':abs<60?'#00c896':off>0?'#ff8c00':'#00aaff';
+    const alert=off!==null&&abs>=(dvr.alertThreshold||300);
+    const dvrNow=off!==null?realToDvr(dvr,now):null;
+    return `<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${dvr.color};margin-right:6px"></span>#${dvr.id}</td><td><strong>${dvr.name}</strong></td><td>${dvr.location||'—'}</td><td>${dvr.ipAddress||'—'}</td><td>${dvr.model||'—'}</td><td>${dvr.wrongDate} ${dvr.wrongTime}</td><td>${dvr.realDate} ${dvr.realTime}</td><td style="color:${sc};font-weight:bold">${status}</td><td style="color:${sc}">${off!==null?formatDuration(off):'—'}</td><td>${dvrNow?dvrNow.toTimeString().slice(0,8)+' '+dvrNow.toLocaleDateString():'—'}</td><td style="color:${alert?'#ff3c3c':'#00c896'}">${off!==null?(alert?'⚠ ALERT':'✓ OK'):'—'}</td><td>${(dvr.notes||'').substring(0,60)}</td></tr>`;
+  }).join('');
+  const offsets=dvrs.map(d=>getOffsetSeconds(d)).filter(o=>o!==null);
+  const alerts=dvrs.filter(d=>{const o=getOffsetSeconds(d);return o!==null&&Math.abs(o)>=(d.alertThreshold||300);}).length;
+  const html=`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>DVR Sync Report — ${meta.caseNum}</title><style>body{font-family:'Segoe UI',sans-serif;background:#f5f7fa;color:#1a2332;margin:0;padding:0}.page{max-width:1100px;margin:30px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 30px rgba(0,0,0,.1)}.rh{background:linear-gradient(135deg,#0a1520,#0d2035);color:#fff;padding:32px 36px}.rh h1{font-size:24px;font-weight:900;letter-spacing:2px;margin:0 0 4px}.ms{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;padding:24px 36px;background:#f0f4f8;border-bottom:1px solid #d0dce8}.mk{font-size:10px;color:#6a8aaa;font-weight:700;text-transform:uppercase;margin-bottom:4px}.mv{font-size:14px;color:#1a2332;font-weight:600}.sr{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;padding:20px 36px;border-bottom:1px solid #d0dce8}.st{text-align:center;background:#fff;border:1px solid #d0dce8;border-radius:8px;padding:14px}.st .n{font-size:26px;font-weight:900;margin-bottom:2px}.st .k{font-size:10px;color:#6a8aaa;letter-spacing:1px;font-weight:700}.sc{padding:24px 36px}table{width:100%;border-collapse:collapse;font-size:12px}th{background:#0a1520;color:#fff;padding:9px 10px;text-align:left;font-size:10px;letter-spacing:1px;font-weight:700}td{padding:9px 10px;border-bottom:1px solid #e8eef4}tr:nth-child(even) td{background:#f8fafc}.ft{text-align:center;padding:18px;font-size:11px;color:#8aa0b8;border-top:1px solid #d0dce8;background:#f5f7fa}</style></head><body><div class="page"><div class="rh"><div style="font-size:12px;color:#4a8aaa;letter-spacing:2px;margin-bottom:6px">// SURVEILLANCE FORENSIC REPORT</div><h1>DVR TIME SYNC MASTER PRO</h1><div style="font-size:11px;color:#7aaccc;margin-top:8px">Generated: ${meta.generated}</div></div><div class="ms"><div><div class="mk">Case No.</div><div class="mv">${meta.caseNum}</div></div><div><div class="mk">Investigator</div><div class="mv">${meta.investigator}</div></div><div><div class="mk">Site</div><div class="mv">${meta.siteName}</div></div>${meta.notes?`<div><div class="mk">Notes</div><div class="mv">${meta.notes}</div></div>`:''}</div><div class="sr"><div class="st"><div class="n" style="color:#0088dd">${dvrs.length}</div><div class="k">DVR UNITS</div></div><div class="st"><div class="n" style="color:#ff4444">${offsets.length?formatDuration(Math.max(...offsets.map(Math.abs))).replace(/^[+-]/,''):'—'}</div><div class="k">MAX OFFSET</div></div><div class="st"><div class="n" style="color:#ff9900">${offsets.length?Math.round(offsets.reduce((a,b)=>a+Math.abs(b),0)/offsets.length)+'s':'—'}</div><div class="k">AVG OFFSET</div></div><div class="st"><div class="n" style="color:#00c896">${offsets.filter(o=>Math.abs(o)<60).length}</div><div class="k">SYNCED (±1m)</div></div><div class="st"><div class="n" style="color:${alerts>0?'#ff4444':'#00c896'}">${alerts}</div><div class="k">ALERTS</div></div></div><div class="sc"><h2 style="font-size:14px;font-weight:800;color:#0a1520;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #e0eaf4;letter-spacing:2px;text-transform:uppercase">DVR Unit Details</h2>${alerts>0?`<div style="background:#fff0f0;border:1px solid #ffaaaa;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#cc2222;font-weight:600">⚠ ${alerts} DVR unit(s) exceeded alert threshold</div>`:''}<table><thead><tr><th>ID</th><th>Name</th><th>Location</th><th>IP</th><th>Model</th><th>Wrong Time</th><th>Real Time</th><th>Status</th><th>Offset</th><th>DVR Now</th><th>Alert</th><th>Notes</th></tr></thead><tbody>${rows}</tbody></table></div>${historyLog.length?`<div class="sc"><h2 style="font-size:14px;font-weight:800;color:#0a1520;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #e0eaf4;letter-spacing:2px;text-transform:uppercase">Calculation History</h2><table><thead><tr><th>Timestamp</th><th>Event</th></tr></thead><tbody>${historyLog.map(h=>`<tr><td style="color:#6a8aaa">${h.ts}</td><td>${h.msg}</td></tr>`).join('')}</tbody></table></div>`:''}<div class="ft">DVR Time Sync Master Pro — Forensic Report | ${meta.generated}</div></div>    <script src="qalyx-bridge.js"></script>
+</body></html>`;
+  downloadBlob(html,'text/html','dvr-sync-report.html');
+  showToast(t('toastHtmlExport')); addHistory(t('histExportHtml'));
+}
+
+function exportPDF(){
+  if(!dvrs.length){showToast(t('toastAddDvr'));return;}
+  showToast(t('toastPdfGen'));
+  try {
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const meta=getReportMeta(); const now=new Date();
+    const W=210,pH=297,mg=14,cW=W-mg*2;
+    const C={dark:[10,21,32],mid:[13,32,53],acc:[0,170,255],grn:[0,200,150],red:[255,60,60],org:[255,140,0],yel:[255,215,0],wht:[255,255,255],lt:[200,218,232],dim:[74,98,120],bg:[245,247,250],alt:[248,250,252]};
+    const sF=(c,fill=true)=>fill?doc.setFillColor(...c):doc.setTextColor(...c);
+    const fnt=(sz,sty='normal')=>{ doc.setFont('helvetica',sty); doc.setFontSize(sz); };
+    let y=mg;
+    // Header
+    sF(C.dark); doc.rect(0,0,W,50,'F');
+    sF(C.acc); doc.rect(0,0,4,50,'F');
+    sF(C.mid); doc.rect(0,0,W,1.5,'F');
+    fnt(7); sF(C.acc,false); doc.text('// SURVEILLANCE SYSTEM UTILITY — FORENSIC REPORT',mg+6,y+7);
+    fnt(18,'bold'); sF(C.wht,false); doc.text('DVR TIME SYNC MASTER PRO',mg+6,y+17);
+    fnt(9); sF(C.lt,false); doc.text(`Case: ${meta.caseNum}   |   Investigator: ${meta.investigator}`,mg+6,y+26);
+    doc.text(`Site: ${meta.siteName}`,mg+6,y+32);
+    doc.text(`Generated: ${meta.generated}`,mg+6,y+38);
+    if(meta.notes){fnt(8);sF(C.dim,false);doc.text(`Notes: ${meta.notes}`,mg+6,y+44);}
+    y=56;
+    // Stats
+    const offsets=dvrs.map(d=>getOffsetSeconds(d)).filter(o=>o!==null);
+    const alertCount=dvrs.filter(d=>{const o=getOffsetSeconds(d);return o!==null&&Math.abs(o)>=(d.alertThreshold||300);}).length;
+    const stats=[{l:'DVR UNITS',v:String(dvrs.length),c:C.acc},{l:'MAX OFFSET',v:offsets.length?formatDuration(Math.max(...offsets.map(Math.abs))).replace(/^[+-]/,''):'—',c:C.red},{l:'AVG OFFSET',v:offsets.length?Math.round(offsets.reduce((a,b)=>a+Math.abs(b),0)/offsets.length)+'s':'—',c:C.org},{l:'SYNCED (±1m)',v:String(offsets.filter(o=>Math.abs(o)<60).length),c:C.grn},{l:'ALERTS',v:String(alertCount),c:alertCount>0?C.red:C.grn}];
+    const sW=cW/stats.length;
+    stats.forEach((s,i)=>{
+      const sx=mg+i*sW;
+      sF(C.bg); doc.rect(sx,y,sW-2,18,'F');
+      sF(s.c); doc.rect(sx,y,2,18,'F');
+      fnt(14,'bold'); sF(s.c,false); doc.text(s.v,sx+sW/2,y+10,{align:'center'});
+      fnt(6); sF(C.dim,false); doc.text(s.l,sx+sW/2,y+15,{align:'center'});
+    });
+    y+=24;
+    if(alertCount>0){
+      sF([60,10,10]); doc.rect(mg,y,cW,8,'F');
+      sF(C.red); doc.rect(mg,y,2,8,'F');
+      fnt(8,'bold'); sF(C.red,false); doc.text(`⚠  ${alertCount} DVR UNIT(S) EXCEEDED ALERT THRESHOLD — REVIEW REQUIRED`,mg+6,y+5.5);
+      y+=12;
+    }
+    // Table header
+    fnt(9,'bold'); sF(C.dark,false); doc.text('DVR UNIT DETAILS',mg,y+5);
+    sF(C.acc); doc.rect(mg,y+6.5,22,0.5,'F');
+    y+=12;
+    const cols=[{h:'#',w:8},{h:'NAME',w:24},{h:'LOCATION',w:26},{h:'IP',w:22},{h:'MODEL',w:22},{h:'WRONG TIME',w:24},{h:'REAL TIME',w:24},{h:'STATUS',w:18},{h:'OFFSET',w:16},{h:'ALERT',w:12}];
+    let tx=mg; sF(C.dark); doc.rect(mg,y,cW,7,'F');
+    cols.forEach(col=>{fnt(6,'bold');sF(C.acc,false);doc.text(col.h,tx+1.5,y+4.8);tx+=col.w;});
+    y+=7;
+    dvrs.forEach((dvr,ri)=>{
+      if(y>270){doc.addPage();y=14;}
+      const off=getOffsetSeconds(dvr),abs=off!==null?Math.abs(off):null;
+      const status=off===null?t('noData'):abs<60?t('synced'):off>0?t('dvrAhead'):t('dvrBehind');
+      const sc=off===null?C.dim:abs<60?C.grn:off>0?C.org:C.acc;
+      const alertT=off!==null&&abs>=(dvr.alertThreshold||300);
+      const rowH=dvr.notes?10:8;
+      sF(ri%2===0?C.wht:C.alt); doc.rect(mg,y,cW,rowH,'F');
+      sF([220,230,240]); doc.rect(mg,y+rowH-0.3,cW,0.3,'F');
+      const dvrRgb=hexToRgb(dvr.color);
+      if(dvrRgb){sF(dvrRgb);doc.rect(mg,y,1.5,rowH,'F');}
+      const vals=[`#${dvr.id}`,dvr.name,dvr.location||'—',dvr.ipAddress||'—',dvr.model||'—',
+        `${dvr.wrongDate}\n${dvr.wrongTime}`,`${dvr.realDate}\n${dvr.realTime}`,status,
+        off!==null?formatDuration(off):'—',alertT?'⚠ ALERT':'✓ OK'];
+      tx=mg;
+      vals.forEach((val,vi)=>{
+        const col=cols[vi];
+        let tc=C.dark;
+        if(vi===7) tc=sc;
+        if(vi===9) tc=alertT?C.red:C.grn;
+        fnt(6); sF(tc,false);
+        val.split('\n').forEach((line,li)=>{doc.text(line,tx+2,y+3.5+li*3.5,{maxWidth:col.w-3});});
+        tx+=col.w;
+      });
+      if(dvr.notes){fnt(5.5,'italic');sF(C.dim,false);doc.text(`Notes: ${dvr.notes.substring(0,90)}`,mg+3,y+rowH-1.5,{maxWidth:cW-4});}
+      y+=rowH;
+    });
+    y+=6;
+    // Offset blocks
+    if(y>245){doc.addPage();y=14;}
+    fnt(9,'bold');sF(C.dark,false);doc.text('OFFSET ANALYSIS',mg,y+5);
+    sF(C.acc);doc.rect(mg,y+6.5,18,0.5,'F');y+=12;
+    dvrs.forEach(dvr=>{
+      const off=getOffsetSeconds(dvr); if(off===null) return;
+      if(y>270){doc.addPage();y=14;}
+      const abs=Math.abs(off),sc=abs<60?C.grn:off>0?C.org:C.acc;
+      const dvrNow=realToDvr(dvr,now); const bH=24;
+      sF(C.bg);doc.rect(mg,y,cW,bH,'F');
+      const dR=hexToRgb(dvr.color)||C.acc;sF(dR);doc.rect(mg,y,2.5,bH,'F');
+      fnt(8,'bold');sF(dR,false);doc.text(`${dvr.name}${dvr.location?' — '+dvr.location:''}`,mg+6,y+5);
+      if(dvr.ipAddress||dvr.model){fnt(6);sF(C.dim,false);doc.text(`${dvr.ipAddress?'IP: '+dvr.ipAddress+' ':''}${dvr.model?'Model: '+dvr.model:''}`,mg+6,y+10);}
+      const det=[['WRONG TIME',`${dvr.wrongDate} ${dvr.wrongTime}`],['REAL TIME',`${dvr.realDate} ${dvr.realTime}`],['OFFSET',formatDuration(off)+` (${off}s)`],['DVR NOW',dvrNow?`${dvrNow.toTimeString().slice(0,8)} ${dvrNow.toLocaleDateString()}`:'—'],['DAYS',(off/86400).toFixed(2)+' days'],['ALERT',abs>=(dvr.alertThreshold||300)?'⚠ TRIGGERED':'✓ OK']];
+      const dW=cW/3;
+      det.forEach((p,di)=>{
+        const dx=mg+6+(di%3)*dW,dy=y+14+(Math.floor(di/3)*6);
+        fnt(5.5);sF(C.dim,false);doc.text(p[0],dx,dy);
+        fnt(6,'bold');
+        const tc=p[0]==='OFFSET'?sc:p[0]==='ALERT'?(abs>=(dvr.alertThreshold||300)?C.red:C.grn):C.dark;
+        sF(tc,false);doc.text(p[1],dx,dy+4);
+      });
+      y+=bH+3;
+    });
+    // History
+    if(historyLog.length>0){
+      if(y>250){doc.addPage();y=14;} y+=4;
+      fnt(9,'bold');sF(C.dark,false);doc.text('CALCULATION HISTORY',mg,y+5);
+      sF(C.acc);doc.rect(mg,y+6.5,24,0.5,'F');y+=12;
+      historyLog.slice(0,20).forEach((h,hi)=>{
+        if(y>278){doc.addPage();y=14;}
+        sF(hi%2===0?C.wht:C.alt);doc.rect(mg,y,cW,5.5,'F');
+        fnt(6);sF(C.dim,false);doc.text(h.ts,mg+2,y+3.8);
+        sF(C.dark,false);doc.text(h.msg,mg+22,y+3.8,{maxWidth:cW-24});
+        y+=5.5;
+      });
+      if(historyLog.length>20){fnt(6,'italic');sF(C.dim,false);doc.text(`... and ${historyLog.length-20} more`,mg,y+5);}
+    }
+    // Footer
+    const tp=doc.internal.getNumberOfPages();
+    for(let p=1;p<=tp;p++){
+      doc.setPage(p);
+      sF(C.dark);doc.rect(0,pH-10,W,10,'F');
+      sF(C.acc);doc.rect(0,pH-10,W,0.5,'F');
+      fnt(6);sF(C.dim,false);
+      doc.text('DVR TIME SYNC MASTER PRO — CONFIDENTIAL FORENSIC REPORT',mg,pH-4);
+      doc.text(`Page ${p}/${tp}  |  ${meta.caseNum}  |  ${now.toLocaleDateString()}`,W-mg,pH-4,{align:'right'});
+    }
+    doc.save(`dvr-sync-report-${meta.caseNum.replace(/[^a-z0-9]/gi,'_')}.pdf`);
+    showToast(t('toastPdfDone')); addHistory(t('histExportPdf'));
+  } catch(err){ console.error(err); showToast(t('toastPdfErr')); }
+}
+
+function hexToRgb(hex){const r=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);return r?[parseInt(r[1],16),parseInt(r[2],16),parseInt(r[3],16)]:null;}
+
+// Import / Reset
+function importData(){ document.getElementById('importFile').click(); }
+function handleImport(e){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      dvrs=data.dvrs||[]; dvrIdCounter=data.dvrIdCounter||dvrs.length;
+      historyLog=data.historyLog||[]; cbRangeHours=data.cbRangeHours||1;
+      renderDvrs(); renderXrefSelects(); renderGapRows(); renderCrossbar(); renderBatchSelect(); recalcAll(); renderHistory(); saveToLS();
+      showToast(t('toastImported')); addHistory(t('histImport'));
+    }catch{ showToast(t('toastInvalidJson')); }
+  };
+  reader.readAsText(file); e.target.value='';
+}
+function resetAll(){
+  if(!confirm(t('resetBtn')+'?')) return;
+  dvrs=[]; dvrIdCounter=0; historyLog=[];
+  localStorage.removeItem(LS_KEY);
+  renderDvrs(); renderXrefSelects(); renderGapRows(); renderCrossbar(); renderBatchSelect(); recalcAll();
+  document.getElementById('xrefResult').classList.remove('visible');
+  document.getElementById('gapResult').innerHTML='';
+  document.getElementById('driftGrid').innerHTML=`<div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);grid-column:1/-1;text-align:center;padding:14px">${t('driftEmpty')}</div>`;
+  document.getElementById('batchResult').textContent=t('batchPlaceholder');
+  renderHistory(); showToast(t('toastReset')); addHistory(t('histReset'));
+}
+function clearHistory(){ historyLog=[]; renderHistory(); saveToLS(); }
+
+// ── INIT ──
+const todayStr=new Date().toISOString().slice(0,10);
+const nowStr=new Date().toTimeString().slice(0,8);
+document.getElementById('xrefDate').value=todayStr;
+document.getElementById('xrefTime').value=nowStr;
+document.getElementById('cbAnchorDate').value=todayStr;
+document.getElementById('cbAnchorTime').value=nowStr;
+document.getElementById('driftInstallDate').value=todayStr;
+cbAnchorMs=Date.now();
+
+// Apply saved theme & lang
+applyTheme(currentTheme);
+applyLang(currentLang);
+
+const loaded=loadFromLS();
+if(loaded&&dvrs.length){
+  renderDvrs(); renderXrefSelects(); renderGapRows(); renderHistory(); renderBatchSelect(); recalcAll(); renderCrossbar();
+  showToast(`${t('toastLoaded').split(' ')[0]} ${dvrs.length} ${t('toastLoaded').split(' ').slice(1).join(' ')}`);
+} else {
+  addDvr(); addDvr();
+}
+// Re-apply lang after renders
+translatePage();
+</script>
+</body>
+</html>
