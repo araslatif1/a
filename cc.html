@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=0.8, maximum-scale=1.0, user-scalable=no">
+<title>یاری دۆمینە</title>
+<style>
+  :root{
+    --green:#E3ED5A;
+    --blue:#3e8ede;
+    --blue-dark:#2f74c0;
+    --border:#111;
+    --cell-empty:#ffffff;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    min-height:100vh;
+    background:#e9edf1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:24px 12px 60px;
+    font-family:"Segoe UI","Tahoma",Arial,sans-serif;
+  }
+  h1{
+    font-size:22px;
+    color:#222;
+    margin:0 0 16px;
+    letter-spacing:0.5px;
+  }
+  .board-wrap{
+    background:#fff;
+    padding:14px;
+    border-radius:10px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.15);
+  }
+  .win-card-outer{
+    position:relative;
+    width:100%;
+    max-width:420px;
+  }
+  .stamp{
+    position:absolute;
+    left:24px;
+    top:-4px;
+    width:120px;
+    height:44px;
+    z-index:5;
+    transform:rotate(-9deg);
+    opacity:0.85;
+    mix-blend-mode:multiply;
+    pointer-events:none;
+    user-select:none;
+  }
+  .stamp-inner{
+    position:relative;
+    width:100%;
+    height:100%;
+    border:2px solid #b5322b;
+    border-radius:4px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:1px;
+  }
+  .stamp-inner::before{
+    content:'';
+    position:absolute;
+    inset:3px;
+    border:1px solid #b5322b;
+    border-radius:2px;
+  }
+  .stamp-line{
+    color:#b5322b;
+    font-weight:800;
+    font-size:12px;
+    letter-spacing:0.2px;
+    line-height:1.1;
+  }
+  table{
+    border-collapse:collapse;
+    table-layout:fixed;
+  }
+  td, th{
+    border:2px solid var(--border);
+    text-align:center;
+    padding:0;
+  }
+  .name-cell{
+    background:var(--green);
+    padding:6px 4px;
+  }
+  .name-input{
+    width:100%;
+    border:none;
+    background:transparent;
+    text-align:center;
+    font-size:18px;
+    font-weight:800;
+    color:#1a1a1a;
+    outline:none;
+    font-family:inherit;
+  }
+  .player-2-name .name-input{
+    color:var(--blue);
+    font-weight:800;
+  }
+  .sub-col{
+    width:85px;
+    height:52px;
+  }
+  .mark-row td{
+    width:85px;
+    height:52px;
+  }
+  .mark-row.o-row td{
+    height:34px;
+  }
+  .mark-row:not(.o-row) td{
+    border-bottom-color:transparent;
+  }
+  .mark-row.o-row td{
+    border-top-color:transparent;
+  }
+  .mark-cell{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:30px;
+    font-weight:800;
+    color:#1a1a1a;
+    height:52px;
+  }
+  .mark-row.o-row .mark-cell{
+    height:34px;
+    font-size:28px;
+  }
+  .mark-cell.half{
+    color:#1a1a1a;
+    font-weight:800;
+  }
+  .player-2 .mark-cell{
+    color:var(--blue);
+  }
+  .foot-cell{
+    background:linear-gradient(135deg, #3e8ede, #5a9fe8);
+    color:#fff;
+    font-size:22px;
+    font-weight:800;
+    cursor:pointer;
+    user-select:none;
+    transition:all 0.2s ease;
+    border-radius:6px;
+    box-shadow:0 3px 8px rgba(62,142,222,0.35);
+    letter-spacing:1px;
+  }
+  .foot-cell:hover{
+    background:linear-gradient(135deg, #2f74c0, #4a8fd8);
+    box-shadow:0 5px 14px rgba(62,142,222,0.5);
+    transform:translateY(-2px);
+  }
+  .foot-cell:active{
+    background:linear-gradient(135deg, #e0a92e, #f0c040);
+    color:#fff;
+    transform:translateY(1px) scale(0.96);
+    box-shadow:0 2px 4px rgba(224,169,46,0.4);
+  }
+  .foot-cell[data-val="10"]:active{
+    background:linear-gradient(135deg, #22c55e, #4ade80);
+    box-shadow:0 2px 4px rgba(34,197,94,0.4);
+  }
+
+  .totals{
+    display:flex;
+    gap:40px;
+    justify-content:center;
+    margin-top:16px;
+  }
+  .total-box{
+    background:#fff;
+    border-radius:8px;
+    padding:8px 36px;
+    box-shadow:0 3px 8px rgba(0,0,0,0.1);
+    text-align:center;
+  }
+  .total-box .lbl{ font-size:13px; color:#666; }
+  .total-box .val{ font-size:26px; font-weight:800; color:#222; }
+
+  .controls{
+    display:flex;
+    gap:12px;
+    margin-top:20px;
+  }
+  .btn{
+    padding:9px 18px;
+    border-radius:7px;
+    border:none;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    color:#fff;
+  }
+  .btn-undo{ background:#e0a92e; }
+  .btn-undo:hover{ background:#c8931f; }
+  .btn-reset{ background:#d9534f; }
+  .btn-reset:hover{ background:#c14742; }
+  .btn-close{ background:#3a3f47; }
+  .btn-close:hover{ background:#262a30; }
+
+  .winner-banner{
+    margin-top:16px;
+    font-size:18px;
+    font-weight:800;
+    color:#2f8f3e;
+    min-height:24px;
+  }
+
+  .log-link{
+    margin-top:14px;
+    background:none;
+    border:none;
+    color:#3e6ede;
+    font-size:14px;
+    font-weight:700;
+    text-decoration:underline;
+    cursor:pointer;
+  }
+
+  .overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(20,24,30,0.62);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:100;
+    padding:16px;
+  }
+  .overlay.hidden{ display:none; }
+  .modal-card{
+    position:relative;
+    z-index:2;
+    background:#fff;
+    border-radius:12px;
+    padding:26px 24px;
+    width:100%;
+    max-width:360px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.3);
+    text-align:center;
+  }
+  .modal-card h2{
+    margin:0 0 6px;
+    font-size:19px;
+    color:#222;
+  }
+  .modal-card p{
+    margin:0 0 18px;
+    font-size:13px;
+    color:#777;
+  }
+  .modal-field{
+    margin-bottom:12px;
+    text-align:right;
+  }
+  .modal-field label{
+    display:block;
+    font-size:13px;
+    color:#555;
+    margin-bottom:4px;
+    font-weight:700;
+  }
+  .modal-field input{
+    width:100%;
+    padding:10px 12px;
+    border-radius:7px;
+    border:2px solid #ddd;
+    font-size:16px;
+    text-align:center;
+    font-family:inherit;
+    outline:none;
+  }
+  .modal-field input:focus{ border-color:var(--blue); }
+  .modal-start-btn{
+    width:100%;
+    margin-top:8px;
+    padding:11px;
+    border:none;
+    border-radius:7px;
+    background:var(--green);
+    color:#1a1a1a;
+    font-size:16px;
+    font-weight:800;
+    cursor:pointer;
+  }
+  .modal-start-btn:hover{ filter:brightness(0.95); }
+
+  .log-modal-card{
+    background:#fff;
+    border-radius:12px;
+    padding:20px;
+    width:100%;
+    max-width:480px;
+    max-height:85vh;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 10px 30px rgba(0,0,0,0.3);
+  }
+  .log-modal-card h2{
+    margin:0 0 12px;
+    font-size:18px;
+    color:#222;
+    text-align:center;
+  }
+  .log-list{
+    overflow-y:auto;
+    flex:1;
+  }
+  .log-entry{
+    border:1px solid #e2e2e2;
+    border-radius:8px;
+    padding:10px 12px;
+    margin-bottom:8px;
+    font-size:13px;
+  }
+  .log-entry .row1{
+    display:flex;
+    justify-content:space-between;
+    font-weight:800;
+    font-size:15px;
+    color:#222;
+    margin-bottom:4px;
+  }
+  .log-entry .row2{
+    display:flex;
+    justify-content:space-between;
+    color:#777;
+    font-size:12px;
+  }
+  .log-entry .win{ color:#2f8f3e; }
+  .log-empty{
+    text-align:center;
+    color:#999;
+    font-size:14px;
+    padding:30px 0;
+  }
+  .modal-close-btn{
+    margin-top:14px;
+    padding:9px 22px;
+    border:none;
+    border-radius:7px;
+    background:#555;
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .btn-clear-log{
+    background:#d9534f;
+  }
+  .btn-clear-log:hover{
+    background:#c14742;
+  }
+  .log-btn-row{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    margin-top:14px;
+  }
+
+  .chart-section{
+    margin-top:16px;
+    padding-top:14px;
+    border-top:1px solid #e2e2e2;
+  }
+  .chart-title{
+    text-align:center;
+    font-size:14px;
+    font-weight:800;
+    color:#555;
+    margin:0 0 12px;
+  }
+  .chart-container{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    padding:12px 16px;
+    overflow-y:auto;
+    max-height:300px;
+    direction:rtl;
+  }
+  .chart-game-group{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    padding-bottom:8px;
+    margin-bottom:4px;
+    border-bottom:1px dashed #ccc;
+  }
+  .chart-game-group:last-child{
+    border-bottom:none;
+    margin-bottom:0;
+    padding-bottom:0;
+  }
+  .chart-bar-wrap{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    width:100%;
+  }
+  .chart-bar-name{
+    font-size:12px;
+    font-weight:800;
+    color:#333;
+    min-width:90px;
+    text-align:left;
+    flex-shrink:0;
+  }
+  .chart-bar-track{
+    flex:1;
+    display:flex;
+    gap:4px;
+    align-items:center;
+  }
+  .chart-bar{
+    height:26px;
+    border-radius:4px;
+    transition:width 0.4s ease;
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    padding:0 6px;
+    min-width:4px;
+  }
+  .chart-bar.win1{ background:linear-gradient(90deg, #5a9fe8, #3e8ede); }
+  .chart-bar.win2{ background:linear-gradient(90deg, #f0c040, #e0a92e); }
+  .chart-bar-num{
+    font-size:11px;
+    font-weight:800;
+    color:#c0392b;
+    text-shadow:none;
+    white-space:nowrap;
+  }
+  .chart-bar-label{
+    font-size:11px;
+    font-weight:700;
+    color:#333;
+    min-width:28px;
+    text-align:center;
+    flex-shrink:0;
+  }
+  .chart-legend{
+    display:flex;
+    gap:16px;
+    justify-content:center;
+    margin-top:10px;
+    padding-top:8px;
+    border-top:1px solid #e2e2e2;
+  }
+  .chart-legend-item{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    font-size:11px;
+    font-weight:700;
+    color:#555;
+  }
+  .chart-legend-color{
+    width:12px;
+    height:12px;
+    border-radius:3px;
+  }
+</style>
+</head>
+<body>
+
+<h1>یاری دۆمینە </h1>
+
+<div class="board-wrap">
+  <table id="board">
+    <tr>
+      <th class="name-cell player-2-name" colspan="2">
+        <input class="name-input" id="name2" value="احمد" maxlength="14">
+      </th>
+      <th class="name-cell" colspan="2">
+        <input class="name-input" id="name1" value="على" maxlength="14">
+      </th>
+    </tr>
+    <tbody id="rows-body">
+      <!-- score rows injected by JS -->
+    </tbody>
+    <tr class="mark-row">
+      <td class="foot-cell" data-player="2" data-val="10">10</td>
+      <td class="foot-cell" data-player="2" data-val="5">5</td>
+      <td class="foot-cell" data-player="1" data-val="10">10</td>
+      <td class="foot-cell" data-player="1" data-val="5">5</td>
+    </tr>
+  </table>
+</div>
+
+
+<div class="totals">
+  <div class="total-box">
+    <div class="lbl" id="totalLbl2">احمد</div>
+    <div class="val" id="total2">0</div>
+  </div>
+  <div class="total-box">
+    <div class="lbl" id="totalLbl1">على</div>
+    <div class="val" id="total1">0</div>
+  </div>
+</div>
+
+<div class="winner-banner" id="winnerBanner"></div>
+
+<div class="controls">
+  <button class="btn btn-undo" id="undoBtn">پاشگەزبوونەوە</button>
+  <button class="btn btn-reset" id="resetBtn">یاری نوێ</button>
+  <button class="btn btn-close" id="closeBtn">داخستنی یاری</button>
+</div>
+
+<button class="log-link" id="logLink">لۆگی یاریەکانی پێشوو</button>
+
+<!-- name entry overlay: shown once, or again after 3h expiry -->
+<div class="overlay hidden" id="nameOverlay">
+  <div class="modal-card">
+    <h2>دەستپێکردنی یاری</h2>
+    <p>تکایە ناوی هەردوو یاریزان بنووسە</p>
+    <div class="modal-field">
+      <label>یاریزانی یەکەم</label>
+      <input type="text" id="modalName1" maxlength="14" placeholder="على">
+    </div>
+    <div class="modal-field">
+      <label>یاریزانی دووەم</label>
+      <input type="text" id="modalName2" maxlength="14" placeholder="احمد">
+    </div>
+    <button class="modal-start-btn" id="startGameBtn">دەستپێکردن</button>
+  </div>
+</div>
+
+<!-- winner congratulation popup, shown once a player reaches WIN_SCORE -->
+<div class="overlay hidden" id="winOverlay">
+  <div class="win-card-outer">
+    <div class="stamp" aria-hidden="true">
+      <div class="stamp-inner">
+        <div class="stamp-line">دروستکراوە لەلایەن</div>
+        <div class="stamp-line">ئاراس لطیف</div>
+      </div>
+    </div>
+    <div class="modal-card">
+      <h2>🎉 پیرۆزە!</h2>
+      <p id="winMessage"></p>
+      <button class="modal-start-btn" id="winOkBtn">یاری نوێ</button>
+    </div>
+  </div>
+</div>
+
+<!-- previous games log -->
+<div class="overlay hidden" id="logOverlay">
+  <div class="log-modal-card">
+    <h2>لۆگی یاریەکانی پێشوو</h2>
+    <div class="log-list" id="logList"></div>
+    <div class="chart-section" id="chartSection">
+      <h3 class="chart-title">نرخی جیاوازی</h3>
+      <div class="chart-container" id="chartContainer"></div>
+    </div>
+    <div class="log-btn-row">
+      <button class="modal-close-btn btn-clear-log" id="clearLogBtn">سڕینەوەی لۆگ</button>
+      <button class="modal-close-btn" id="closeLogBtn">داخستن</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------- state ----------
+// each player: xFull (completed X count), xHalf (0/1 pending stroke),
+// oFull (permanent o's, never deleted), oPending (0/1, may convert into X progress),
+// convBlock (index of the row-pair currently eligible for o->X conversion)
+const ROWS_PER_BLOCK = 3;   // how many X-rows (and matching O-rows) rendered initially
+const SLOTS_PER_ROW = 4;
+const WIN_SCORE = 400;      // game finishes once a player reaches this score
+const MAX_ROWS = 4;         // table will never grow past 4 X-rows and 4 O-rows (16 slots each = 400 pts)
+
+let state = {
+  1: { xFull: 0, xHalf: 0, oFull: 0, oPending: 0, convBlock: 0 },
+  2: { xFull: 0, xHalf: 0, oFull: 0, oPending: 0, convBlock: 0 }
+};
+let historyStack = []; // stack of full state snapshots for undo
+let roundLogged = false; // whether current round's result has already been saved to the log
+let gameOver = false; // true once a player has reached WIN_SCORE, blocks further scoring
+
+const rowsBody = document.getElementById('rows-body');
+
+// ---------- persistence ----------
+const SESSION_KEY = 'domino_session';
+const LOGS_KEY = 'domino_logs';
+const GAME_STATE_KEY = 'domino_game_state';
+const SESSION_TTL_MS = 3 * 60 * 60 * 1000; // 3 hours
+
+const name1Input = document.getElementById('name1');
+const name2Input = document.getElementById('name2');
+const nameOverlay = document.getElementById('nameOverlay');
+const modalName1 = document.getElementById('modalName1');
+const modalName2 = document.getElementById('modalName2');
+const logOverlay = document.getElementById('logOverlay');
+const logList = document.getElementById('logList');
+
+function loadSession(){
+  try{
+    const raw = localStorage.getItem(SESSION_KEY);
+    if(!raw) return null;
+    const s = JSON.parse(raw);
+    if(!s || !s.savedAt) return null;
+    if(Date.now() - s.savedAt > SESSION_TTL_MS) return null;
+    return s;
+  }catch(e){ return null; }
+}
+
+function saveSession(n1, n2){
+  const existing = (() => {
+    try{ return JSON.parse(localStorage.getItem(SESSION_KEY)); }catch(e){ return null; }
+  })();
+  const savedAt = (existing && existing.savedAt) ? existing.savedAt : Date.now();
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ name1: n1, name2: n2, savedAt }));
+}
+
+function startNewSession(n1, n2){
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ name1: n1, name2: n2, savedAt: Date.now() }));
+}
+
+function clearSession(){
+  localStorage.removeItem(SESSION_KEY);
+}
+
+function saveGameState(){
+  try{
+    localStorage.setItem(GAME_STATE_KEY, JSON.stringify(state));
+  }catch(e){ /* ignore quota / privacy-mode errors */ }
+}
+
+function loadGameState(){
+  try{
+    const raw = localStorage.getItem(GAME_STATE_KEY);
+    if(!raw) return null;
+    const s = JSON.parse(raw);
+    if(!s || !s[1] || !s[2]) return null;
+    return s;
+  }catch(e){ return null; }
+}
+
+function clearGameState(){
+  localStorage.removeItem(GAME_STATE_KEY);
+}
+
+function loadLogs(){
+  try{
+    const logs = JSON.parse(localStorage.getItem(LOGS_KEY)) || [];
+    const today = new Date().toLocaleDateString('en-GB');
+    return logs.filter(l => new Date(l.timestamp).toLocaleDateString('en-GB') === today);
+  }catch(e){ return []; }
+}
+
+function pushLog(n1, n2, s1, s2){
+  const today = new Date().toLocaleDateString('en-GB');
+  const logs = loadLogs();
+  let winner;
+  if(s1 === s2) winner = 'یەکسان';
+  else winner = s1 > s2 ? n1 : n2;
+  logs.unshift({ name1: n1, name2: n2, score1: s1, score2: s2, winner, timestamp: Date.now() });
+  // save only today's logs
+  localStorage.setItem(LOGS_KEY, JSON.stringify(logs));
+}
+
+function renderLogs(){
+  const logs = loadLogs();
+  logList.innerHTML = '';
+  const chartContainer = document.getElementById('chartContainer');
+  const chartSection = document.getElementById('chartSection');
+  if(logs.length === 0){
+    logList.innerHTML = '<div class="log-empty">هیچ یاریەکی تۆمارکراو نیە</div>';
+    chartContainer.innerHTML = '';
+    chartSection.style.display = 'none';
+    return;
+  }
+  chartSection.style.display = '';
+  // clean previous dynamic chart elements
+  const oldLegend = chartSection.querySelector('.chart-legend');
+  if(oldLegend) oldLegend.remove();
+  logs.forEach(l => {
+    const div = document.createElement('div');
+    div.className = 'log-entry';
+    const date = new Date(l.timestamp).toLocaleString('en-GB', { hour12:false });
+    div.innerHTML = `
+      <div class="row1"><span>${l.name1} ${l.score1} - ${l.score2} ${l.name2}</span></div>
+      <div class="row2"><span class="win">🏆 ${l.winner}</span><span>${date}</span></div>
+    `;
+    logList.appendChild(div);
+  });
+
+  // render chart: horizontal bars, names on left
+  const maxScore = Math.max(...logs.map(l => Math.max(l.score1, l.score2)), 1);
+  chartContainer.innerHTML = '';
+  const recent = logs.slice().reverse();
+
+  recent.forEach((l, i) => {
+    const group = document.createElement('div');
+    group.className = 'chart-game-group';
+    const w1 = Math.max(4, (l.score1 / maxScore) * 100);
+    const w2 = Math.max(4, (l.score2 / maxScore) * 100);
+
+    const wrap1 = document.createElement('div');
+    wrap1.className = 'chart-bar-wrap';
+    wrap1.innerHTML = `
+      <div class="chart-bar-name">یاری ${i+1}</div>
+      <div class="chart-bar-track">
+        <div class="chart-bar-label">${l.score1}</div>
+        <div class="chart-bar win1" style="width:${w1}%"><span class="chart-bar-num">${l.name1}</span></div>
+      </div>
+    `;
+    group.appendChild(wrap1);
+
+    const wrap2 = document.createElement('div');
+    wrap2.className = 'chart-bar-wrap';
+    wrap2.innerHTML = `
+      <div class="chart-bar-name"></div>
+      <div class="chart-bar-track">
+        <div class="chart-bar-label">${l.score2}</div>
+        <div class="chart-bar win2" style="width:${w2}%"><span class="chart-bar-num">${l.name2}</span></div>
+      </div>
+    `;
+    group.appendChild(wrap2);
+
+    chartContainer.appendChild(group);
+  });
+
+  // legend
+  const legend = document.createElement('div');
+  legend.className = 'chart-legend';
+  legend.innerHTML = `
+    <div class="chart-legend-item"><div class="chart-legend-color" style="background:#3e8ede"></div>یاریزان ١</div>
+    <div class="chart-legend-item"><div class="chart-legend-color" style="background:#e0a92e"></div>یاریزان ٢</div>
+  `;
+  chartContainer.parentNode.appendChild(legend);
+}
+
+function showNameOverlay(prefill){
+  modalName1.value = prefill ? prefill.name1 : '';
+  modalName2.value = prefill ? prefill.name2 : '';
+  nameOverlay.classList.remove('hidden');
+}
+
+function hideNameOverlay(){
+  nameOverlay.classList.add('hidden');
+}
+
+function totalXSlotsNeeded(p){
+  const used = state[p].xFull + state[p].xHalf;
+  const rows = Math.max(ROWS_PER_BLOCK, Math.ceil((used + 1) / SLOTS_PER_ROW));
+  return Math.min(rows, MAX_ROWS);
+}
+function totalOSlotsNeeded(p){
+  const used = state[p].oFull + state[p].oPending;
+  const rows = Math.max(ROWS_PER_BLOCK, Math.ceil((used + 1) / SLOTS_PER_ROW));
+  return Math.min(rows, MAX_ROWS);
+}
+
+function render(){
+  // the board is fixed: always show all MAX_ROWS X-rows and MAX_ROWS O-rows from the start
+  const rowCount = MAX_ROWS;
+
+  rowsBody.innerHTML = '';
+
+  for(let r=0; r<rowCount; r++){
+    // X row
+    const xTr = document.createElement('tr');
+    xTr.className = 'mark-row';
+    xTr.appendChild(buildMarkCell(2, r, 'x'));
+    xTr.appendChild(buildMarkCell(1, r, 'x'));
+    rowsBody.appendChild(xTr);
+
+    // O row
+    const oTr = document.createElement('tr');
+    oTr.className = 'mark-row o-row';
+    oTr.appendChild(buildMarkCell(2, r, 'o'));
+    oTr.appendChild(buildMarkCell(1, r, 'o'));
+    rowsBody.appendChild(oTr);
+  }
+
+  updateTotals();
+  saveGameState();
+}
+
+function buildMarkCell(player, rowIndex, kind){
+  const td = document.createElement('td');
+  td.colSpan = 2;
+  if(player === 2) td.className = 'player-2';
+  const inner = document.createElement('div');
+  inner.style.display = 'flex';
+  inner.style.justifyContent = 'space-evenly';
+  inner.style.alignItems = 'center';
+  inner.style.height = (kind === 'o') ? '34px' : '52px';
+
+  for(let i=0; i<SLOTS_PER_ROW; i++){
+    const slotIndex = rowIndex * SLOTS_PER_ROW + i;
+    const span = document.createElement('span');
+    span.className = 'mark-cell';
+    span.style.width = '25%';
+    span.style.height = 'auto';
+
+    if(kind === 'x'){
+      if(slotIndex < state[player].xFull){
+        span.textContent = 'X';
+      } else if(slotIndex === state[player].xFull && state[player].xHalf === 1){
+        span.textContent = '/';
+        span.classList.add('half');
+      } else {
+        span.textContent = '';
+      }
+    } else {
+      if(slotIndex < (state[player].oFull + state[player].oPending)){
+        span.textContent = 'o';
+      } else {
+        span.textContent = '';
+      }
+    }
+    inner.appendChild(span);
+  }
+  td.appendChild(inner);
+  return td;
+}
+
+function scoreOf(p){
+  return state[p].xFull*20 + state[p].xHalf*10 + (state[p].oFull + state[p].oPending)*5;
+}
+
+function updateTotals(){
+  document.getElementById('total1').textContent = scoreOf(1);
+  document.getElementById('total2').textContent = scoreOf(2);
+  document.getElementById('totalLbl1').textContent = document.getElementById('name1').value || 'یاریزان ١';
+  document.getElementById('totalLbl2').textContent = document.getElementById('name2').value || 'یاریزان ٢';
+
+  const banner = document.getElementById('winnerBanner');
+  const s1 = scoreOf(1), s2 = scoreOf(2);
+  if(s1 >= WIN_SCORE || s2 >= WIN_SCORE){
+    const winnerName = s1 >= s2 ? name1Input.value : name2Input.value;
+    banner.textContent = '🏆 ' + winnerName + ' براوەیە!';
+    if(!roundLogged){
+      pushLog(name1Input.value || 'یاریزان ١', name2Input.value || 'یاریزان ٢', s1, s2);
+      roundLogged = true;
+    }
+    if(!gameOver){
+      gameOver = true;
+      showWinPopup(winnerName || 'یاریزان', s1, s2);
+    }
+  } else {
+    banner.textContent = '';
+  }
+}
+
+function playWinSound(){
+  try{
+    const ctx = getAudioCtx();
+    const melody = [
+      {freq:523, dur:0.2, start:0},
+      {freq:659, dur:0.2, start:0.2},
+      {freq:784, dur:0.2, start:0.4},
+      {freq:659, dur:0.2, start:0.6},
+      {freq:784, dur:0.2, start:0.8},
+      {freq:1047, dur:0.6, start:1.0}
+    ];
+    melody.forEach(n => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = n.freq;
+      osc.type = 'sine';
+      gain.gain.value = 0.3;
+      osc.start(ctx.currentTime + n.start);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + n.start + n.dur);
+      osc.stop(ctx.currentTime + n.start + n.dur);
+    });
+  }catch(e){}
+}
+function showWinPopup(winnerName, s1, s2){
+  document.getElementById('winMessage').textContent =
+    winnerName + ' براوەی یاریەکەیە! (' + s1 + ' - ' + s2 + ')';
+  playWinSound();
+  document.getElementById('winOverlay').classList.remove('hidden');
+}
+
+function pushHistory(){
+  historyStack.push(JSON.parse(JSON.stringify(state)));
+}
+
+const MAX_X = MAX_ROWS * SLOTS_PER_ROW; // 16 X's = 4 full X rows
+const MAX_O = MAX_ROWS * SLOTS_PER_ROW; // 16 O's = 4 full O rows
+
+function xRowsFull(player){
+  return state[player].xFull >= MAX_X;
+}
+
+function clampState(player){
+  if(state[player].xFull >= MAX_X){
+    state[player].xFull = MAX_X;
+    state[player].xHalf = 0; // no partial X once the X rows are completely filled
+  }
+  if(state[player].oFull > MAX_O) state[player].oFull = MAX_O;
+  if(state[player].oFull + state[player].oPending > MAX_O){
+    state[player].oPending = Math.max(0, MAX_O - state[player].oFull);
+  }
+}
+
+function convertTenIntoX(player){
+  // one unit of 10 becomes X progress: complete a pending half-X first, else start a new half-X
+  if(state[player].xHalf === 1){
+    state[player].xHalf = 0;
+    state[player].xFull += 1;
+  } else {
+    state[player].xHalf = 1;
+  }
+}
+
+function convertTenIntoO(player){
+  // the 4 X-rows are already full: this 10 has nowhere to go as X progress,
+  // so it converts straight into two o's to help finish off the remaining O rows
+  const room = MAX_O - (state[player].oFull + state[player].oPending);
+  const toAdd = Math.max(0, Math.min(2, room));
+  state[player].oFull += toAdd;
+}
+
+function relativeXInBlock(player){
+  // how many X's are done within the row-pair currently eligible for conversion
+  return state[player].xFull - state[player].convBlock * 4;
+}
+function relativeOInBlock(player){
+  // how many plain o's are done within that same row-pair
+  return state[player].oFull - state[player].convBlock * 4;
+}
+function isCurrentBlockXFull(player){
+  return relativeXInBlock(player) >= 4;
+}
+
+function addTen(player){
+  if(gameOver) return;
+  pushHistory();
+  if(xRowsFull(player)){
+    // all 4 X rows are complete: focus on filling the remaining O rows instead
+    convertTenIntoO(player);
+  } else {
+    convertTenIntoX(player);
+  }
+  clampState(player);
+  render();
+}
+
+function addFive(player){
+  if(gameOver) return;
+  pushHistory();
+  if(xRowsFull(player)){
+    // all 4 X rows are complete: a five just fills a remaining O slot directly
+    if(state[player].oFull + state[player].oPending < MAX_O){
+      state[player].oFull += 1;
+    }
+    clampState(player);
+    render();
+    return;
+  }
+  if(isCurrentBlockXFull(player)){
+    // the X row this o-row is paired with is already finished (4/4) —
+    // so this o just adds permanently to its own row, no more deleting/converting.
+    state[player].oFull += 1;
+    if(relativeOInBlock(player) >= 4){
+      // this o-row is now also finished (4/4): move on to the next row-pair,
+      // where conversion becomes active again (helping the next X row)
+      state[player].convBlock += 1;
+    }
+  } else {
+    // the X row above is still incomplete: let this o pair up and help finish it
+    state[player].oPending += 1;
+    if(state[player].oPending >= 2){
+      state[player].oPending -= 2;
+      convertTenIntoX(player);
+    }
+  }
+  clampState(player);
+  render();
+}
+
+function undo(){
+  const prev = historyStack.pop();
+  if(!prev) return;
+  state = prev;
+  render();
+}
+
+function resetGame(){
+  const s1 = scoreOf(1), s2 = scoreOf(2);
+  if(!roundLogged && (s1 > 0 || s2 > 0)){
+    pushLog(name1Input.value || 'یاریزان ١', name2Input.value || 'یاریزان ٢', s1, s2);
+  }
+  state = {
+    1: { xFull: 0, xHalf: 0, oFull: 0, oPending: 0, convBlock: 0 },
+    2: { xFull: 0, xHalf: 0, oFull: 0, oPending: 0, convBlock: 0 }
+  };
+  historyStack = [];
+  roundLogged = false;
+  gameOver = false;
+  render();
+}
+
+// ---------- events ----------
+let audioCtx = null;
+function getAudioCtx(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+document.getElementById('board').addEventListener('click', (e) => {
+  const cell = e.target.closest('.foot-cell');
+  if(!cell) return;
+  const player = cell.dataset.player;
+  const val = cell.dataset.val;
+  // beep sound - different for each player
+  try{
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = player === '1' ? 600 : 900;
+    osc.type = 'sine';
+    gain.gain.value = 0.3;
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+    osc.stop(ctx.currentTime + 0.15);
+  }catch(e){}
+  // vibrate
+  if(navigator.vibrate) navigator.vibrate(50);
+  if(val === '10') addTen(player);
+  else addFive(player);
+});
+
+document.getElementById('undoBtn').addEventListener('click', undo);
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if(confirm('دڵنیایت لە دەستپێکردنەوەی یاری؟')) resetGame();
+});
+document.getElementById('closeBtn').addEventListener('click', () => {
+  if(!confirm('دڵنیایت لە داخستنی یاری؟ بۆ یاریەکی نوێ دەبێت ناوەکان دووبارە بنووسیت.')) return;
+  const s1 = scoreOf(1), s2 = scoreOf(2);
+  if(!roundLogged && (s1 > 0 || s2 > 0)){
+    pushLog(name1Input.value || 'یاریزان ١', name2Input.value || 'یاریزان ٢', s1, s2);
+  }
+  state = {
+    1: { xFull: 0, xHalf: 0, oFull: 0, oPending: 0, convBlock: 0 },
+    2: { xFull: 0, xHalf: 0, oFull: 0, oPending: 0, convBlock: 0 }
+  };
+  historyStack = [];
+  roundLogged = false;
+  gameOver = false;
+  clearSession();
+  clearGameState();
+  name1Input.value = '';
+  name2Input.value = '';
+  render();
+
+  // try to close the browser tab/window itself
+  window.open('', '_self');
+  window.close();
+
+  // some browsers block script-closing of tabs that weren't opened by script;
+  // if we're still here after a moment, fall back to showing the name overlay
+  setTimeout(() => {
+    showNameOverlay(null);
+  }, 300);
+});
+
+name1Input.addEventListener('input', () => {
+  updateTotals();
+  saveSession(name1Input.value, name2Input.value);
+});
+name2Input.addEventListener('input', () => {
+  updateTotals();
+  saveSession(name1Input.value, name2Input.value);
+});
+
+// ---------- win popup logic ----------
+document.getElementById('winOkBtn').addEventListener('click', () => {
+  document.getElementById('winOverlay').classList.add('hidden');
+  // continue with the same two players, just start a fresh round
+  resetGame();
+});
+
+// ---------- name-entry overlay logic ----------
+document.getElementById('startGameBtn').addEventListener('click', () => {
+  const n1 = modalName1.value.trim();
+  const n2 = modalName2.value.trim();
+  if(!n1 || !n2){
+    alert('تکایە ناوی هەردوو یاریزان بنووسە');
+    return;
+  }
+  name1Input.value = n1;
+  name2Input.value = n2;
+  startNewSession(n1, n2);
+  state = {
+    1: { xFull: 0, xHalf: 0, oFull: 0, oPending: 0, convBlock: 0 },
+    2: { xFull: 0, xHalf: 0, oFull: 0, oPending: 0, convBlock: 0 }
+  };
+  historyStack = [];
+  roundLogged = false;
+  gameOver = false;
+  hideNameOverlay();
+  render();
+});
+
+// ---------- log overlay logic ----------
+document.getElementById('logLink').addEventListener('click', () => {
+  renderLogs();
+  logOverlay.classList.remove('hidden');
+});
+document.getElementById('closeLogBtn').addEventListener('click', () => {
+  logOverlay.classList.add('hidden');
+});
+document.getElementById('clearLogBtn').addEventListener('click', () => {
+  if(confirm('دڵنیایت لە سڕینەوەی هەموو لۆگەکان؟')){
+    localStorage.removeItem(LOGS_KEY);
+    renderLogs();
+  }
+});
+
+// ---------- periodic session expiry check ----------
+setInterval(() => {
+  if(!nameOverlay.classList.contains('hidden')) return; // already showing, don't interrupt typing
+  const s = loadSession();
+  if(!s){
+    // session expired while page was open
+    clearSession();
+    clearGameState();
+    showNameOverlay(null);
+  }
+}, 60 * 1000);
+
+// ---------- init ----------
+function init(){
+  const session = loadSession();
+  if(session){
+    name1Input.value = session.name1;
+    name2Input.value = session.name2;
+    // the file was reopened (not explicitly closed/finished) with names still valid:
+    // restore whatever marks were on the board when it was last open
+    const savedState = loadGameState();
+    if(savedState){
+      state = savedState;
+    }
+  } else {
+    clearSession();
+    clearGameState();
+    showNameOverlay(null);
+  }
+  render();
+}
+
+init();
+</script>
+
+</body>
+</html>
