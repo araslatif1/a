@@ -1,304 +1,621 @@
-/**
- * script.js
- * -----------------------------------------------------------------------
- * Shared logic for the HTML Documentation Viewer.
- * This file is included on EVERY page (index + all content pages), so it
- * is split into two responsibilities:
- *
- *   1. Things that run on every page:
- *        - load config.json and apply the theme
- *        - inject a floating "Back to Index" button if we're not on
- *          index.html and one doesn't already exist
- *
- *   2. Things that only run on index.html:
- *        - fetch the live page list from /api/files
- *        - render cards, wire up search + sort
- *        - poll periodically so added/removed/renamed files show up
- *          automatically, with zero manual editing
- * -----------------------------------------------------------------------
- */
-
 (function () {
   'use strict';
 
-  const CONFIG_URL = 'config.json';
-  const API_URL = 'api/files';
+  var POLL_INTERVAL = 60000;
+  var CONCURRENCY_LIMIT = 3;
+  var TITLE_FETCH_CONCURRENCY = 5;
+  var THEME_KEY = 'gh-pages-theme';
+  var SEARCH_DEBOUNCE_MS = 200;
+  var FETCH_TIMEOUT_MS = 15000;
+  var RAW_TIMEOUT_MS = 10000;
 
-  const isIndexPage =
+  var isIndexPage =
     location.pathname.endsWith('/') ||
     location.pathname.toLowerCase().endsWith('/index.html') ||
     location.pathname.toLowerCase() === '/index.html';
 
-  /** Load and parse config.json (settings live here, no database). */
-  async function loadConfig() {
-    try {
-      const res = await fetch(CONFIG_URL, { cache: 'no-store' });
-      if (!res.ok) throw new Error('config.json not found');
-      return await res.json();
-    } catch (err) {
-      console.warn('Could not load config.json, using defaults.', err);
-      return {
-        title: 'HTML Library',
-        theme: 'light',
-        hidden: [],
-        favorites: [],
-        sort: 'alphabetical',
-        showLastModified: true,
-        pollIntervalMs: 3000,
-      };
-    }
+  function detectRepo() {
+    var hostname = window.location.hostname;
+    var pathname = window.location.pathname;
+    var match = hostname.match(/^([^.]+)\.github\.io$/);
+    if (!match) return null;
+    var owner = match[1];
+    var parts = pathname.replace(/^\/|\/$/g, '').split('/');
+    var repo = parts[0] || owner + '.github.io';
+    return { owner: owner, repo: repo };
   }
 
-  /** Apply the light/dark theme to the whole document. */
-  function applyTheme(theme) {
-    document.documentElement.setAttribute(
-      'data-theme',
-      theme === 'dark' ? 'dark' : 'light'
-    );
+  function fetchWithTimeout(url, options, timeoutMs) {
+    options = options || {};
+    timeoutMs = timeoutMs || FETCH_TIMEOUT_MS;
+    var controller = new AbortController();
+    var id = setTimeout(function () { controller.abort(); }, timeoutMs);
+    return fetch(url, Object.assign({}, options, { signal: controller.signal }))
+      .finally(function () { clearTimeout(id); });
   }
 
-  /**
-   * Requirement #5 / #17: every non-index page needs a floating
-   * "Back to Index" button. If the page author already added one
-   * (an element with id="back-to-index"), we leave it alone.
-   * Otherwise we inject one dynamically.
-   */
-  function ensureBackButton() {
-    if (isIndexPage) return;
-    if (document.getElementById('back-to-index')) return;
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
 
-    const btn = document.createElement('button');
-    btn.id = 'back-to-index';
-    btn.className = 'back-to-index-btn';
-    btn.innerHTML = '&#8592; Back to Index';
-    btn.addEventListener('click', () => {
-      window.location.href = 'index.html';
+  function formatDate(dateStr) {
+    if (!dateStr) return null;
+    var d = new Date(dateStr);
+    if (isNaN(d.getTime())) return null;
+    return d.toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     });
-    document.body.appendChild(btn);
   }
 
-  // ---- Runs on every page --------------------------------------------
-  document.addEventListener('DOMContentLoaded', async () => {
-    const config = await loadConfig();
-    applyTheme(config.theme);
-    ensureBackButton();
+  function stripHtml(html) {
+    var doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || '';
+  }
 
-    if (isIndexPage) {
-      initIndexPage(config);
-    }
-  });
-
-  // =========================================================================
-  //  Everything below only runs on index.html
-  // =========================================================================
-
-  function initIndexPage(initialConfig) {
-    let config = initialConfig;
-    let pages = []; // last known list from the API: {file, title, mtime}
-    let lastSnapshot = '';
-    let usingServerApi = true;
-
-    const grid = document.getElementById('card-grid');
-    const emptyState = document.getElementById('empty-state');
-    const serverWarning = document.getElementById('server-warning');
-    const statusLine = document.getElementById('status-line');
-    const searchBox = document.getElementById('search-box');
-    const sortSelect = document.getElementById('sort-select');
-    const themeToggle = document.getElementById('theme-toggle');
-    const siteTitle = document.getElementById('site-title');
-
-    siteTitle.textContent = config.title || 'HTML Library';
-    document.title = config.title || 'HTML Library';
-    sortSelect.value = config.sort || 'alphabetical';
-    themeToggle.textContent =
-      document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
-
-    // Manual light/dark toggle (session only - config.json stays the
-    // source of truth for the next full reload, per requirement #6/#14).
-    themeToggle.addEventListener('click', () => {
-      const current = document.documentElement.getAttribute('data-theme');
-      const next = current === 'dark' ? 'light' : 'dark';
-      applyTheme(next);
-      themeToggle.textContent = next === 'dark' ? '☀️' : '🌙';
+  function fetchFileTree(owner, repo) {
+    var url = 'https://api.github.com/repos/' + encodeURIComponent(owner) + '/' + encodeURIComponent(repo) + '/git/trees/HEAD?recursive=1';
+    return fetchWithTimeout(url).then(function (res) {
+      if (res.status === 403) {
+        return res.json().catch(function () { return {}; }).then(function (data) {
+          if (data.message && data.message.toLowerCase().includes('rate limit')) {
+            throw new Error('RATE_LIMIT');
+          }
+          throw new Error('PRIVATE_OR_FORBIDDEN');
+        });
+      }
+      if (res.status === 404) {
+        throw new Error('NOT_FOUND');
+      }
+      if (!res.ok) {
+        throw new Error('API_ERROR');
+      }
+      return res.json();
+    }).then(function (data) {
+      return data.tree || [];
     });
+  }
 
-    searchBox.addEventListener('input', renderGrid);
-    sortSelect.addEventListener('change', renderGrid);
-
-    /** Fetch the live file list from the tiny local server. */
-    async function fetchPages() {
-      try {
-        const res = await fetch(API_URL, { cache: 'no-store' });
-        if (!res.ok) throw new Error('API responded with ' + res.status);
-        const data = await res.json();
-        usingServerApi = true;
-        serverWarning.hidden = true;
-        return data;
-      } catch (err) {
-        usingServerApi = false;
-        serverWarning.hidden = false;
-        return [];
-      }
-    }
-
-    /** Filter out anything listed as hidden in config.json. */
-    function applyHiddenFilter(list) {
-      const hiddenSet = new Set((config.hidden || []).map((f) => f.toLowerCase()));
-      return list.filter((p) => !hiddenSet.has(p.file.toLowerCase()));
-    }
-
-    /** Sort the page list according to the active sort mode. */
-    function sortPages(list) {
-      const mode = sortSelect.value;
-      const favorites = new Set((config.favorites || []).map((f) => f.toLowerCase()));
-      const copy = [...list];
-
-      switch (mode) {
-        case 'newest':
-          copy.sort((a, b) => new Date(b.mtime) - new Date(a.mtime));
-          break;
-        case 'oldest':
-          copy.sort((a, b) => new Date(a.mtime) - new Date(b.mtime));
-          break;
-        case 'favorites':
-          copy.sort((a, b) => {
-            const favA = favorites.has(a.file.toLowerCase()) ? 0 : 1;
-            const favB = favorites.has(b.file.toLowerCase()) ? 0 : 1;
-            if (favA !== favB) return favA - favB;
-            return a.title.localeCompare(b.title);
-          });
-          break;
-        case 'alphabetical':
-        default:
-          copy.sort((a, b) => a.title.localeCompare(b.title));
-          break;
-      }
-      return copy;
-    }
-
-    /** Filter by the live search box (matches filename OR title). */
-    function searchFilter(list) {
-      const query = searchBox.value.trim().toLowerCase();
-      if (!query) return list;
-      return list.filter(
-        (p) =>
-          p.file.toLowerCase().includes(query) ||
-          p.title.toLowerCase().includes(query)
-      );
-    }
-
-    function formatDate(iso) {
-      if (!iso) return 'Unknown';
-      const d = new Date(iso);
-      if (isNaN(d.getTime())) return 'Unknown';
-      return d.toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
+  function filterHtmlFiles(tree) {
+    return tree
+      .filter(function (item) {
+        return item.type === 'blob' && item.path.toLowerCase().endsWith('.html');
+      })
+      .filter(function (item) {
+        var base = item.path.split('/').pop().toLowerCase();
+        return base !== 'index.html' && base !== '404.html';
       });
+  }
+
+  function extractTitleFromHtml(html) {
+    var match = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+    if (match && match[1]) {
+      var text = match[1].replace(/\s+/g, ' ').trim();
+      if (text.length > 0) return text;
     }
+    var doc = new DOMParser().parseFromString(html, 'text/html');
+    var h1 = doc.querySelector('h1');
+    if (h1 && h1.textContent.trim().length > 0) {
+      return h1.textContent.trim();
+    }
+    return null;
+  }
 
-    function buildCard(page) {
-      const favorites = new Set((config.favorites || []).map((f) => f.toLowerCase()));
-      const isFavorite = favorites.has(page.file.toLowerCase());
+  function fetchRawContent(owner, repo, path) {
+    var url = 'https://raw.githubusercontent.com/' + encodeURIComponent(owner) + '/' + encodeURIComponent(repo) + '/HEAD/' + path;
+    return fetchWithTimeout(url, {}, RAW_TIMEOUT_MS).then(function (res) {
+      if (!res.ok) return null;
+      return res.text();
+    }).catch(function () {
+      return null;
+    });
+  }
 
-      const card = document.createElement('article');
-      card.className = 'card';
-      card.tabIndex = 0;
-      card.setAttribute('role', 'button');
-      card.setAttribute('aria-label', `Open ${page.title}`);
-
-      const title = document.createElement('h3');
-      title.className = 'card-title';
-      title.innerHTML =
-        (isFavorite ? '<span class="favorite-star">★</span>' : '') +
-        escapeHtml(page.title);
-
-      const filename = document.createElement('div');
-      filename.className = 'card-filename';
-      filename.textContent = page.file;
-
-      card.appendChild(title);
-      card.appendChild(filename);
-
-      if (config.showLastModified) {
-        const modified = document.createElement('div');
-        modified.className = 'card-modified';
-        modified.textContent = 'Last modified: ' + formatDate(page.mtime);
-        card.appendChild(modified);
+  function fetchLastModified(owner, repo, path) {
+    var url = 'https://api.github.com/repos/' + encodeURIComponent(owner) + '/' + encodeURIComponent(repo) + '/commits?path=' + encodeURIComponent(path) + '&per_page=1';
+    return fetchWithTimeout(url, {}, RAW_TIMEOUT_MS).then(function (res) {
+      if (res.status === 403) {
+        return res.json().catch(function () { return {}; }).then(function (data) {
+          if (data.message && data.message.toLowerCase().includes('rate limit')) {
+            return null;
+          }
+          return null;
+        });
       }
+      if (!res.ok) return null;
+      return res.json();
+    }).then(function (commits) {
+      if (Array.isArray(commits) && commits.length > 0 && commits[0].commit && commits[0].commit.committer) {
+        return commits[0].commit.committer.date;
+      }
+      return null;
+    }).catch(function () {
+      return null;
+    });
+  }
 
-      const openBtn = document.createElement('button');
-      openBtn.className = 'card-open-btn';
-      openBtn.textContent = 'Open';
-      openBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        openPage(page.file);
-      });
-      card.appendChild(openBtn);
+  function batchFetchWithConcurrency(tasks, limit) {
+    var results = new Array(tasks.length);
+    var index = 0;
+    function worker() {
+      function next() {
+        if (index >= tasks.length) return Promise.resolve();
+        var i = index++;
+        return tasks[i]().then(function (result) {
+          results[i] = result;
+          return next();
+        });
+      }
+      return next();
+    }
+    var workers = [];
+    for (var i = 0; i < Math.min(limit, tasks.length); i++) {
+      workers.push(worker());
+    }
+    return Promise.allSettled(workers).then(function () { return results; });
+  }
 
-      card.addEventListener('click', () => openPage(page.file));
-      card.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          openPage(page.file);
+  function getTheme() {
+    return localStorage.getItem(THEME_KEY) || 'dark';
+  }
+
+  function setTheme(theme) {
+    localStorage.setItem(THEME_KEY, theme);
+    document.documentElement.setAttribute('data-theme', theme);
+  }
+
+  function errorMessageFor(error) {
+    switch (error.message) {
+      case 'RATE_LIMIT':
+        return 'GitHub API rate limit exceeded. Please wait a few minutes and try again.';
+      case 'PRIVATE_OR_FORBIDDEN':
+        return 'This repository is private or access is forbidden. Make sure the repository is public.';
+      case 'NOT_FOUND':
+        return 'Repository not found. Check that the owner and repo name are correct.';
+      case 'API_ERROR':
+        return 'GitHub API returned an unexpected error. Please try again later.';
+      default:
+        if (error.name === 'AbortError') {
+          return 'Request timed out. Please check your network connection and try again.';
         }
+        return 'A network error occurred. Please check your connection and try again.';
+    }
+  }
+
+  function createSvgIcon(pathD) {
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', '2');
+    svg.setAttribute('stroke-linecap', 'round');
+    svg.setAttribute('stroke-linejoin', 'round');
+    var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', pathD);
+    svg.appendChild(path);
+    return svg;
+  }
+
+  function createSearchIcon() {
+    return createSvgIcon('M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z');
+  }
+
+  function createArrowUpIcon() {
+    return createSvgIcon('M12 19V5M5 12l7-7 7 7');
+  }
+
+  function createRefreshIcon() {
+    return createSvgIcon('M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15');
+  }
+
+  function renderApp(root, repoInfo) {
+    root.innerHTML = '';
+
+    var header = document.createElement('header');
+    header.className = 'header';
+
+    var titleEl = document.createElement('div');
+    titleEl.className = 'header__title';
+    var titleIcon = document.createElement('span');
+    titleIcon.className = 'header__title-icon';
+    titleIcon.textContent = '\uD83D\uDCC1';
+    var titleLink = document.createElement('a');
+    titleLink.href = 'https://github.com/' + repoInfo.owner + '/' + repoInfo.repo;
+    titleLink.textContent = repoInfo.owner + '/' + repoInfo.repo;
+    titleLink.target = '_blank';
+    titleLink.rel = 'noopener noreferrer';
+    titleEl.appendChild(titleIcon);
+    titleEl.appendChild(titleLink);
+    header.appendChild(titleEl);
+
+    var controls = document.createElement('div');
+    controls.className = 'header__controls';
+
+    var searchWrapper = document.createElement('div');
+    searchWrapper.className = 'search-wrapper';
+    var searchIconEl = document.createElement('span');
+    searchIconEl.className = 'search-wrapper__icon';
+    searchIconEl.appendChild(createSearchIcon());
+    var searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.className = 'search-input';
+    searchInput.placeholder = 'Search by title or filename\u2026';
+    searchInput.id = 'gh-search-input';
+    searchWrapper.appendChild(searchIconEl);
+    searchWrapper.appendChild(searchInput);
+    controls.appendChild(searchWrapper);
+
+    var sortSelect = document.createElement('select');
+    sortSelect.className = 'sort-select';
+    sortSelect.id = 'gh-sort-select';
+    var sortOpts = [
+      { value: 'alpha', label: 'A \u2192 Z' },
+      { value: 'newest', label: 'Newest' },
+      { value: 'oldest', label: 'Oldest' }
+    ];
+    sortOpts.forEach(function (o) {
+      var option = document.createElement('option');
+      option.value = o.value;
+      option.textContent = o.label;
+      sortSelect.appendChild(option);
+    });
+    controls.appendChild(sortSelect);
+
+    var themeToggle = document.createElement('button');
+    themeToggle.className = 'theme-toggle';
+    themeToggle.id = 'gh-theme-toggle';
+    themeToggle.title = 'Toggle theme';
+    themeToggle.textContent = getTheme() === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
+    controls.appendChild(themeToggle);
+
+    header.appendChild(controls);
+    root.appendChild(header);
+
+    var statusBar = document.createElement('div');
+    statusBar.className = 'status-bar';
+    statusBar.id = 'gh-status-bar';
+    statusBar.style.display = 'none';
+    var statusCount = document.createElement('span');
+    statusCount.className = 'status-bar__count';
+    statusCount.id = 'gh-count';
+    statusBar.appendChild(statusCount);
+    root.appendChild(statusBar);
+
+    var mainContent = document.createElement('div');
+    mainContent.className = 'main-content';
+    mainContent.id = 'gh-main';
+    root.appendChild(mainContent);
+
+    if (!isIndexPage) {
+      var backBtn = document.createElement('a');
+      backBtn.className = 'back-to-index';
+      backBtn.href = '/';
+      backBtn.title = 'Back to Index';
+      var backIcon = document.createElement('span');
+      backIcon.className = 'back-to-index__icon';
+      backIcon.appendChild(createArrowUpIcon());
+      backBtn.appendChild(backIcon);
+      backBtn.appendChild(document.createTextNode(' Index'));
+      root.appendChild(backBtn);
+    }
+
+    return {
+      header: header,
+      searchInput: searchInput,
+      sortSelect: sortSelect,
+      themeToggle: themeToggle,
+      statusBar: statusBar,
+      statusCount: statusCount,
+      mainContent: mainContent
+    };
+  }
+
+  function renderLoading(mainContent) {
+    mainContent.innerHTML = '';
+    var spinner = document.createElement('div');
+    spinner.className = 'loading-spinner';
+    var circle = document.createElement('div');
+    circle.className = 'loading-spinner__circle';
+    var text = document.createElement('div');
+    text.className = 'loading-spinner__text';
+    text.textContent = 'Discovering pages\u2026';
+    spinner.appendChild(circle);
+    spinner.appendChild(text);
+    mainContent.appendChild(spinner);
+  }
+
+  function renderError(mainContent, message, retryFn) {
+    mainContent.innerHTML = '';
+    var errorState = document.createElement('div');
+    errorState.className = 'error-state';
+    var icon = document.createElement('div');
+    icon.className = 'error-state__icon';
+    icon.textContent = '\u26A0\uFE0F';
+    var title = document.createElement('h2');
+    title.className = 'error-state__title';
+    title.textContent = 'Something went wrong';
+    var desc = document.createElement('p');
+    desc.className = 'error-state__description';
+    desc.textContent = message;
+    errorState.appendChild(icon);
+    errorState.appendChild(title);
+    errorState.appendChild(desc);
+    if (retryFn) {
+      var retryBtn = document.createElement('button');
+      retryBtn.className = 'retry-button';
+      var retryIcon = document.createElement('span');
+      retryIcon.className = 'retry-button__icon';
+      retryIcon.appendChild(createRefreshIcon());
+      retryBtn.appendChild(retryIcon);
+      retryBtn.appendChild(document.createTextNode('Retry'));
+      retryBtn.addEventListener('click', retryFn);
+      errorState.appendChild(retryBtn);
+    }
+    mainContent.appendChild(errorState);
+  }
+
+  function renderEmpty(mainContent) {
+    mainContent.innerHTML = '';
+    var emptyState = document.createElement('div');
+    emptyState.className = 'empty-state';
+    var icon = document.createElement('div');
+    icon.className = 'empty-state__icon';
+    icon.textContent = '\uD83D\uDCC2';
+    var title = document.createElement('h2');
+    title.className = 'empty-state__title';
+    title.textContent = 'No pages found';
+    var desc = document.createElement('p');
+    desc.className = 'empty-state__description';
+    desc.textContent = 'No HTML pages found in this repository.';
+    emptyState.appendChild(icon);
+    emptyState.appendChild(title);
+    emptyState.appendChild(desc);
+    mainContent.appendChild(emptyState);
+  }
+
+  function renderGrid(mainContent, statusBar, statusCount, files) {
+    mainContent.innerHTML = '';
+    statusCount.innerHTML = '<strong>' + files.length + '</strong> page' + (files.length !== 1 ? 's' : '') + ' found';
+    statusBar.style.display = '';
+
+    var grid = document.createElement('div');
+    grid.className = 'card-grid';
+    grid.id = 'gh-grid';
+
+    files.forEach(function (file, idx) {
+      var card = document.createElement('a');
+      card.className = 'card';
+      card.href = file.path;
+      card.dataset.path = file.path.toLowerCase();
+      card.dataset.title = (file.title || '').toLowerCase();
+      card.dataset.filename = file.path.split('/').pop().toLowerCase();
+
+      var badge = document.createElement('span');
+      badge.className = 'card__badge';
+      badge.textContent = file.path.split('/').pop().replace(/\.html$/i, '');
+      card.appendChild(badge);
+
+      var cardTitle = document.createElement('h3');
+      cardTitle.className = 'card__title';
+      cardTitle.textContent = file.title || file.path.split('/').pop();
+      cardTitle.id = 'gh-title-' + idx;
+      card.appendChild(cardTitle);
+
+      var cardDesc = document.createElement('p');
+      cardDesc.className = 'card__description';
+      cardDesc.textContent = file.path;
+      card.appendChild(cardDesc);
+
+      var meta = document.createElement('div');
+      meta.className = 'card__meta';
+
+      var metaItem = document.createElement('span');
+      metaItem.className = 'card__meta-item';
+      var metaIcon = document.createElement('span');
+      metaIcon.className = 'card__meta-icon';
+      metaIcon.textContent = '\uD83D\uDCC5';
+      metaItem.appendChild(metaIcon);
+      var dateEl = document.createElement('span');
+      dateEl.id = 'gh-date-' + idx;
+      dateEl.textContent = '\u2014';
+      metaItem.appendChild(dateEl);
+      meta.appendChild(metaItem);
+
+      card.appendChild(meta);
+      grid.appendChild(card);
+    });
+
+    mainContent.appendChild(grid);
+  }
+
+  function renderNoResults(mainContent, statusBar, statusCount, query) {
+    statusCount.innerHTML = '<strong>0</strong> pages found';
+    var grid = mainContent.querySelector('.card-grid');
+    if (grid) grid.innerHTML = '';
+    var emptyState = document.createElement('div');
+    emptyState.className = 'empty-state';
+    var icon = document.createElement('div');
+    icon.className = 'empty-state__icon';
+    icon.textContent = '\uD83D\uDD0D';
+    var title = document.createElement('h2');
+    title.className = 'empty-state__title';
+    title.textContent = 'No results';
+    var desc = document.createElement('p');
+    desc.className = 'empty-state__description';
+    desc.textContent = 'No pages match "' + query + '"';
+    emptyState.appendChild(icon);
+    emptyState.appendChild(title);
+    emptyState.appendChild(desc);
+    mainContent.appendChild(emptyState);
+  }
+
+  function setupSearchAndSort(files, els, renderFn) {
+    var currentSort = 'alpha';
+    var currentQuery = '';
+    var searchTimeout = null;
+
+    function getFilteredAndSorted() {
+      var filtered = files;
+      if (currentQuery) {
+        var q = currentQuery.toLowerCase();
+        filtered = files.filter(function (f) {
+          var title = (f.title || '').toLowerCase();
+          var path = f.path.toLowerCase();
+          var filename = f.path.split('/').pop().toLowerCase();
+          return title.includes(q) || path.includes(q) || filename.includes(q);
+        });
+      }
+      var sorted = filtered.slice();
+      if (currentSort === 'alpha') {
+        sorted.sort(function (a, b) {
+          return (a.title || a.path).localeCompare(b.title || b.path);
+        });
+      } else if (currentSort === 'newest') {
+        sorted.sort(function (a, b) {
+          if (!a.lastModified) return 1;
+          if (!b.lastModified) return -1;
+          return new Date(b.lastModified) - new Date(a.lastModified);
+        });
+      } else if (currentSort === 'oldest') {
+        sorted.sort(function (a, b) {
+          if (!a.lastModified) return 1;
+          if (!b.lastModified) return -1;
+          return new Date(a.lastModified) - new Date(b.lastModified);
+        });
+      }
+      return sorted;
+    }
+
+    function refreshView() {
+      var sorted = getFilteredAndSorted();
+      if (sorted.length === 0) {
+        renderNoResults(els.mainContent, els.statusBar, els.statusCount, currentQuery);
+        return;
+      }
+      renderFn(sorted);
+    }
+
+    els.searchInput.addEventListener('input', function () {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(function () {
+        currentQuery = els.searchInput.value.trim();
+        refreshView();
+      }, SEARCH_DEBOUNCE_MS);
+    });
+
+    els.sortSelect.addEventListener('change', function () {
+      currentSort = els.sortSelect.value;
+      refreshView();
+    });
+  }
+
+  function fetchTitlesInBatches(files, owner, repo) {
+    var tasks = files.map(function (file, idx) {
+      return function () {
+        return fetchRawContent(owner, repo, file.path).then(function (html) {
+          if (html) {
+            var title = extractTitleFromHtml(html);
+            if (title) {
+              files[idx].title = title;
+              var el = document.getElementById('gh-title-' + idx);
+              if (el) el.textContent = title;
+            }
+          }
+        });
+      };
+    });
+    return batchFetchWithConcurrency(tasks, TITLE_FETCH_CONCURRENCY);
+  }
+
+  function fetchLastModifiedDates(files, owner, repo) {
+    var tasks = files.map(function (file, idx) {
+      return function () {
+        return fetchLastModified(owner, repo, file.path).then(function (date) {
+          if (date) {
+            files[idx].lastModified = date;
+            var el = document.getElementById('gh-date-' + idx);
+            if (el) el.textContent = formatDate(date) || '\u2014';
+          }
+        });
+      };
+    });
+    return batchFetchWithConcurrency(tasks, CONCURRENCY_LIMIT);
+  }
+
+  function init() {
+    var repoInfo = detectRepo();
+    var root = document.getElementById('app');
+
+    if (!repoInfo) {
+      root.innerHTML = '';
+      var errorState = document.createElement('div');
+      errorState.className = 'error-state';
+      var icon = document.createElement('div');
+      icon.className = 'error-state__icon';
+      icon.textContent = '\uD83D\uDEAB';
+      var title = document.createElement('h2');
+      title.className = 'error-state__title';
+      title.textContent = 'Not a GitHub Pages site';
+      var desc = document.createElement('p');
+      desc.className = 'error-state__description';
+      desc.textContent = 'This page must be hosted on GitHub Pages (e.g. username.github.io).';
+      errorState.appendChild(icon);
+      errorState.appendChild(title);
+      errorState.appendChild(desc);
+      root.appendChild(errorState);
+      return;
+    }
+
+    document.documentElement.setAttribute('data-theme', getTheme());
+
+    var els = renderApp(root, repoInfo);
+
+    els.themeToggle.addEventListener('click', function () {
+      var current = getTheme();
+      var next = current === 'dark' ? 'light' : 'dark';
+      setTheme(next);
+      els.themeToggle.textContent = next === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
+    });
+
+    var files = [];
+
+    function renderFileGrid(sortedFiles) {
+      renderGrid(els.mainContent, els.statusBar, els.statusCount, sortedFiles);
+    }
+
+    setupSearchAndSort(files, els, renderFileGrid);
+
+    function loadFiles() {
+      renderLoading(els.mainContent);
+      els.statusBar.style.display = 'none';
+      return fetchFileTree(repoInfo.owner, repoInfo.repo).then(function (tree) {
+        var htmlFiles = filterHtmlFiles(tree);
+        files.length = 0;
+        htmlFiles.forEach(function (f) {
+          files.push({ path: f.path, title: null, lastModified: null });
+        });
+        if (files.length === 0) {
+          renderEmpty(els.mainContent);
+          return;
+        }
+        renderFileGrid(files);
+        fetchTitlesInBatches(files, repoInfo.owner, repoInfo.repo);
+        fetchLastModifiedDates(files, repoInfo.owner, repoInfo.repo);
+      }).catch(function (error) {
+        renderError(els.mainContent, errorMessageFor(error), loadFiles);
       });
-
-      return card;
     }
 
-    function openPage(file) {
-      window.location.href = file;
-    }
+    loadFiles();
+    setInterval(loadFiles, POLL_INTERVAL);
+  }
 
-    function escapeHtml(str) {
-      const div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
-    }
-
-    /** Re-render the card grid from the current `pages` state. */
-    function renderGrid() {
-      grid.innerHTML = '';
-
-      let visible = applyHiddenFilter(pages);
-      visible = searchFilter(visible);
-      visible = sortPages(visible);
-
-      if (visible.length === 0) {
-        emptyState.hidden = false;
-      } else {
-        emptyState.hidden = true;
-        visible.forEach((page) => grid.appendChild(buildCard(page)));
-      }
-
-      const total = applyHiddenFilter(pages).length;
-      statusLine.textContent = usingServerApi
-        ? `${visible.length} of ${total} page(s) shown` +
-          (searchBox.value ? ` for "${searchBox.value}"` : '')
-        : '';
-    }
-
-    /** Poll the server so add/remove/rename events are picked up live. */
-    async function refresh(isFirstLoad) {
-      const freshPages = await fetchPages();
-      const snapshot = JSON.stringify(freshPages);
-
-      if (snapshot !== lastSnapshot) {
-        pages = freshPages;
-        lastSnapshot = snapshot;
-        renderGrid();
-      } else if (isFirstLoad) {
-        // Even with no change, make sure the initial render happens.
-        pages = freshPages;
-        renderGrid();
-      }
-    }
-
-    // Initial load, then poll on the interval from config.json.
-    refresh(true);
-    const interval = Math.max(1000, Number(config.pollIntervalMs) || 3000);
-    setInterval(() => refresh(false), interval);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
   }
 })();
