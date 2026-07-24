@@ -708,17 +708,11 @@
     }
 
     function loadFiles() {
+      try {
+        localStorage.removeItem(CACHE_KEY);
+      } catch (e) {}
       renderLoading(els.mainContent);
       els.statusBar.style.display = 'none';
-
-      var cached = getCachedTree();
-      if (cached) {
-        console.log('[Pages] Loading initial view from cache:', cached.length, 'items');
-        processTree(cached, true);
-        fetchFreshTreeInBackground();
-        return Promise.resolve();
-      }
-
       return fetchFreshTree();
     }
 
